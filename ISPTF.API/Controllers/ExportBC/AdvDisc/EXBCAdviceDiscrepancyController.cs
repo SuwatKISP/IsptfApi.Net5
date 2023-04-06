@@ -82,69 +82,73 @@ namespace ISPTF.API.Controllers.ExportBC
                 return results;
         }
 
-        [HttpGet("releaselist")]
-        public async Task<IEnumerable<Q_EXBCAdviceDiscrepancyPageRsp>> GetAllRelease(string? UserID, string? CenterID, string? EXPORT_BC_NO, string? BENNAME, string? Page, string? PageSize)
-        {
-            DynamicParameters param = new();
+        //[HttpGet("releaselist")]
+        //public async Task<IEnumerable<Q_EXBCAdviceDiscrepancyPageRsp>> GetAllRelease(string? UserID, string? CenterID, string? EXPORT_BC_NO, string? BENNAME, string? Page, string? PageSize)
+        //{
+        //    DynamicParameters param = new();
 
-            param.Add("@UserID", UserID);
-            param.Add("@CenterID", CenterID);
-            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            param.Add("@BENNAME", BENNAME);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
+        //    param.Add("@UserID", UserID);
+        //    param.Add("@CenterID", CenterID);
+        //    param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+        //    param.Add("@BENNAME", BENNAME);
+        //    param.Add("@Page", Page);
+        //    param.Add("@PageSize", PageSize);
 
-            if (EXPORT_BC_NO == null)
-            {
-                param.Add("@EXPORT_BC_NO", "");
-            }
-            if (BENNAME == null)
-            {
-                param.Add("@BENNAME", "");
-            }
+        //    if (EXPORT_BC_NO == null)
+        //    {
+        //        param.Add("@EXPORT_BC_NO", "");
+        //    }
+        //    if (BENNAME == null)
+        //    {
+        //        param.Add("@BENNAME", "");
+        //    }
 
-            var results = await _db.LoadData<Q_EXBCAdviceDiscrepancyPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXBC_AdviceDiscrepancyReleasePage",
-                        param);
-            return results;
-        }
+        //    var results = await _db.LoadData<Q_EXBCAdviceDiscrepancyPageRsp, dynamic>(
+        //                storedProcedure: "usp_q_EXBC_AdviceDiscrepancyReleasePage",
+        //                param);
+        //    return results;
+        //}
 
-        [HttpGet("querylist")]
-        public async Task<IEnumerable<Q_EXBCAdviceDiscrepancyPageRsp>> GetAllQurey(string? CenterID, string? EXPORT_BC_NO, string? BENNAME, string? Page, string? PageSize)
-        {
-            DynamicParameters param = new();
+        //[HttpGet("querylist")]
+        //public async Task<IEnumerable<Q_EXBCAdviceDiscrepancyPageRsp>> GetAllQurey(string? CenterID, string? EXPORT_BC_NO, string? BENNAME, string? Page, string? PageSize)
+        //{
+        //    DynamicParameters param = new();
 
-            param.Add("@CenterID", CenterID);
-            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            param.Add("@BENNAME", BENNAME);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
+        //    param.Add("@CenterID", CenterID);
+        //    param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+        //    param.Add("@BENNAME", BENNAME);
+        //    param.Add("@Page", Page);
+        //    param.Add("@PageSize", PageSize);
 
-            if (EXPORT_BC_NO == null)
-            {
-                param.Add("@EXPORT_BC_NO", "");
-            }
-            if (BENNAME == null)
-            {
-                param.Add("@BENNAME", "");
-            }
+        //    if (EXPORT_BC_NO == null)
+        //    {
+        //        param.Add("@EXPORT_BC_NO", "");
+        //    }
+        //    if (BENNAME == null)
+        //    {
+        //        param.Add("@BENNAME", "");
+        //    }
 
-            var results = await _db.LoadData<Q_EXBCAdviceDiscrepancyPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXBC_AdviceDiscrepancyQueryPage",
-                        param);
-            return results;
-        }
+        //    var results = await _db.LoadData<Q_EXBCAdviceDiscrepancyPageRsp, dynamic>(
+        //                storedProcedure: "usp_q_EXBC_AdviceDiscrepancyQueryPage",
+        //                param);
+        //    return results;
+        //}
 
 
         [HttpGet("select")]
-        public async Task<IEnumerable<PEXBC_issue>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_TYPE, string? EVENT_NO, string? LFORM)
+        public async Task<IEnumerable<PEXBC_issue>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
         {
             DynamicParameters param = new();
 
+            //param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+            //param.Add("@EVENT_TYPE", EVENT_TYPE);
+            //param.Add("@EVENT_NO", EVENT_NO);
+            //param.Add("@LFORM", LFORM);
+
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            param.Add("@EVENT_TYPE", EVENT_TYPE);
-            param.Add("@EVENT_NO", EVENT_NO);
-            param.Add("@LFORM", LFORM);
+            param.Add("@RECORD_TYPE", RECORD_TYPE);
+            param.Add("@REC_STATUS", REC_STATUS);
 
             var results = await _db.LoadData<PEXBC_issue, dynamic>(
                         storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Select",
