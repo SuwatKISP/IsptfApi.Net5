@@ -25,29 +25,54 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("newlist")]
-        public async Task<IEnumerable<Q_EXLCIssueNewPageRsp>> GetAllNew(string? CenterID, string? RegDocNo, string? BENName, string? Page, string? PageSize)
+        public async Task<EXLCIssueCollectNewPageResponse> GetAllNew(string? CenterID, string? RegDocNo, string? BENName, string? Page, string? PageSize)
         {
-            DynamicParameters param = new();
+            EXLCIssueCollectNewPageResponse response = new EXLCIssueCollectNewPageResponse();
 
-            param.Add("@CenterID", CenterID);
-            param.Add("@RegDocNo", RegDocNo);
-            param.Add("@BENName", BENName);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
-
-            if (RegDocNo == null)
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page))
             {
-                param.Add("@RegDocNo", "");
-            }
-            if (BENName == null)
-            {
-                param.Add("@BENName", "");
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXLCIssueNewPageRsp>();
+                return response;
             }
 
-            var results = await _db.LoadData<Q_EXLCIssueNewPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXLC_IssueCollNewPage",
-                        param);
-            return results;
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+
+                param.Add("@CenterID", CenterID);
+                param.Add("@RegDocNo", RegDocNo);
+                param.Add("@BENName", BENName);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (RegDocNo == null)
+                {
+                    param.Add("@RegDocNo", "");
+                }
+                if (BENName == null)
+                {
+                    param.Add("@BENName", "");
+                }
+
+                var results = await _db.LoadData<Q_EXLCIssueNewPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXLC_IssueCollNewPage",
+                            param);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "success";
+                response.Data = (List<Q_EXLCIssueNewPageRsp>)results;
+            }
+            catch(Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXLCIssueNewPageRsp>();
+            }
+            return response;
         }
 
         [HttpGet("editlist")]
@@ -110,7 +135,7 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCIssueCollectResponse response = new EXLCIssueCollectResponse();
             
             // Validate
-            if (RegDocNo == null || RegDocNo == "")
+            if (string.IsNullOrEmpty(RegDocNo))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "RegDocNo is required";
