@@ -32,6 +32,7 @@ namespace ISPTF.API.Controllers.ExportLC
             param.Add("@CenterID", CenterID);
             param.Add("@RegDocNo", RegDocNo);
             param.Add("@BENName", BENName);
+            //TEST PUSH
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
 
@@ -77,7 +78,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("releaselist")]
-        public async Task<IEnumerable<Q_EXLCIssueEditPageRsp>> GetAllrelease(string? CenterID,string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
+        public async Task<IEnumerable<Q_EXLCIssueEditPageRsp>> GetAllRelease(string? CenterID,string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
         {
             DynamicParameters param = new();
 
