@@ -104,7 +104,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
         // Select from pDocRegister
         [HttpGet("newselect")]
-        public EXLCIssueCollectResponse GetNewSelect(string? RegDocNo)
+        public async Task<EXLCIssueCollectResponse> GetNewSelect(string? RegDocNo)
         {
           
             EXLCIssueCollectResponse response = new EXLCIssueCollectResponse();
@@ -112,7 +112,7 @@ namespace ISPTF.API.Controllers.ExportLC
             // Validate
             if (RegDocNo == null || RegDocNo == "")
             {
-                response.Code = "1000";
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "RegDocNo is required";
                 response.Data = new List<PDocRegister>();
                 return response;
@@ -124,16 +124,16 @@ namespace ISPTF.API.Controllers.ExportLC
 
                 param.Add("@RegDocNo", RegDocNo);
 
-                var results = _db.LoadData<PDocRegister, dynamic>(
+                var results = await _db.LoadData<PDocRegister, dynamic>(
                             storedProcedure: "usp_pDocRegisterSelect",
                             param);
 
-                response.Code = "0";
+                response.Code = Constants.RESPONSE_OK;
                 response.Message = "success";
-                response.Data = (List<PDocRegister>)results.Result;
+                response.Data = (List<PDocRegister>)results;
             }catch(Exception e)
             {
-                response.Code = "9999";
+                response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
                 response.Data = new List<PDocRegister>();
             }
