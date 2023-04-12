@@ -32,7 +32,6 @@ namespace ISPTF.API.Controllers.ExportLC
             param.Add("@CenterID", CenterID);
             param.Add("@RegDocNo", RegDocNo);
             param.Add("@BENName", BENName);
-            //TEST PUSH
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
 
@@ -105,16 +104,40 @@ namespace ISPTF.API.Controllers.ExportLC
         }
         // Select from pDocRegister
         [HttpGet("newselect")]
-        public async Task<IEnumerable<PDocRegister>> GetNewSelect(string? RegDocNo)
+        public EXLCIssueCollectResponse GetNewSelect(string? RegDocNo)
         {
-            DynamicParameters param = new();
+          
+            EXLCIssueCollectResponse response = new EXLCIssueCollectResponse();
+            
+            // Validate
+            if (RegDocNo == null || RegDocNo == "")
+            {
+                response.Code = "1000";
+                response.Message = "RegDocNo is required";
+                response.Data = new List<PDocRegister>();
+                return response;
+            }
 
-            param.Add("@RegDocNo", RegDocNo);
+            // Call Store Procedure
+            try { 
+                DynamicParameters param = new();
 
-            var results = await _db.LoadData<PDocRegister, dynamic>(
-                        storedProcedure: "usp_pDocRegisterSelect",
-                        param);
-            return results;
+                param.Add("@RegDocNo", RegDocNo);
+
+                var results = _db.LoadData<PDocRegister, dynamic>(
+                            storedProcedure: "usp_pDocRegisterSelect",
+                            param);
+
+                response.Code = "0";
+                response.Message = "success";
+                response.Data = (List<PDocRegister>)results.Result;
+            }catch(Exception e)
+            {
+                response.Code = "9999";
+                response.Message = e.ToString();
+                response.Data = new List<PDocRegister>();
+            }
+            return response;
         }
 
         [HttpGet("select")]
