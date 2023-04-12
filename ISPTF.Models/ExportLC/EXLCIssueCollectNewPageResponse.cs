@@ -9,7 +9,7 @@ namespace ISPTF.Models
 {
     public class EXLCIssueCollectNewPageResponse
     {
-        public int Code { get; set; }
+        public string Code { get; set; }
         public string Message { get; set; }
         public List<Q_EXLCIssueNewPageRsp> Data { get; set; }
     }
