@@ -9,7 +9,7 @@ namespace ISPTF.Models
 {
     public class EXLCIssueCollectResponse
     {
-        public string Code { get; set; }
+        public int Code { get; set; }
         public string Message { get; set; }
         public List<PDocRegister> Data { get; set; }
     }
