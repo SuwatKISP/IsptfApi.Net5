@@ -30,10 +30,10 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCAcceptTermDueListPageRespond response = new EXLCAcceptTermDueListPageRespond();
 
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(USER_ID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "ListType, CenterID, USER_ID, Page, PageSize is required";
+                response.Message = "ListType, CenterID, Page, PageSize is required";
                 response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
                 return response;
             }
@@ -107,8 +107,18 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXLCPPaymentRsp>> GetAllSelect(string? EXPORT_LC_NO,int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
+        public async Task<EXLCAcceptTermDueSelectPageRespond> GetAllSelect(string? EXPORT_LC_NO,int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
         {
+            EXLCAcceptTermDueSelectPageRespond response = new EXLCAcceptTermDueSelectPageRespond();
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(LFROM))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, LFROM is required";
+                response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
+                return response;
+            }
+
             DynamicParameters param = new();
 
             param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
@@ -135,22 +145,22 @@ namespace ISPTF.API.Controllers.ExportLC
 
                 if (PExLcRsp > 0)
                 {
-                    return Ok(pexlcppaymentrsp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
+                    response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT L/C NO does not exit";
-                    return BadRequest(response);
                 }
-
+                response.Data = (List<Q_EXLCAcceptTermDueListPageRsp>)results;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
             }
+            return response;
         }
 
 
