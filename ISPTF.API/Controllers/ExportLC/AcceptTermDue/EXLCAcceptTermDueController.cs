@@ -25,31 +25,56 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<IEnumerable<Q_EXLCAcceptTermDueListPageRsp>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<EXLCAcceptTermDueListPageRespond> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
-            DynamicParameters param = new();
+            EXLCAcceptTermDueListPageRespond response = new EXLCAcceptTermDueListPageRespond();
 
-            param.Add("@ListType", @ListType);
-            param.Add("@CenterID", CenterID);
-            param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
-            param.Add("@BENName", BENName);
-            param.Add("@USER_ID", USER_ID);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
-
-            if (EXPORT_LC_NO == null)
+            // Validate
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(USER_ID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
             {
-                param.Add("@EXPORT_LC_NO", "");
-            }
-            if (BENName == null)
-            {
-                param.Add("@BENName", "");
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, USER_ID, Page, PageSize is required";
+                response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
+                return response;
             }
 
-            var results = await _db.LoadData<Q_EXLCAcceptTermDueListPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXLC_AcceptTermDueListPage",
-                        param);
-            return results;
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+
+                param.Add("@ListType", ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
+                param.Add("@BENName", BENName);
+                param.Add("@USER_ID", USER_ID);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (EXPORT_LC_NO == null)
+                {
+                    param.Add("@EXPORT_LC_NO", "");
+                }
+                if (BENName == null)
+                {
+                    param.Add("@BENName", "");
+                }
+
+                var results = await _db.LoadData<Q_EXLCAcceptTermDueListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXLC_IssueCollNewPage",
+                            param);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXLCAcceptTermDueListPageRsp>)results;
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
+            }
+            return response;
         }
 
         //[HttpGet("query")]

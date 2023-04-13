@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models
 {
-    public class EXLCIssueCollectNewPageResponse
+    public class EXLCAcceptTermDueListPageRespond
     {
         public string Code { get; set; }
         public string Message { get; set; }
-        public List<Q_EXLCIssueNewPageRsp> Data { get; set; }
+        public List<Q_EXLCAcceptTermDueListPageRsp> Data { get; set; }
     }
 }
