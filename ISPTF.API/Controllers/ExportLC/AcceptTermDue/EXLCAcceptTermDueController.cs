@@ -61,7 +61,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 }
 
                 var results = await _db.LoadData<Q_EXLCAcceptTermDueListPageRsp, dynamic>(
-                            storedProcedure: "usp_q_EXLC_IssueCollNewPage",
+                            storedProcedure: "usp_q_EXLC_AcceptTermDueListPage",
                             param);
 
                 response.Code = Constants.RESPONSE_OK;
