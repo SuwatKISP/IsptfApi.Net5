@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using System.Text.Json;
+
 namespace ISPTF.API.Controllers.ExportLC
 {
     [ApiController]
@@ -25,31 +26,55 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<IEnumerable<Q_EXLCCoveringLetterListPageRsp>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<EXLCCoveringLetterListResponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
-            DynamicParameters param = new();
+            EXLCCoveringLetterListResponse response = new EXLCCoveringLetterListResponse();
 
-            param.Add("@ListType", @ListType);
-            param.Add("@CenterID", CenterID);
-            param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
-            param.Add("@BENName", BENName);
-            param.Add("@USER_ID", USER_ID);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
-
-            if (EXPORT_LC_NO == null)
+            // Validate
+            if (string.IsNullOrEmpty(@ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
             {
-                param.Add("@EXPORT_LC_NO", "");
-            }
-            if (BENName == null)
-            {
-                param.Add("@BENName", "");
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXLCCoveringLetterListPageRsp>();
+                return response;
             }
 
-            var results = await _db.LoadData<Q_EXLCCoveringLetterListPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXLC_CoveringLetterListPage",
-                        param);
-            return results;
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+
+                param.Add("@ListType", @ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
+                param.Add("@BENName", BENName);
+                param.Add("@USER_ID", USER_ID);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (EXPORT_LC_NO == null)
+                {
+                    param.Add("@EXPORT_LC_NO", "");
+                }
+                if (BENName == null)
+                {
+                    param.Add("@BENName", "");
+                }
+
+                var results = await _db.LoadData<Q_EXLCCoveringLetterListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXLC_CoveringLetterListPage",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXLCCoveringLetterListPageRsp>)results;
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXLCCoveringLetterListPageRsp>();
+            }
+            return response;
         }
 
         //[HttpGet("query")]
@@ -82,50 +107,69 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXLC_PSWExport_PEXDOC_Rsp>> GetAllSelect(string? EXPORT_LC_NO,int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
+        public async Task<EXLCCoveringLetterSelectResponse> GetAllSelect(string? EXPORT_LC_NO,int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
         {
-            DynamicParameters param = new();
+            EXLCCoveringLetterSelectResponse response = new EXLCCoveringLetterSelectResponse();
 
-            param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
-            param.Add("@EVENT_NO", EVENT_NO);
-            param.Add("@RECORD_TYPE", RECORD_TYPE);
-            param.Add("@REC_STATUS", REC_STATUS);
-            param.Add("@LFROM", LFROM);
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO==null || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(LFROM))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, EVENT_NO, REC_STATUS, LFROM is required";
+                response.Data = new PEXLC_PSWExport_PEXDOC_Rsp();
+                return response;
+            }
 
-            param.Add("@CoveringRsp", dbType: DbType.Int32,
-               direction: System.Data.ParameterDirection.Output,
-               size: 12800);
-            param.Add("@CoveringLetterJSONRsp", dbType: DbType.String,
-               direction: System.Data.ParameterDirection.Output,
-               size: 5215585);
-
+            // Call Store Procedure
             try
             {
+                DynamicParameters param = new();
+
+                param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
+                param.Add("@EVENT_NO", EVENT_NO);
+                param.Add("@RECORD_TYPE", RECORD_TYPE);
+                param.Add("@REC_STATUS", REC_STATUS);
+                param.Add("@LFROM", LFROM);
+
+                param.Add("@CoveringRsp", dbType: DbType.Int32,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 12800);
+                param.Add("@CoveringLetterJSONRsp", dbType: DbType.String,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 5215585);
+
+               
                 var results = await _db.LoadData<PEXLC_PSWExport_PEXDOC_Rsp, dynamic>(
-                           storedProcedure: "usp_pEXLC_CoveringLetter_Select",
-                           param);
+                               storedProcedure: "usp_pEXLC_CoveringLetter_Select",
+                               param);
 
                 var CoveringRsp = param.Get<dynamic>("@CoveringRsp");
                 var coveringletterjsonrsp = param.Get<dynamic>("@CoveringLetterJSONRsp");
 
-                if (CoveringRsp > 0)
+                if (CoveringRsp > 0 && !string.IsNullOrEmpty(coveringletterjsonrsp))
                 {
-                    return Ok(coveringletterjsonrsp);
+                    PEXLC_PSWExport_PEXDOC_Rsp jsonResponse = JsonSerializer.Deserialize<PEXLC_PSWExport_PEXDOC_Rsp>(coveringletterjsonrsp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return response;
                 }
                 else
                 {
 
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = "EXPORT L/C NO does not exit";
-                    return BadRequest(response);
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Error selecting covering letter";
+                    response.Data = new PEXLC_PSWExport_PEXDOC_Rsp();
+                    return response;
                 }
-
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXLC_PSWExport_PEXDOC_Rsp();
             }
+            return response;
         }
 
 

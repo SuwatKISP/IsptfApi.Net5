@@ -216,7 +216,7 @@ namespace ISPTF.API.Controllers.ExportLC
         [HttpGet("select")]
         public async Task<EXLCIssueCollectSelectResponse> GetAllSelect(string? EXPORT_LC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
         {
-            EXLCIssueCollectSelectResponse response = new();
+            EXLCIssueCollectSelectResponse response = new EXLCIssueCollectSelectResponse();
 
             // Validate
             if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(EVENT_NO))
@@ -281,7 +281,7 @@ namespace ISPTF.API.Controllers.ExportLC
         [HttpPost("save")]
         public async Task<EXLCIssueCollectSaveResponse> Save([FromBody] PEXLCPPaymentRsp pexlcppaymentreq)
         {
-            EXLCIssueCollectSaveResponse response = new();
+            EXLCIssueCollectSaveResponse response = new EXLCIssueCollectSaveResponse();
             // Class validate
 
             try
