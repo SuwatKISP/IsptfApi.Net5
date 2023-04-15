@@ -120,6 +120,7 @@ namespace ISPTF.API.Controllers.ExportLC
         public async Task<EXLCPurchasePaymentSelectResponse> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
             EXLCPurchasePaymentSelectResponse response = new EXLCPurchasePaymentSelectResponse();
+            
             // Validate
             if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(LFROM))
             {
@@ -179,7 +180,6 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCPEXPaymentRsp();
             }
             return response;
-            //return results;
         }
 
 
