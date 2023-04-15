@@ -125,7 +125,7 @@ namespace ISPTF.API.Controllers.ExportLC
             if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_LC_NO, EVENT_NO, RECORD_TYPE, REC_STATUS, LFROM is required";
+                response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
                 response.Data = new PEXLCPEXPaymentRsp();
                 return response;
             }
