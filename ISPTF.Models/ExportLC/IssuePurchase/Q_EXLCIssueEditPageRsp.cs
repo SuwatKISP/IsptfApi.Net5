@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ISPTF.Models.LoginRegis;
-
-namespace ISPTF.Models.ExportLC
+﻿namespace ISPTF.Models.ExportLC
 {
     public class Q_EXLCIssueEditPageRsp
-
     {
         public int RCount { get; set; }
         public string EXPORT_LC_NO { get; set; }
@@ -23,6 +15,5 @@ namespace ISPTF.Models.ExportLC
         public int COLLECT_AGENT { get; set; }
         public int EVENT_NO { get; set; }
         public string VOUCH_ID { get; set; }
-
     }
 }

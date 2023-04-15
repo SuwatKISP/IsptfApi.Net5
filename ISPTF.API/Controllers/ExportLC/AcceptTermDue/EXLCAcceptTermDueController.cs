@@ -1,17 +1,14 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
-using ISPTF.Models;
-using ISPTF.Models.LoginRegis;
-using ISPTF.Models.ExportBC;
 using ISPTF.Models.ExportLC;
-using Microsoft.AspNetCore.Authorization;
+using ISPTF.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
- 
+using System;
+
 namespace ISPTF.API.Controllers.ExportLC
 {
     [ApiController]
@@ -25,9 +22,9 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<EXLCAcceptTermDueListPageRespond> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<EXLCAcceptTermDueListResponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
-            EXLCAcceptTermDueListPageRespond response = new EXLCAcceptTermDueListPageRespond();
+            EXLCAcceptTermDueListResponse response = new EXLCAcceptTermDueListResponse();
 
             // Validate
             if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
@@ -37,12 +34,18 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
                 return response;
             }
+            if (ListType=="RELEASE" && string.IsNullOrEmpty(USER_ID))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "USER_ID is required";
+                response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
+                return response;
+            }
 
             // Call Store Procedure
             try
             {
                 DynamicParameters param = new();
-
                 param.Add("@ListType", ListType);
                 param.Add("@CenterID", CenterID);
                 param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
@@ -107,15 +110,15 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<EXLCAcceptTermDueSelectPageRespond> GetAllSelect(string? EXPORT_LC_NO,int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
+        public async Task<PEXLCPPaymentResponse> GetAllSelect(string? EXPORT_LC_NO,string? EVENT_NO, string? LFROM)
         {
-            EXLCAcceptTermDueSelectPageRespond response = new EXLCAcceptTermDueSelectPageRespond();
+            PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_LC_NO, LFROM is required";
-                response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
+                response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
+                response.Data = new PEXLCPPaymentRsp();
                 return response;
             }
 
@@ -123,8 +126,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
             param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
             param.Add("@EVENT_NO", EVENT_NO);
-            param.Add("@RECORD_TYPE", RECORD_TYPE);
-            param.Add("@REC_STATUS", REC_STATUS);
+            //param.Add("@RECORD_TYPE", RECORD_TYPE);
+            //param.Add("@REC_STATUS", REC_STATUS);
             param.Add("@LFROM", LFROM);
 
             param.Add("@PExLcRsp", dbType: DbType.Int32,
@@ -143,22 +146,27 @@ namespace ISPTF.API.Controllers.ExportLC
                 var PExLcRsp = param.Get<dynamic>("@PExLcRsp");
                 var pexlcppaymentrsp = param.Get<dynamic>("@PEXLCPPaymentRsp");
 
-                if (PExLcRsp > 0)
+                if (PExLcRsp > 0 && !string.IsNullOrEmpty(pexlcppaymentrsp))
                 {
+                    PEXLCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXLCPPaymentRsp>(pexlcppaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return response;
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT L/C NO does not exit";
+                    response.Data = new PEXLCPPaymentRsp();
+                    return response;
                 }
-                response.Data = (List<Q_EXLCAcceptTermDueListPageRsp>)results;
             }
             catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
+                response.Data = new PEXLCPPaymentRsp();
             }
             return response;
         }

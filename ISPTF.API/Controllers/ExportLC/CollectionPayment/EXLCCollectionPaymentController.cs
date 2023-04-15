@@ -1,18 +1,14 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
-using ISPTF.Models;
-using ISPTF.Models.LoginRegis;
-using ISPTF.Models.ExportBC;
 using ISPTF.Models.ExportLC;
-using ISPTF.Models.PEXPayment;
-using Microsoft.AspNetCore.Authorization;
+using ISPTF.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
- 
+using System;
+
 namespace ISPTF.API.Controllers.ExportLC
 {
     [ApiController]
@@ -26,31 +22,60 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<IEnumerable<Q_EXLCCollectionPaymentListPageRsp>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<EXLCCollectionPaymentListResponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
-            DynamicParameters param = new();
+            EXLCCollectionPaymentListResponse response = new EXLCCollectionPaymentListResponse();
 
-            param.Add("@ListType", @ListType);
-            param.Add("@CenterID", CenterID);
-            param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
-            param.Add("@BENName", BENName);
-            param.Add("@USER_ID", USER_ID);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
-
-            if (EXPORT_LC_NO == null)
+            // Validate
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
             {
-                param.Add("@EXPORT_LC_NO", "");
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXLCCollectionPaymentListPageRsp>();
+                return response;
             }
-            if (BENName == null)
+            if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
             {
-                param.Add("@BENName", "");
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "USER_ID is required";
+                response.Data = new List<Q_EXLCCollectionPaymentListPageRsp>();
+                return response;
             }
 
-            var results = await _db.LoadData<Q_EXLCCollectionPaymentListPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXLC_CollectionPaymentListPage",
-                        param);
-            return results;
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@ListType", @ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
+                param.Add("@BENName", BENName);
+                param.Add("@USER_ID", USER_ID);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (EXPORT_LC_NO == null)
+                {
+                    param.Add("@EXPORT_LC_NO", "");
+                }
+                if (BENName == null)
+                {
+                    param.Add("@BENName", "");
+                }
+
+                var results = await _db.LoadData<Q_EXLCCollectionPaymentListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXLC_CollectionPaymentListPage",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXLCCollectionPaymentListPageRsp>)results;
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXLCCollectionPaymentListPageRsp>();
+            }
+            return response;
         }
 
         //[HttpGet("query")]
@@ -84,56 +109,61 @@ namespace ISPTF.API.Controllers.ExportLC
 
         [HttpGet("select")]
 //        public async Task<IEnumerable<PEXBCPEXPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
-          public async Task<ActionResult<List<PEXLCPEXPaymentPPaymentRsp>>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<PEXLCPEXPaymentPPaymentResponse> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
-            DynamicParameters param = new();
+            PEXLCPEXPaymentPPaymentResponse response = new PEXLCPEXPaymentPPaymentResponse();
 
-            param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
-            param.Add("@EVENT_NO", EVENT_NO);
-            param.Add("@LFROM", LFROM);
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
+                response.Data = new PEXLCPEXPaymentPPaymentRsp();
+                return response;
+            }
 
-            param.Add("@PEXLCRsp", dbType: DbType.Int32,
-                       direction: System.Data.ParameterDirection.Output,
-                       size: 12800);
-
-            param.Add("@PEXLCPEXPaymentRsp", dbType: DbType.String,
-                       direction: System.Data.ParameterDirection.Output,
-                       size: 5215585);
             try
             {
+                DynamicParameters param = new();
+                param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
+                param.Add("@EVENT_NO", EVENT_NO);
+                param.Add("@LFROM", LFROM);
+                param.Add("@PEXLCRsp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+                param.Add("@PEXLCPEXPaymentRsp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
+
                 var results = await _db.LoadData<PEXLCPEXPaymentPPaymentRsp, dynamic>(
                            storedProcedure: "usp_pEXLC_CollectionPayment_Select",
                            param);
-
                 var PEXLCRsp = param.Get<dynamic>("@PEXLCRsp");
                 var pexlcpexpaymentrsp = param.Get<dynamic>("@PEXLCPEXPaymentRsp");
 
-                if (PEXLCRsp > 0)
+                if (PEXLCRsp > 0 && !string.IsNullOrEmpty(pexlcpexpaymentrsp))
                 {
-                    return Ok(pexlcpexpaymentrsp);
+                    PEXLCPEXPaymentPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXLCPEXPaymentPPaymentRsp>(pexlcpexpaymentrsp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return response;
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
+                    response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT L/C NO does not exit";
-                    return BadRequest(response);
+                    response.Data = new PEXLCPEXPaymentPPaymentRsp();
+                    return response;
                 }
-               
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXLCPEXPaymentPPaymentRsp();
             }
-            //return results;
+            return response;
         }
-
-
-
-
-
-
-
     }
 }
