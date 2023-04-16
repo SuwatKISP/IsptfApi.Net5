@@ -28,7 +28,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<EXLCReverseCollectionListResponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCReverseCollectionListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCReverseCollectionListResponse response = new EXLCReverseCollectionListResponse();
 
@@ -38,14 +38,14 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
                 response.Data = new List<Q_EXLCReverseCollectionListPageRsp>();
-                return response;
+                return BadRequest(response);
             }
             if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "USER_ID is required";
                 response.Data = new List<Q_EXLCReverseCollectionListPageRsp>();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Procedure
@@ -90,6 +90,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Total = 0;
                     response.TotalPage = 0;
                 }
+                return Ok(response);
             }
             catch (Exception e)
             {
@@ -97,7 +98,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new List<Q_EXLCReverseCollectionListPageRsp>();
             }
-            return response;
+            return BadRequest(response);
         }
 
         [HttpGet("select")]
