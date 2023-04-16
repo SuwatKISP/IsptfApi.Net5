@@ -66,8 +66,21 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<Q_EXLCIssueNewPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
@@ -116,8 +129,21 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<Q_EXLCIssueEditPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
@@ -127,7 +153,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("releaselist")]
-        public async Task<EXLCIssueCollectReleasePageResponse> GetAllRelease(string? CenterID,string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
+        public async Task<EXLCIssueCollectReleasePageResponse> GetAllRelease(string? CenterID, string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
         {
             EXLCIssueCollectReleasePageResponse response = new EXLCIssueCollectReleasePageResponse();
             // Validate
@@ -166,6 +192,19 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<Q_EXLCIssueEditPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
             }
             catch (Exception e)
             {
@@ -179,9 +218,9 @@ namespace ISPTF.API.Controllers.ExportLC
         [HttpGet("newselect")]
         public async Task<EXLCIssueCollectResponse> GetNewSelect(string? RegDocNo)
         {
-          
+
             EXLCIssueCollectResponse response = new EXLCIssueCollectResponse();
-            
+
             // Validate
             if (string.IsNullOrEmpty(RegDocNo))
             {
@@ -192,7 +231,8 @@ namespace ISPTF.API.Controllers.ExportLC
             }
 
             // Call Store Procedure
-            try { 
+            try
+            {
                 DynamicParameters param = new();
 
                 param.Add("@RegDocNo", RegDocNo);
@@ -204,7 +244,8 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<PDocRegister>)results;
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
@@ -243,7 +284,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 param.Add("@PEXLCPEXPaymentRsp", dbType: DbType.String,
                            direction: System.Data.ParameterDirection.Output,
                            size: 5215585);
-            
+
                 var results = await _db.LoadData<PEXLCPPaymentRsp, dynamic>(
                            storedProcedure: "usp_pEXLC_IssueCollect_Select",
                            param);
@@ -257,6 +298,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+
                     return response;
                 }
                 else
@@ -450,7 +492,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                 // Convert bool to string => DB BIT (0/1)
                 string SIGHT_BASIS = "0";
-                if(pexlcppaymentreq.PEXLC.SIGHT_BASIS == true)
+                if (pexlcppaymentreq.PEXLC.SIGHT_BASIS == true)
                 {
                     SIGHT_BASIS = "1";
                 }
@@ -634,13 +676,5 @@ namespace ISPTF.API.Controllers.ExportLC
             }
 
         }
-
-
-
-
-
-
-
-
     }
 }

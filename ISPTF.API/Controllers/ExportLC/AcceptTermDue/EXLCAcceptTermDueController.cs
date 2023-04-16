@@ -34,7 +34,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new List<Q_EXLCAcceptTermDueListPageRsp>();
                 return response;
             }
-            if (ListType=="RELEASE" && string.IsNullOrEmpty(USER_ID))
+            if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "USER_ID is required";
@@ -70,6 +70,19 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<Q_EXLCAcceptTermDueListPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
             }
             catch (Exception e)
             {
@@ -110,7 +123,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<PEXLCPPaymentResponse> GetAllSelect(string? EXPORT_LC_NO,string? EVENT_NO, string? LFROM)
+        public async Task<PEXLCPPaymentResponse> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
             // Validate
@@ -170,15 +183,6 @@ namespace ISPTF.API.Controllers.ExportLC
             }
             return response;
         }
-
-
-
-
-
-
-
-
-
 
     }
 }

@@ -73,9 +73,23 @@ namespace ISPTF.API.Controllers.ExportLC
                 var results = await _db.LoadData<Q_EXLCEditFlagListPageRsp, dynamic>(
                             storedProcedure: "usp_q_EXLC_EditFlagListPage",
                             param);
+
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<Q_EXLCEditFlagListPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
             }
             catch (Exception e)
             {
@@ -95,7 +109,7 @@ namespace ISPTF.API.Controllers.ExportLC
             if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_LC_NO, EVENT_NO, REC_STATUS, LFROM is required";
+                response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
                 response.Data = new PEXLCRecordRsp();
                 return response;
             }

@@ -27,9 +27,9 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<EXLCCollectionPaymentListReponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<EXLCCollectionPaymentListResponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
-            EXLCCollectionPaymentListReponse response = new EXLCCollectionPaymentListReponse();
+            EXLCCollectionPaymentListResponse response = new EXLCCollectionPaymentListResponse();
 
             // Validate
             if (string.IsNullOrEmpty(@ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
@@ -76,6 +76,19 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<Q_EXLCCollectionPaymentListPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
             }
             catch (Exception e)
             {

@@ -73,9 +73,23 @@ namespace ISPTF.API.Controllers.ExportLC
                 var results = await _db.LoadData<Q_EXLCPurchasePaymentListPageRsp, dynamic>(
                             storedProcedure: "usp_q_EXLC_PurchasePaymentListPage",
                             param);
+
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<Q_EXLCPurchasePaymentListPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
             }
             catch (Exception e)
             {
