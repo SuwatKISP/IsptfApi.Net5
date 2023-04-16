@@ -26,7 +26,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("newlist")]
-        public async Task<EXLCIssueCollectNewPageResponse> GetAllNew(string? CenterID, string? RegDocNo, string? BENName, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCIssueCollectNewPageResponse>> GetAllNew(string? CenterID, string? RegDocNo, string? BENName, string? Page, string? PageSize)
         {
             EXLCIssueCollectNewPageResponse response = new EXLCIssueCollectNewPageResponse();
 
@@ -36,7 +36,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, Page, PageSize is required";
                 response.Data = new List<Q_EXLCIssueNewPageRsp>();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Store Procedure
@@ -72,13 +72,16 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = int.Parse(Page);
                     response.Total = response.Data[0].RCount;
                     response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                    return Ok(response);
                 }
                 catch (Exception)
                 {
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
+                    return BadRequest(response);
                 }
+                
             }
             catch (Exception e)
             {
@@ -86,11 +89,11 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new List<Q_EXLCIssueNewPageRsp>();
             }
-            return response;
+            return BadRequest(response);
         }
 
         [HttpGet("editlist")]
-        public async Task<EXLCIssueCollectEditPageResponse> GetAllEdit(string? CenterID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCIssueCollectEditPageResponse>> GetAllEdit(string? CenterID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
         {
             EXLCIssueCollectEditPageResponse response = new EXLCIssueCollectEditPageResponse();
 
@@ -100,7 +103,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, Page, PageSize is required";
                 response.Data = new List<Q_EXLCIssueEditPageRsp>();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Store Procedure
@@ -135,13 +138,16 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = int.Parse(Page);
                     response.Total = response.Data[0].RCount;
                     response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                    return Ok(response);
                 }
                 catch (Exception)
                 {
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
+                    return BadRequest(response);
                 }
+                
             }
             catch (Exception e)
             {
@@ -149,11 +155,11 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new List<Q_EXLCIssueEditPageRsp>();
             }
-            return response;
+            return BadRequest(response);
         }
 
         [HttpGet("releaselist")]
-        public async Task<EXLCIssueCollectReleasePageResponse> GetAllRelease(string? CenterID, string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCIssueCollectReleasePageResponse>> GetAllRelease(string? CenterID, string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
         {
             EXLCIssueCollectReleasePageResponse response = new EXLCIssueCollectReleasePageResponse();
             // Validate
@@ -162,7 +168,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, USER_ID, Page, PageSize is required";
                 response.Data = new List<Q_EXLCIssueEditPageRsp>();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Store Procedure
@@ -198,12 +204,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = int.Parse(Page);
                     response.Total = response.Data[0].RCount;
                     response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                    return Ok(response);
                 }
                 catch (Exception)
                 {
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
+                    return BadRequest(response);
                 }
             }
             catch (Exception e)
@@ -212,11 +220,11 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new List<Q_EXLCIssueEditPageRsp>();
             }
-            return response;
+            return BadRequest(response);
         }
         // Select from pDocRegister
         [HttpGet("newselect")]
-        public async Task<EXLCIssueCollectResponse> GetNewSelect(string? RegDocNo)
+        public async Task<ActionResult<EXLCIssueCollectResponse>> GetNewSelect(string? RegDocNo)
         {
 
             EXLCIssueCollectResponse response = new EXLCIssueCollectResponse();
@@ -227,7 +235,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "RegDocNo is required";
                 response.Data = new List<PDocRegister>();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Store Procedure
@@ -244,6 +252,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<PDocRegister>)results;
+                return Ok(response);
             }
             catch (Exception e)
             {
@@ -251,11 +260,11 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new List<PDocRegister>();
             }
-            return response;
+            return BadRequest(response);
         }
 
         [HttpGet("select")]
-        public async Task<EXLCIssueCollectSelectResponse> GetAllSelect(string? EXPORT_LC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
+        public async Task<ActionResult<EXLCIssueCollectSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
         {
             EXLCIssueCollectSelectResponse response = new EXLCIssueCollectSelectResponse();
 
@@ -265,7 +274,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, Page, PageSize is required";
                 response.Data = new PEXLCPPaymentRsp();
-                return response;
+                return BadRequest(response);
             }
 
             try
@@ -298,8 +307,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-
-                    return response;
+                    return Ok(response);
                 }
                 else
                 {
@@ -307,7 +315,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT L/C NO does not exit";
                     response.Data = new PEXLCPPaymentRsp();
-                    return response;
+                    return BadRequest(response);
                 }
 
             }
@@ -316,12 +324,12 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
                 response.Data = new PEXLCPPaymentRsp();
-                return response;
+                return BadRequest(response);
             }
         }
 
         [HttpPost("save")]
-        public async Task<EXLCIssueCollectSaveResponse> Save([FromBody] PEXLCPPaymentRsp pexlcppaymentreq)
+        public async Task<ActionResult<EXLCIssueCollectSaveResponse>> Save([FromBody] PEXLCPPaymentRsp pexlcppaymentreq)
         {
             EXLCIssueCollectSaveResponse response = new EXLCIssueCollectSaveResponse();
             // Class validate
@@ -657,14 +665,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return response;
+                    return Ok(response);
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_LC_NO Insert Error";
                     response.Data = new PEXLCPPaymentRsp();
-                    return response;
+                    return BadRequest(response);
                 }
             }
             catch (Exception e)
@@ -672,7 +680,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
                 response.Data = new PEXLCPPaymentRsp();
-                return response;
+                return BadRequest(response);
             }
 
         }

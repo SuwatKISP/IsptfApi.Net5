@@ -101,7 +101,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("select")]
-        public async Task<EXLCReverseCollectionSelectResponse> GetAllSelect(string? EXPORT_LC_NO, int? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<EXLCReverseCollectionSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, int? EVENT_NO, string? LFROM)
         {
             EXLCReverseCollectionSelectResponse response = new EXLCReverseCollectionSelectResponse();
 
@@ -111,7 +111,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
                 response.Data = new PEXLCRecordRsp();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Store Procedure
@@ -150,14 +150,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return response;
+                    return Ok(response);
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT L/C NO does not exit";
                     response.Data = new PEXLCRecordRsp();
-                    return response;
+                    return BadRequest(response);
                 }
             }
             catch (Exception e)
@@ -166,7 +166,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new PEXLCRecordRsp();
             }
-            return response;
+            return BadRequest(response);
 
         }
     }

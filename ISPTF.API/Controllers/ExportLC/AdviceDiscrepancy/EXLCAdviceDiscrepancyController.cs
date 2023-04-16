@@ -22,7 +22,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<EXLCAdviceDiscrepancyListResponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCAdviceDiscrepancyListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCAdviceDiscrepancyListResponse response = new EXLCAdviceDiscrepancyListResponse();
 
@@ -32,14 +32,14 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
                 response.Data = new List<Q_EXLCAdviceDiscrepancyListPageRsp>();
-                return response;
+                return BadRequest(response);
             }
             if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "USER_ID is required";
                 response.Data = new List<Q_EXLCAdviceDiscrepancyListPageRsp>();
-                return response;
+                return BadRequest(response);
             }
 
             try
@@ -74,12 +74,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = int.Parse(Page);
                     response.Total = response.Data[0].RCount;
                     response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                    return Ok(response);
                 }
                 catch (Exception)
                 {
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
+                    return BadRequest(response);
                 }
             }
             catch (Exception e)
@@ -88,7 +90,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new List<Q_EXLCAdviceDiscrepancyListPageRsp>();
             }
-            return response;
+            return BadRequest(response);
         }
 
         //[HttpGet("query")]
@@ -121,7 +123,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<PEXLCRecordResponse> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
+        public async Task<ActionResult<PEXLCRecordResponse>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
         {
             PEXLCRecordResponse response = new PEXLCRecordResponse();
 
@@ -131,7 +133,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
                 response.Data = new PEXLCRecordRsp();
-                return response;
+                return BadRequest(response);
             }
 
             try
@@ -161,14 +163,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return response;
+                    return Ok(response);
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT L/C NO does not exit";
                     response.Data = new PEXLCRecordRsp();
-                    return response;
+                    return BadRequest(response);
                 }
             }
             catch (Exception e)
@@ -177,7 +179,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new PEXLCRecordRsp();
             }
-            return response;
+            return BadRequest(response);
         }
     }
 }

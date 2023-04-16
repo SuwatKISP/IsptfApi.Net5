@@ -27,7 +27,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<EXLCCollectionPaymentListResponse> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCCollectionPaymentListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCCollectionPaymentListResponse response = new EXLCCollectionPaymentListResponse();
 
@@ -37,7 +37,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
                 response.Data = new List<Q_EXLCCollectionPaymentListPageRsp>();
-                return response;
+                return BadRequest(response);
             }
 
             if (@ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
@@ -45,7 +45,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "USER_ID is required for RELEASE";
                 response.Data = new List<Q_EXLCCollectionPaymentListPageRsp>();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Store Procedure
@@ -82,12 +82,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = int.Parse(Page);
                     response.Total = response.Data[0].RCount;
                     response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                    return Ok(response);
                 }
                 catch (Exception)
                 {
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
+                    return BadRequest(response);
                 }
             }
             catch (Exception e)
@@ -96,7 +98,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new List<Q_EXLCCollectionPaymentListPageRsp>();
             }
-            return response;
+            return BadRequest(response);
         }
 
         //[HttpGet("query")]
@@ -130,7 +132,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
         [HttpGet("select")]
         //        public async Task<IEnumerable<PEXBCPEXPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
-        public async Task<EXLCPurchasePaymentSelectResponse> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<EXLCPurchasePaymentSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
             EXLCPurchasePaymentSelectResponse response = new EXLCPurchasePaymentSelectResponse();
 
@@ -140,7 +142,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
                 response.Data = new PEXLCPEXPaymentRsp();
-                return response;
+                return BadRequest(response);
             }
 
             // Call Store Procedure
@@ -173,7 +175,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return response;
+                    return Ok(response);
                 }
                 else
                 {
@@ -181,7 +183,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "Export L/C does not exists";
                     response.Data = new PEXLCPEXPaymentRsp();
-                    return response;
+                    return BadRequest(response);
                 }
 
             }
@@ -191,7 +193,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 response.Data = new PEXLCPEXPaymentRsp();
             }
-            return response;
+            return BadRequest(response);
         }
     }
 }
