@@ -41,7 +41,8 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new List<Q_EXLCEditFlagListPageRsp>();
                 return response;
             }
-
+            
+            // Call Store Procedure
             try
             {
                 DynamicParameters param = new();

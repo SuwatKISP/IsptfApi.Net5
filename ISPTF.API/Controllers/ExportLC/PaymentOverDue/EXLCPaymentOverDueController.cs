@@ -48,6 +48,8 @@ namespace ISPTF.API.Controllers.ExportLC
                 return response;
             }
 
+            // Call Procedure
+
             try
             {
                 DynamicParameters param = new();
@@ -112,6 +114,8 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCPEXPaymentRsp();
                 return response;
             }
+
+            // Call Store Procedure
             try
             {
                 DynamicParameters param = new();
