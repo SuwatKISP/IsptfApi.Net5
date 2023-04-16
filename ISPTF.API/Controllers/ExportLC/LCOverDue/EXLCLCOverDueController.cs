@@ -76,15 +76,15 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = int.Parse(Page);
                     response.Total = response.Data[0].RCount;
                     response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
-                    return Ok(response);
                 }
                 catch (Exception)
                 {
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
-                    return BadRequest(response);
+                   
                 }
+                return Ok(response);
             }
             catch (Exception e)
             {
@@ -136,15 +136,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return Ok(response);
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT L/C NO does not exit";
                     response.Data = new PEXLCRecordRsp();
-                    return BadRequest(response);
                 }
+                return Ok(response);
             }
             catch (Exception e)
             {

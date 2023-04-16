@@ -76,15 +76,14 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = int.Parse(Page);
                     response.Total = response.Data[0].RCount;
                     response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
-                    return Ok(response);
                 }
                 catch (Exception)
                 {
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
-                    return BadRequest(response);
                 }
+                return Ok(response);
             }
             catch (Exception e)
             {
