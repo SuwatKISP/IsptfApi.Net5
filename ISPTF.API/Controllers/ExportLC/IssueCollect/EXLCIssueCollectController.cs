@@ -231,7 +231,7 @@ namespace ISPTF.API.Controllers.ExportLC
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "RegDocNo is required";
-                response.Data = new List<PDocRegister>();
+                response.Data = new List<PDocRegisterCustomer>();
                 return BadRequest(response);
             }
 
@@ -242,20 +242,20 @@ namespace ISPTF.API.Controllers.ExportLC
 
                 param.Add("@RegDocNo", RegDocNo);
 
-                var results = await _db.LoadData<PDocRegister, dynamic>(
-                            storedProcedure: "usp_pDocRegisterSelect",
+                var results = await _db.LoadData<PDocRegisterCustomer, dynamic>(
+                            storedProcedure: "usp_pDocRegisterCustomerSelect",
                             param);
 
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
-                response.Data = (List<PDocRegister>)results;
+                response.Data = (List<PDocRegisterCustomer>)results;
                 return Ok(response);
             }
             catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new List<PDocRegister>();
+                response.Data = new List<PDocRegisterCustomer>();
             }
             return BadRequest(response);
         }

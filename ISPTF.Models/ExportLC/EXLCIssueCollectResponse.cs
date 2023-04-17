@@ -11,6 +11,6 @@ namespace ISPTF.Models
     {
         public string Code { get; set; }
         public string Message { get; set; }
-        public List<PDocRegister> Data { get; set; }
+        public List<PDocRegisterCustomer> Data { get; set; }
     }
 }
