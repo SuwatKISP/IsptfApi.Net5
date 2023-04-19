@@ -88,29 +88,44 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 // Select from pDocRegister
         [HttpGet("newselect")]
-        public async Task<ActionResult<EXBCIssuePurchaseNewSelectResponse>> GetNewSelect(string? RegDocNo)
+        public async Task<ActionResult<EXBCIssuePurchaseNewSelectResponse>> GetNewSelect(string? RegDocNo, int? Page, int? PageSize)
         {
             EXBCIssuePurchaseNewSelectResponse response = new EXBCIssuePurchaseNewSelectResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(RegDocNo))
+            if (string.IsNullOrEmpty(RegDocNo) || Page == null || PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "RegDocNo is required";
+                response.Message = "RegDocNo, Page, PageSize is required";
                 response.Data = new List<PDocRegister>();
                 return BadRequest(response);
             }
             try
             {
-                var items = await (from row in _context.PDocRegisters
+                var rows = (from row in _context.PDocRegisters
                                    where row.RegDocno == RegDocNo
                                         || row.RegDocno == null
-                                   select row).ToListAsync();
+                                   select row);
+                var count = await rows.CountAsync();
+                var data = await rows.Skip(((int)Page - 1) * (int)PageSize)
+                                   .Take((int)PageSize).ToListAsync();
 
                 response.Code = Constants.RESPONSE_OK;
-                response.Message = "RegDocNo is required";
-                response.Data = items;
+                response.Message = "Success";
+                response.Data = data;
 
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = count;
+                    response.TotalPage = (int)((count + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
                 return Ok(response);
             }
             catch(Exception)
