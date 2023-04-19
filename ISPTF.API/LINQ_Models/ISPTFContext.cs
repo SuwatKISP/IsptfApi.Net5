@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace ISPTF.API.LINQ_Models
+namespace ISPTF.Models.LINQ
 {
     public partial class ISPTFContext : DbContext
     {

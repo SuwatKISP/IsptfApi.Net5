@@ -1,7 +1,7 @@
-﻿using Dapper;
+﻿
+using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.LoginRegis;
 using ISPTF.Models.ExportBC;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,17 +10,23 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using Microsoft.EntityFrameworkCore;
+using ISPTF.Models.LINQ;
+using ISPTF.API.LINQ_Models.ExportBC;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXBCIssuePurchaseController : ControllerBase
     {
+        private readonly ISPTFContext _context;
         private readonly ISqlDataAccess _db;
-        public EXBCIssuePurchaseController(ISqlDataAccess db)
+        public EXBCIssuePurchaseController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("newlist")]
@@ -82,16 +88,31 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 // Select from pDocRegister
         [HttpGet("newselect")]
-        public async Task<IEnumerable<PDocRegister>> GetNewSelect(string? RegDocNo)
+        public async Task<ActionResult<EXBCIssuePurchaseNewSelectResponse>> GetNewSelect(string? RegDocNo)
         {
-            DynamicParameters param = new();
+            EXBCIssuePurchaseNewSelectResponse response = new EXBCIssuePurchaseNewSelectResponse();
 
-            param.Add("@RegDocNo", RegDocNo);
-
-            var results = await _db.LoadData<PDocRegister, dynamic>(
-                        storedProcedure: "usp_pDocRegisterSelect",
-                        param);
-            return results;
+            // Validate
+            if (string.IsNullOrEmpty(RegDocNo))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "RegDocNo is required";
+                response.Data = new List<PDocRegister>();
+                return BadRequest(response);
+            }
+            try
+            {
+                var items = await (from row in _context.PDocRegisters
+                                   where row.RegDocno == RegDocNo
+                                        || row.RegDocno == null
+                                   select row).ToListAsync();
+                return Ok(items);
+            }
+            catch(Exception)
+            {
+                return BadRequest(response);
+            }
+            
         }
 // END Select from pDocRegister
         [HttpGet("editselect")]

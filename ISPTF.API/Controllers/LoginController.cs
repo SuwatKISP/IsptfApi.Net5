@@ -11,7 +11,7 @@ using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using ISPTF.API.LINQ_Models;
+using ISPTF.Models.LINQ;
 
 namespace ISPTF.API.Controllers
 {
@@ -37,10 +37,10 @@ namespace ISPTF.API.Controllers
             string EnPassword = PasswordCheck.Encryption(userLogin.password);
             try
             {
-                var item = (from u in _context.MUsers
-                           where u.UserId == userLogin.username 
-                                && u.UserPassword == EnPassword
-                           select u).FirstOrDefault();
+                var item = (from row in _context.MUsers
+                           where row.UserId == userLogin.username 
+                                && row.UserPassword == EnPassword
+                           select row).FirstOrDefault();
                 if (item != null)
                 {
                     var response = new LoginReturn();

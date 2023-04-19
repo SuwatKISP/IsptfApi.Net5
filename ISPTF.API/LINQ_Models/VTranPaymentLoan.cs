@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable disable
 
-namespace ISPTF.API.LINQ_Models
+namespace ISPTF.Models.LINQ
 {
     public partial class VTranPaymentLoan
     {

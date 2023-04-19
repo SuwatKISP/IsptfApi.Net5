@@ -1,7 +1,7 @@
 using DocumentFormat.OpenXml.Math;
-using ISPTF.API.LINQ_Models;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
+using ISPTF.Models.LINQ;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -75,6 +75,10 @@ namespace ISPTF.API
                 .AddJsonOptions(options=>
                     options.JsonSerializerOptions.PropertyNameCaseInsensitive=true)
                 ;
+            services.AddSwaggerGen(options =>
+            {
+                options.CustomSchemaIds(type => $"{type.Name}_{System.Guid.NewGuid()}");
+            });
 
             var key = Configuration["JwtToken:SecretKey"] + DateTime.Now.ToLongTimeString();
             //var key = Configuration["JwtToken:SecretKey"];
