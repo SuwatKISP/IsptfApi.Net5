@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+
+#nullable disable
+
+namespace ISPTF.API.LINQ_Models
+{
+    public partial class VTranPaymentLoan
+    {
+        public DateTime? EventDate { get; set; }
+        public string Module { get; set; }
+        public int? Trseqno { get; set; }
+        public string EventName { get; set; }
+        public string Reference { get; set; }
+        public string KeyNumber { get; set; }
+        public string CustCode { get; set; }
+        public string CustName { get; set; }
+        public string Ccy { get; set; }
+        public double? OriginalAmt { get; set; }
+        public double BalanceAmt { get; set; }
+        public DateTime? DueDate { get; set; }
+        public string UserCode { get; set; }
+        public string AuthCode { get; set; }
+        public double? Commlc { get; set; }
+        public double? Cable { get; set; }
+        public double? Payble { get; set; }
+        public double? Duty { get; set; }
+        public double? Commother { get; set; }
+        public double? Overdraw { get; set; }
+        public double? Engage { get; set; }
+        public double Commlieu { get; set; }
+        public double Commibc { get; set; }
+        public double Penalty { get; set; }
+        public double? Commtran { get; set; }
+        public int Commamend { get; set; }
+        public int Commadvice { get; set; }
+        public double? Postage { get; set; }
+        public double Commnego { get; set; }
+        public double? TelexSwift { get; set; }
+        public double? HandingFee { get; set; }
+        public double? Commcertify { get; set; }
+        public double Taxamt { get; set; }
+        public string Collectrefund { get; set; }
+        public string RecStatus { get; set; }
+        public string LastReceiptNo { get; set; }
+        public string PayFlag { get; set; }
+        public string CenterId { get; set; }
+        public string Allocation { get; set; }
+        public double PayPrnAmt { get; set; }
+        public double PayIntAmt { get; set; }
+        public DateTime? PaymentDate { get; set; }
+    }
+}

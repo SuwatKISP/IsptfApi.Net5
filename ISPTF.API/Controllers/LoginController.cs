@@ -11,62 +11,57 @@ using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using ISPTF.API.LINQ_Models;
 
 namespace ISPTF.API.Controllers
 {
+    
     //[EnableCors("MyAllowSpecificOrigins")]
     [ApiController]
     [Route("api/[controller]")]
     public class LoginController : ControllerBase
     {
+        private readonly ISPTFContext _context;
         private readonly IJwtAuth jwtAuth;
         private readonly ISqlDataAccess _db;
-        public LoginController(ISqlDataAccess db,IJwtAuth jwtAuth)
+        public LoginController(ISqlDataAccess db, IJwtAuth jwtAuth, ISPTFContext context)
         {
+            _context = context;
             _db = db;
             this.jwtAuth = jwtAuth;
         }
 
         [HttpPost]
-        public async Task<ActionResult<LoginReturn>> Index([FromBody] UserLogin userLogin)
+        public async Task<ActionResult<LoginReturn>> Index([FromBody] UserLoginRequest userLogin)
         {
             string EnPassword = PasswordCheck.Encryption(userLogin.password);
-
-            DynamicParameters param = new DynamicParameters();
-            param.Add("@UserId",userLogin.username);
-            param.Add("@UserPassword", EnPassword);
             try
             {
-                var result = await _db.LoadData<LoginReturn,dynamic>(storedProcedure:"usp_MUserSelect", 
-                    param);
-                if (result == null)
+                var item = (from u in _context.MUsers
+                           where u.UserId == userLogin.username 
+                                && u.UserPassword == EnPassword
+                           select u).FirstOrDefault();
+                if (item != null)
                 {
-                    return BadRequest("Username or Password erors/not found");
-                }
-                var response = new List<LoginReturn>();
-                foreach (var item in result)
-                {
-                    response.Add(new LoginReturn()
-                    { 
-                        userId = item.userId,
-                        userBran = item.userBran,
-                        userEmail = item.userEmail,
-                        userName = item.userName,
-                        userLevel = item.userLevel,
-                        userRole = item.userDept,
+                    var response = new LoginReturn();
+                    response = new LoginReturn
+                    {
+                        userId = item.UserId,
+                        userBran = item.UserBran,
+                        userEmail = item.UserEmail,
+                        userName = item.UserName,
+                        userLevel = item.UserLevel,
+                        userRole = item.UserDept,
                         userToken = jwtAuth.Authentication(userLogin.username, userLogin.password),
                         //PasswordEncrypted= PasswordCheck.Encryption(userLogin.password)
-                    });
-                };    
-                if (response.Count !=0)
-                {
+                    };
                     return Ok(response);
                 }
                 else
                 {
                     return Unauthorized();
                 }
-                
+
             }
             catch (Exception)
             {
@@ -133,6 +128,6 @@ namespace ISPTF.API.Controllers
         //    //}
         //    //return Ok(Convert.ToString(passwordLength)+EnPassword);
         //}
-    
+
     }
 }

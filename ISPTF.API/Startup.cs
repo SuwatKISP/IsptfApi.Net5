@@ -1,4 +1,5 @@
 using DocumentFormat.OpenXml.Math;
+using ISPTF.API.LINQ_Models;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.EntityFrameworkCore;
 //using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,6 +66,8 @@ namespace ISPTF.API
             //                .AllowAnyMethod();
             //     });
             //});
+            services.AddDbContext<ISPTFContext>(
+                    options => options.UseSqlServer("Server=203.154.158.182;Database=ISPTF;User Id=sa;Password=ispadmin;"));
 
             services.AddControllers()
                 .AddJsonOptions(options =>

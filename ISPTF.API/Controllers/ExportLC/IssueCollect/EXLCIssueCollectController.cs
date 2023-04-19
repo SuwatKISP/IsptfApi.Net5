@@ -15,6 +15,7 @@ using System.Text.Json;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXLCIssueCollectController : ControllerBase
@@ -155,7 +156,7 @@ namespace ISPTF.API.Controllers.ExportLC
             }
             return BadRequest(response);
         }
-
+        
         [HttpGet("releaselist")]
         public async Task<ActionResult<EXLCIssueCollectReleasePageResponse>> GetAllRelease(string? CenterID, string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
         {

@@ -1,0 +1,120 @@
+﻿using System;
+using System.Collections.Generic;
+
+#nullable disable
+
+namespace ISPTF.API.LINQ_Models
+{
+    public partial class PExPayment
+    {
+        public string Docnumber { get; set; }
+        public int EventNo { get; set; }
+        public string EventType { get; set; }
+        public string RecStatus { get; set; }
+        public DateTime? EventDate { get; set; }
+        public int? PayType { get; set; }
+        public DateTime? PaymentDate { get; set; }
+        public double? NegoAmt { get; set; }
+        public double? LessAgent { get; set; }
+        public double? TotNegoAmount { get; set; }
+        public double? BankChargeAmt { get; set; }
+        public double? NetProceedClaim { get; set; }
+        public int? PayBy { get; set; }
+        public int? AgentPayBy { get; set; }
+        public int? SettlementCredit { get; set; }
+        public string Mtflag { get; set; }
+        public double? ReceivePayAmt { get; set; }
+        public int? PartialFullRate { get; set; }
+        public double? SightPaidAmt { get; set; }
+        public double? SightPaidRate { get; set; }
+        public double? SightPaidThb { get; set; }
+        public string SightForward { get; set; }
+        public double? TermPaidAmt { get; set; }
+        public double? TermPaidRate { get; set; }
+        public double? TermPaidThb { get; set; }
+        public string TermForward { get; set; }
+        public double? TotPrincPaid { get; set; }
+        public string ParTnorType1 { get; set; }
+        public string ParTnorType2 { get; set; }
+        public string ParTnorType3 { get; set; }
+        public string ParTnorType4 { get; set; }
+        public string ParTnorType5 { get; set; }
+        public string ParTnorType6 { get; set; }
+        public double? PartialAmt1 { get; set; }
+        public double? PartialAmt2 { get; set; }
+        public double? PartialAmt3 { get; set; }
+        public double? PartialAmt4 { get; set; }
+        public double? PartialAmt5 { get; set; }
+        public double? PartialAmt6 { get; set; }
+        public double? PartialRate1 { get; set; }
+        public double? PartialRate2 { get; set; }
+        public double? PartialRate3 { get; set; }
+        public double? PartialRate4 { get; set; }
+        public double? PartialRate5 { get; set; }
+        public double? PartialRate6 { get; set; }
+        public double? PartialAmt1Thb { get; set; }
+        public double? PartialAmt2Thb { get; set; }
+        public double? PartialAmt3Thb { get; set; }
+        public double? PartialAmt4Thb { get; set; }
+        public double? PartialAmt5Thb { get; set; }
+        public double? PartialAmt6Thb { get; set; }
+        public string ForwardConractNo1 { get; set; }
+        public string ForwardConractNo2 { get; set; }
+        public string ForwardConractNo3 { get; set; }
+        public string ForwardConractNo4 { get; set; }
+        public string ForwardConractNo5 { get; set; }
+        public string ForwardConractNo6 { get; set; }
+        public int? BaseDay { get; set; }
+        public double? CurrentDisRate { get; set; }
+        public double? CurrentIntRate { get; set; }
+        public double? ComLieu { get; set; }
+        public double? ComLieuRate { get; set; }
+        public string FbCcy { get; set; }
+        public double? FbAmt { get; set; }
+        public double? FbRate { get; set; }
+        public double? FbAmtThb { get; set; }
+        public double? AgentAmt { get; set; }
+        public double? AgentRate { get; set; }
+        public double? AgentThb { get; set; }
+        public double? OverPaidAmt { get; set; }
+        public double? OverPaidRate { get; set; }
+        public double? OverPaidThb { get; set; }
+        public int? IntDay { get; set; }
+        public double? IntPaidAmt { get; set; }
+        public double? IntPaidRate { get; set; }
+        public double? IntExchRate { get; set; }
+        public double? IntPaidThb { get; set; }
+        public double? PrnPaidThb { get; set; }
+        public double? TotalNegoBalance { get; set; }
+        public double? TotalNegoBalThb { get; set; }
+        public double? ChargeCcy { get; set; }
+        public double? ChargeRate { get; set; }
+        public double? ChargeThb { get; set; }
+        public double? TotalCharge { get; set; }
+        public double? TotalDueToCus { get; set; }
+        public string PaymentInstru { get; set; }
+        public string Method { get; set; }
+        public double? FcdAmt { get; set; }
+        public string FcdAcc { get; set; }
+        public double? BahtNet { get; set; }
+        public string AcBahtnet { get; set; }
+        public double? Mtamt { get; set; }
+        public string DebitCreditFlag { get; set; }
+        public string AccountNo1 { get; set; }
+        public string AccountNo2 { get; set; }
+        public string AccountNo3 { get; set; }
+        public double? AmtDebitAc1 { get; set; }
+        public double? AmtDebitAc2 { get; set; }
+        public double? AmtDebitAc3 { get; set; }
+        public double? AmtCreditAc1 { get; set; }
+        public double? AmtCreditAc2 { get; set; }
+        public double? AmtCreditAc3 { get; set; }
+        public double? Cash { get; set; }
+        public double? ChequeAmt { get; set; }
+        public string ChequeNo { get; set; }
+        public string ChequeBkBrn { get; set; }
+        public double? TotalAmount { get; set; }
+        public string PaymentType { get; set; }
+        public string CenterId { get; set; }
+    }
+}
