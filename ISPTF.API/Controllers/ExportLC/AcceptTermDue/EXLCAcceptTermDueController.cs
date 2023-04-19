@@ -135,24 +135,24 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCPPaymentRsp();
                 return BadRequest(response);
             }
-
-            DynamicParameters param = new();
-
-            param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
-            param.Add("@EVENT_NO", EVENT_NO);
-            //param.Add("@RECORD_TYPE", RECORD_TYPE);
-            //param.Add("@REC_STATUS", REC_STATUS);
-            param.Add("@LFROM", LFROM);
-
-            param.Add("@PExLcRsp", dbType: DbType.Int32,
-                       direction: System.Data.ParameterDirection.Output,
-                       size: 12800);
-
-            param.Add("@PEXLCPPaymentRsp", dbType: DbType.String,
-                       direction: System.Data.ParameterDirection.Output,
-                       size: 5215585);
             try
             {
+                DynamicParameters param = new();
+
+                param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
+                param.Add("@EVENT_NO", EVENT_NO);
+                //param.Add("@RECORD_TYPE", RECORD_TYPE);
+                //param.Add("@REC_STATUS", REC_STATUS);
+                param.Add("@LFROM", LFROM);
+
+                param.Add("@PExLcRsp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+
+                param.Add("@PEXLCPPaymentRsp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
+
                 var results = await _db.LoadData<PEXLCPPaymentRsp, dynamic>(
                            storedProcedure: "usp_pEXLC_AcceptTermDue_Select",
                            param);
