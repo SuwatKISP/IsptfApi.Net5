@@ -106,7 +106,12 @@ namespace ISPTF.API.Controllers.ExportBC
                                    where row.RegDocno == RegDocNo
                                         || row.RegDocno == null
                                    select row).ToListAsync();
-                return Ok(items);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "RegDocNo is required";
+                response.Data = items;
+
+                return Ok(response);
             }
             catch(Exception)
             {
