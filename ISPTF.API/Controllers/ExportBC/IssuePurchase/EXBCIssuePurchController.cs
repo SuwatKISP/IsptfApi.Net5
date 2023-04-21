@@ -186,7 +186,8 @@ namespace ISPTF.API.Controllers.ExportBC
                                    select row);
                 var count = await rows.CountAsync();
                 var data = await rows.Skip(((int)Page - 1) * (int)PageSize)
-                                   .Take((int)PageSize).ToListAsync();
+                                   .Take((int)PageSize)
+                                   .ToListAsync();
 
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
