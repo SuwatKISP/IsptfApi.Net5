@@ -11,8 +11,6 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ISPTF.Models.LINQ;
-using ISPTF.API.LINQ_Models.ExportBC;
 using System.Text.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
@@ -175,14 +173,14 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "RegDocNo, Page, PageSize is required";
-                response.Data = new List<PDocRegister>();
+                response.Data = new List<pDocRegister>();
                 return BadRequest(response);
             }
             try
             {
-                var rows = (from row in _context.PDocRegisters
-                                   where row.RegDocno == RegDocNo
-                                        || row.RegDocno == null
+                var rows = (from row in _context.pDocRegisters
+                                   where row.Reg_Docno == RegDocNo
+                                        || row.Reg_Docno == null
                                    select row);
                 var count = await rows.CountAsync();
                 var data = await rows.Skip(((int)Page - 1) * (int)PageSize)
@@ -214,15 +212,15 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 // END Select from pDocRegister
         [HttpGet("editselect")]
-        public async Task<ActionResult<PEXBCPPaymentResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
+        public async Task<ActionResult<EXBCIssuePurchaseEditSelectResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
         {
-            PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
+            EXBCIssuePurchaseEditSelectResponse response = new EXBCIssuePurchaseEditSelectResponse();
             // Validate
             if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(EVENT_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new EXBCPaymentResponse();
                 return BadRequest(response);
             }
             try
@@ -242,11 +240,11 @@ namespace ISPTF.API.Controllers.ExportBC
                            storedProcedure: "usp_pEXBC_IssuePurchase_Select",
                            param);
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
-                var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
+                var PEXBCPEXPaymentRsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
 
-                if (PExBcRsp > 0 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
+                if (PExBcRsp > 0 && !string.IsNullOrEmpty(PEXBCPEXPaymentRsp))
                 {
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                    EXBCPaymentResponse jsonResponse = JsonSerializer.Deserialize<EXBCPaymentResponse>(PEXBCPEXPaymentRsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -256,7 +254,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT B/C NO does not exit";
-                    response.Data = new PEXBCPPaymentRsp();
+                    response.Data = new EXBCPaymentResponse();
                     return BadRequest(response);
                 }
             }
@@ -264,7 +262,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new EXBCPaymentResponse();
             }
             return BadRequest(response);
         }
@@ -275,6 +273,21 @@ namespace ISPTF.API.Controllers.ExportBC
         {
             PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
 
+            // Validate
+            if (pexbcppaymentreq.PEXBC == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "Export BC is required.";
+                response.Data = new PEXBCPPaymentRsp();
+                return BadRequest(response);
+            }
+            if (pexbcppaymentreq.PPayment == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "Payment is required.";
+                response.Data = new PEXBCPPaymentRsp();
+                return BadRequest(response);
+            }
             try
             {
                 DynamicParameters param = new DynamicParameters();
@@ -577,7 +590,21 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<PEXBCPPaymentResponse>> Update([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
             PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
-
+            // Validate
+            if (pexbcppaymentreq.PEXBC == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "Export BC is required.";
+                response.Data = new PEXBCPPaymentRsp();
+                return BadRequest(response);
+            }
+            if (pexbcppaymentreq.PPayment == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "Payment is required.";
+                response.Data = new PEXBCPPaymentRsp();
+                return BadRequest(response);
+            }
             try
             {
                 DynamicParameters param = new DynamicParameters();

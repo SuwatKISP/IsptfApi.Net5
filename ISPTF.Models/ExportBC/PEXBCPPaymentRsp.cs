@@ -12,5 +12,6 @@ namespace ISPTF.Models.ExportBC
     {
         public PEXBCRsp PEXBC { get; set; }
         public PPaymentRsp PPayment{ get; set; }
+
     }
 }

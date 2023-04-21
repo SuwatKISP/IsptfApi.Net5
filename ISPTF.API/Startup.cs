@@ -1,7 +1,6 @@
 using DocumentFormat.OpenXml.Math;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.LINQ;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
