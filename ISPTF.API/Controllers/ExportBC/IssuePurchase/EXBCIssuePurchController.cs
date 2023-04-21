@@ -219,7 +219,7 @@ namespace ISPTF.API.Controllers.ExportBC
             if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(EVENT_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_LC_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
+                response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
                 response.Data = new EXBCPaymentResponse();
                 return BadRequest(response);
             }
