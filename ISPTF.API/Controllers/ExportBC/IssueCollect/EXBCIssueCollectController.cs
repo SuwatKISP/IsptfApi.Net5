@@ -893,8 +893,8 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<string>> EXBCDelete([FromBody] PEXBCDeleteReq pExBcDelete)
         {
             DynamicParameters param = new();
-            param.Add("@EXPORT_BC_NO", pExBcDelete.exporT_BC_NO);
-            param.Add("@EVENT_DATE", pExBcDelete.evenT_DATE);
+            param.Add("@EXPORT_BC_NO", pExBcDelete.EXPORT_BC_NO);
+            param.Add("@EVENT_DATE", pExBcDelete.EVENT_DATE);
 
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,

@@ -15,7 +15,7 @@ using System.Text.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXBCIssuePurchaseController : ControllerBase
@@ -223,6 +223,8 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new EXBCPaymentResponse();
                 return BadRequest(response);
             }
+
+            // Call Store Procedure
             try
             {
                 DynamicParameters param = new();
@@ -906,11 +908,21 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> EXBCDelete([FromBody] PEXBCDeleteReq pExBcDelete)
+        public async Task<ActionResult<EXBCResultResponse>> EXBCDelete([FromBody] PEXBCDeleteReq pExBcDelete)
         {
+            EXBCResultResponse response = new EXBCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(pExBcDelete.EXPORT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
-            param.Add("@EXPORT_BC_NO", pExBcDelete.exporT_BC_NO);
-            param.Add("@EVENT_DATE", pExBcDelete.evenT_DATE);
+            param.Add("@EXPORT_BC_NO", pExBcDelete.EXPORT_BC_NO);
+            param.Add("@EVENT_DATE", pExBcDelete.EVENT_DATE);
 
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
@@ -919,49 +931,75 @@ namespace ISPTF.API.Controllers.ExportBC
             try
             {
                 await _db.SaveData(
-                  storedProcedure: "uusp_pEXBC_IssuePurchase_Delete", param);
+                  storedProcedure: "usp_pEXBC_IssuePurchase_Delete", param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
                 if (resp == "0")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message = "Export B/C NO Deleted";
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Deleted";
                     return Ok(response);
+                }
+                else if(resp == "99")
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C: " + pExBcDelete.EXPORT_BC_NO + " Not Found.";
+                    return BadRequest(response);
                 }
                 else
                 {
 
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    //response.Message = "Export BC No Not Exist";
-                    response.Message = resp.ToString();
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }catch (Exception)
+                    {
+                        response.Message = "Error Deleting Export B/C";
+                    }
                     return BadRequest(response);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = ex.Message;
+                return BadRequest(response);
             }
 
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<string>> PEXBCIssuePurchReleaseReq([FromBody] PEXBCIssuePurchReleaseReq pExBcIssuePurchRelease)
+        public async Task<ActionResult<EXBCResultResponse>> PEXBCIssuePurchReleaseReq([FromBody] PEXBCIssuePurchReleaseReq pExBcIssuePurchRelease)
         {
+            EXBCResultResponse response = new EXBCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(pExBcIssuePurchRelease.CENTER_ID) 
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO) 
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION) 
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.METHOD)
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.PAYMENT_INSTRU)
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE)
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.REFER_BC_NO)
+               )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CENTER_ID, EXPORT_BC_NO, RELEASE_ACTION, METHOD, PAYMENT_INSTRU, EVENT_DATE, CLAIM_TYPE, REFER_BC_NO is required";
+                return BadRequest(response);
+            }
             DynamicParameters param = new();
-            param.Add("@CenterID", pExBcIssuePurchRelease.CenterID);
+            param.Add("@CenterID", pExBcIssuePurchRelease.CENTER_ID);
             param.Add("@EXPORT_BC_NO", pExBcIssuePurchRelease.EXPORT_BC_NO);
-            param.Add("@ReleaseAction", pExBcIssuePurchRelease.ReleaseAction);
+            param.Add("@ReleaseAction", pExBcIssuePurchRelease.RELEASE_ACTION);
             param.Add("@METHOD", pExBcIssuePurchRelease.METHOD);
             param.Add("@PAYMENT_INSTRU", pExBcIssuePurchRelease.PAYMENT_INSTRU);
-            param.Add("@USER_ID", pExBcIssuePurchRelease.USER_ID);
             param.Add("@EVENT_DATE", pExBcIssuePurchRelease.EVENT_DATE);
-            param.Add("CLAIM_TYPE", pExBcIssuePurchRelease.CLAIM_TYPE);
+            param.Add("@CLAIM_TYPE", pExBcIssuePurchRelease.CLAIM_TYPE);
             param.Add("@REFER_BC_NO", pExBcIssuePurchRelease.REFER_BC_NO);
 
-            //param.Add("@Resp", dbType: DbType.Int32,
+            param.Add("@USER_ID", User.Identity.Name);
+
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
@@ -974,34 +1012,32 @@ namespace ISPTF.API.Controllers.ExportBC
                 if (resp == "1")
                 {
 
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
+                    response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";
                     return Ok(response);
                 }
                 else
                 {
 
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    //response.Message = "Export BC No Not Exist";
-                    response.Message = resp.ToString();
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Export BC does not Exist";
+                    }
                     return BadRequest(response);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                //response.Message = "Export BC No Not Exist";
+                response.Message = ex.ToString();
+                return BadRequest(response);
             }
-
         }
-
-
-
-
-
-
-
-
     }
 }

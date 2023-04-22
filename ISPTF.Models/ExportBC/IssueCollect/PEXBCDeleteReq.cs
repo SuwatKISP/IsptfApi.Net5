@@ -8,11 +8,11 @@ namespace ISPTF.Models.ExportBC
 {
     public class PEXBCDeleteReq
     {
-        public string exporT_BC_NO { get; set; }
+        public string EXPORT_BC_NO { get; set; }
         //public string RECORD_TYPE { get; set; }
         //public string REC_STATUS { get; set; }
         //public string EVENT_NO { get; set; }
-        public DateTime evenT_DATE { get; set; }
+        public DateTime EVENT_DATE { get; set; }
 
     }
 }
