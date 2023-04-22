@@ -8,7 +8,7 @@ namespace ISPTF.Models.ExportBC
 {
     public class PEXBCAcceptTermDueDeleteReq
     {
-        public string EXPORTT_BC_NO { get; set; }
+        public string EXPORT_BC_NO { get; set; }
         public string VOUCH_ID { get; set; }
 
     }

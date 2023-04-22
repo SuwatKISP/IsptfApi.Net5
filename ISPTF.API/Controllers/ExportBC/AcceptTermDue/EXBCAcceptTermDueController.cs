@@ -13,6 +13,7 @@ using System.Threading.Tasks;
  
 namespace ISPTF.API.Controllers.ExportBC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXBCAcceptTermDueController : ControllerBase
@@ -24,83 +25,188 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("list")]
-        public async Task<IEnumerable<Q_EXBCAcceptTermDueListPageRsp>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXBCAcceptTermDueListPageResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
-            DynamicParameters param = new();
+            EXBCAcceptTermDueListPageResponse response = new EXBCAcceptTermDueListPageResponse();
 
-            param.Add("@ListType", @ListType);
-            param.Add("@CenterID", CenterID);
-            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            param.Add("@BENName", BENName);
-            param.Add("@USER_ID", USER_ID);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
-
-            if (EXPORT_BC_NO == null)
+            // Validate
+            if (string.IsNullOrEmpty(@ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
             {
-                param.Add("@EXPORT_BC_NO", "");
-            }
-            if (BENName == null)
-            {
-                param.Add("@BENName", "");
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXBCAcceptTermDueListPageRsp>();
+                return BadRequest(response);
             }
 
-            var results = await _db.LoadData<Q_EXBCAcceptTermDueListPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXBC_AcceptTermDueListPage",
-                        param);
-            return results;
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@ListType", @ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+                param.Add("@BENName", BENName);
+                //param.Add("@USER_ID", USER_ID);
+                param.Add("@USER_ID", User.Identity.Name);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (EXPORT_BC_NO == null)
+                {
+                    param.Add("@EXPORT_BC_NO", "");
+                }
+                if (BENName == null)
+                {
+                    param.Add("@BENName", "");
+                }
+
+                var results = await _db.LoadData<Q_EXBCAcceptTermDueListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXBC_AcceptTermDueListPage",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXBCAcceptTermDueListPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXBCAcceptTermDueListPageRsp>();
+            }
+            return BadRequest(response);
         }
 
         [HttpGet("query")]
-        public async Task<IEnumerable<Q_EXBCAcceptTermDueQueryPageRsp>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXBCAcceptTermDueQueryPageResponse>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, int? Page, int? PageSize)
         {
-            DynamicParameters param = new();
+            EXBCAcceptTermDueQueryPageResponse response = new EXBCAcceptTermDueQueryPageResponse();
 
-            //param.Add("@ListType", @ListType);
-            param.Add("@CenterID", CenterID);
-            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            param.Add("@BENName", BENName);
-            param.Add("@USER_ID", USER_ID);
-            param.Add("@Page", Page);
-            param.Add("@PageSize", PageSize);
-
-            if (EXPORT_BC_NO == null)
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
             {
-                param.Add("@EXPORT_BC_NO", "");
-            }
-            if (BENName == null)
-            {
-                param.Add("@BENName", "");
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXBCAcceptTermDueQueryPageRsp>();
+                return BadRequest(response);
             }
 
-            var results = await _db.LoadData<Q_EXBCAcceptTermDueQueryPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXBC_AcceptTermDueQueryPage",
-                        param);
-            return results;
+            try
+            {
+                DynamicParameters param = new();
+
+                //param.Add("@ListType", @ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+                param.Add("@BENName", BENName);
+                param.Add("@USER_ID", USER_ID);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (EXPORT_BC_NO == null)
+                {
+                    param.Add("@EXPORT_BC_NO", "");
+                }
+                if (BENName == null)
+                {
+                    param.Add("@BENName", "");
+                }
+
+                var results = await _db.LoadData<Q_EXBCAcceptTermDueQueryPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXBC_AcceptTermDueQueryPage",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXBCAcceptTermDueQueryPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXBCAcceptTermDueQueryPageRsp>();
+            }
+            return BadRequest(response);
         }
 
 
         [HttpGet("select")]
-        public async Task<IEnumerable<PEXBC>> GetAllSelect(string? EXPORT_BC_NO , string? RECORD_TYPE, string? REC_STATUS)
+        public async Task<ActionResult<PEXBCResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
         {
-            DynamicParameters param = new();
+            PEXBCResponse response = new PEXBCResponse();
 
-            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            //param.Add("@EVENT_NO", EVENT_NO);
-            //param.Add("@LFROM", LFROM);
-            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            param.Add("@RECORD_TYPE", RECORD_TYPE);
-            param.Add("@REC_STATUS", REC_STATUS);
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS";
+                response.Data = new PEXBCRsp();
+                return BadRequest(response);
+            }
 
-            var results = await _db.LoadData<PEXBC, dynamic>(
-                        storedProcedure: "usp_pEXBC_AcceptTermDue_Select",
-                        param);
-            return results;
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+                //param.Add("@EVENT_NO", EVENT_NO);
+                //param.Add("@LFROM", LFROM);
+                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+                param.Add("@RECORD_TYPE", RECORD_TYPE);
+                param.Add("@REC_STATUS", REC_STATUS);
+
+                var results = await _db.LoadData<PEXBC, dynamic>(
+                            storedProcedure: "usp_pEXBC_AcceptTermDue_Select",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (PEXBCRsp)results;
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCRsp();
+            }
+            return BadRequest(response);
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<List<PEXBCRsp>>> Insert([FromBody] PEXBC pexbc)
+        public async Task<ActionResult<PEXBCResponse>> Insert([FromBody] PEXBC pexbc)
         {
+            PEXBCResponse response = new PEXBCResponse();
+            // Validate
+            if (pexbc == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "pexbc is required.";
+                response.Data = new PEXBCRsp();
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new DynamicParameters();
             param.Add("@RECORD_TYPE", pexbc.RECORD_TYPE);
             param.Add("@REC_STATUS", pexbc.REC_STATUS);
@@ -338,11 +444,11 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_Code", pexbc.Campaign_Code);
             param.Add("@Campaign_EffDate", pexbc.Campaign_EffDate);
             param.Add("@PurposeCode", pexbc.PurposeCode);
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
             try
             {
                 var results = await _db.LoadData<PEXBCRsp, dynamic>(
@@ -350,23 +456,29 @@ namespace ISPTF.API.Controllers.ExportBC
                     param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
+
                 if (resp == "1")
                 {
-                    return Ok(results);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = (PEXBCRsp)results;
+                    return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = resp.ToString(); //= "EXPORT_BC_NO Insert Error";
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT_BC_NO Save Error";
+                    response.Data = new PEXBCRsp();
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCRsp();
             }
+            return BadRequest(response);
         }
 
         //[HttpPost("update")]
@@ -641,16 +753,26 @@ namespace ISPTF.API.Controllers.ExportBC
         //}
 
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> EXBCAcceptTermDueDelete([FromBody] PEXBCAcceptTermDueDeleteReq pExBcAcceptTermDueDelete)
+        public async Task<ActionResult<EXBCResultResponse>> EXBCAcceptTermDueDelete([FromBody] PEXBCAcceptTermDueDeleteReq pExBcAcceptTermDueDelete)
         {
-            DynamicParameters param = new();
-            param.Add("@EXPORT_BC_NO", pExBcAcceptTermDueDelete.EXPORTT_BC_NO);
-            param.Add("@VOUCH_ID", pExBcAcceptTermDueDelete.VOUCH_ID);
+            EXBCResultResponse response = new EXBCResultResponse();
 
+            // Validate
+            if (string.IsNullOrEmpty(pExBcAcceptTermDueDelete.EXPORT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
+
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", pExBcAcceptTermDueDelete.EXPORT_BC_NO);
+            param.Add("@VOUCH_ID", pExBcAcceptTermDueDelete.VOUCH_ID);
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
+
             try
             {
                 await _db.SaveData(
@@ -659,37 +781,45 @@ namespace ISPTF.API.Controllers.ExportBC
                 var resp = param.Get<string>("@Resp");
                 if (resp == "1")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
+                    response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C Number Deleted";
                     return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
+                    response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "Export B/C NO Not Exist";
                     //response.Message = resp.ToString();
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
             }
-
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<string>> PEXBCAcceptTermDueReleaseReq([FromBody] PEXBCAcceptTermDueReleaseReq pExBcAcceptTermDueRelease)
+        public async Task<ActionResult<EXBCResultResponse>> PEXBCAcceptTermDueReleaseReq([FromBody] PEXBCAcceptTermDueReleaseReq pExBcAcceptTermDueRelease)
         {
+            EXBCResultResponse response = new EXBCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(pExBcAcceptTermDueRelease.EXPORT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
             param.Add("@CenterID", pExBcAcceptTermDueRelease.CenterID);
             param.Add("@EXPORT_BC_NO", pExBcAcceptTermDueRelease.EXPORT_BC_NO);
             param.Add("@EVENT_NO", pExBcAcceptTermDueRelease.EVENT_NO);
-            param.Add("@USER_ID", pExBcAcceptTermDueRelease.USER_ID);
+            //param.Add("@USER_ID", pExBcAcceptTermDueRelease.USER_ID);
+            param.Add("@USER_ID", User.Identity.Name);
 
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
@@ -703,35 +833,22 @@ namespace ISPTF.API.Controllers.ExportBC
                 var resp = param.Get<string>("@Resp");
                 if (resp == "1")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
+                    response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";
                     return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    //response.Message = "Export BC No Not Exist";
-                    response.Message = resp.ToString();
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C NO Not Exist";
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(e.ToString());
             }
 
         }
-
-
-
-
-
-
-
-
     }
 }

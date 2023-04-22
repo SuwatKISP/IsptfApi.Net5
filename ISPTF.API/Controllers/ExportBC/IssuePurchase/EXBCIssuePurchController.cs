@@ -89,9 +89,10 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("editlist")]
-        public async Task<ActionResult<EXBCEditPageResponse>> GetAllEdit(string? FormType, string? USER_ID, string? CenterID, string? EXPORT_BC_NO, string? BENNAME, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCEditPageResponse>> GetAllEdit(string? FormType, string? CenterID, string? EXPORT_BC_NO, string? BENNAME, int? Page, int? PageSize)
         {
             EXBCEditPageResponse response = new EXBCEditPageResponse();
+            string USER_ID = User.Identity.Name;
 
             // Validate
             if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(FormType) || Page == null || PageSize == null)
