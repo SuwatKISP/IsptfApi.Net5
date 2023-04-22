@@ -102,18 +102,12 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new List<Q_EXBCEditPageRsp>();
                 return BadRequest(response);                
             }
-            if (FormType.Equals("RELEASE") && string.IsNullOrEmpty(USER_ID))
-            {
-                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "USER_ID is required";
-                response.Data = new List<Q_EXBCEditPageRsp>();
-                return BadRequest(response);
-            }
+
 
             try
             {
                 DynamicParameters param = new();
-                param.Add("@USER_ID", USER_ID);
+                param.Add("@USER_ID", User.Identity.Name);
                 param.Add("@FormType", FormType);
                 param.Add("@CenterID", CenterID);
                 param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
