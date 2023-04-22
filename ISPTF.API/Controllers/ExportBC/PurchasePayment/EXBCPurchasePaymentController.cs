@@ -566,87 +566,138 @@ namespace ISPTF.API.Controllers.ExportBC
         [HttpPost("delete")]
         public async Task<ActionResult<string>> EXBCAcceptTermDueDelete([FromBody] PEXBCPurchasePaymentDeleteReq pExBcPurchasePaymentDelete)
         {
+            EXBCResultResponse response = new EXBCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(pExBcPurchasePaymentDelete.EXPORTT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", pExBcPurchasePaymentDelete.EXPORTT_BC_NO);
             param.Add("@VOUCH_ID", pExBcPurchasePaymentDelete.VOUCH_ID);
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
+
             try
             {
                 await _db.SaveData(
                   storedProcedure: "usp_pEXBC_PurchasePayment_Delete", param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
-                if (resp == "1")
+                /*if (resp == "0")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message = "Export B/C Number Deleted";
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Deleted";
                     return Ok(response);
+                }
+                else if (resp == "99")
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C: " + pExBcDelete.EXPORT_BC_NO + " Not Found.";
+                    return BadRequest(response);
                 }
                 else
                 {
 
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = "Export B/C NO Does Not Exist";
-                    //response.Message = resp.ToString();
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Error Deleting Export B/C";
+                    }
+                    return BadRequest(response);
+                }*/
+                if (resp == "1")
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Deleted";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C: " + pExBcPurchasePaymentDelete.EXPORTT_BC_NO + " Not Found.";
                     return BadRequest(response);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = ex.Message;
+                return BadRequest(response);
             }
-
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<string>> PEXBCPurchasePaymentReleaseReq([FromBody] PEXBCPurchasePaymentReleaseReq PEXBCPurchasePaymentRelease)
+        public async Task<ActionResult<EXBCResultResponse>> PEXBCPurchasePaymentReleaseReq([FromBody] PEXBCPurchasePaymentReleaseReq PEXBCPurchasePaymentRelease)
         {
+            EXBCResultResponse response = new EXBCResultResponse();
+            string USER_ID = User.Identity.Name;
+
+            if (string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.EXPORT_BC_NO)
+                || string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.EVENT_NO.ToString())
+                || string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.CenterID)
+                || string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.USER_ID)
+               )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CENTER_ID, EXPORT_BC_NO, RELEASE_ACTION, METHOD, PAYMENT_INSTRU, EVENT_DATE, CLAIM_TYPE, REFER_BC_NO is required";
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
             param.Add("@CenterID", PEXBCPurchasePaymentRelease.CenterID);
             param.Add("@EXPORT_BC_NO", PEXBCPurchasePaymentRelease.EXPORT_BC_NO);
             param.Add("@EVENT_NO", PEXBCPurchasePaymentRelease.EVENT_NO);
-            param.Add("@USER_ID", PEXBCPurchasePaymentRelease.USER_ID);
-
+            //param.Add("@USER_ID", PEXBCPurchasePaymentRelease.USER_ID);
+            param.Add("@USER_ID", USER_ID);
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
+
             try
             {
                 await _db.SaveData(
                   storedProcedure: "usp_pEXBC_PurchasePayment_Release", param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
+
                 if (resp == "1")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
+                    response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";
                     return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    //response.Message = "Export BC No Not Exist";
-                    response.Message = resp.ToString();
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Export BC does not Exist";
+                    }
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
             }
-
         }
 
 
