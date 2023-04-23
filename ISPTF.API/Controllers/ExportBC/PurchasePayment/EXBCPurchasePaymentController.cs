@@ -165,7 +165,6 @@ namespace ISPTF.API.Controllers.ExportBC
             return BadRequest(response);            
         }
 
-
         [HttpGet("select")]
 //      public async Task<IEnumerable<PEXBCPEXPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
         public async Task<ActionResult<PEXBCPEXPaymentResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
@@ -227,8 +226,26 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<List<PEXBCPEXPaymentRsp>>> Insert([FromBody] PEXBCPEXPaymentSaveReq pexbcsave)
+        public async Task<ActionResult<PEXBCPEXPaymentResponse>> Insert([FromBody] PEXBCPEXPaymentSaveReq pexbcsave)
         {
+            PEXBCPEXPaymentResponse response = new PEXBCPEXPaymentResponse();
+
+            // Validate
+            if (pexbcsave.PEXBC == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "PEXBC is required.";
+                response.Data = new PEXBCPPaymentRsp();
+                return BadRequest(response);
+            }
+            if (pexbcsave.PEXPayment == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "PEXPayment is required.";
+                response.Data = new PEXBCPPaymentRsp();
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new DynamicParameters();
 //pExBc
             param.Add("@RECORD_TYPE", pexbcsave.PEXBC.RECORD_TYPE);
@@ -519,19 +536,17 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@CHEQUE_AMT", pexbcsave.PEXPayment.CHEQUE_AMT);
             param.Add("@CHEQUE_NO", pexbcsave.PEXPayment.CHEQUE_NO);
             param.Add("@CHEQUE_BK_BRN", pexbcsave.PEXPayment.CHEQUE_BK_BRN);
-
             param.Add("@PExBcRsp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
                        size: 12800);
-
             param.Add("@PEXBCPEXPaymentRsp", dbType: DbType.String,
                        direction: System.Data.ParameterDirection.Output,
                        size: 5215585);
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
             try
             {
                 var results = await _db.LoadData<PEXBCPEXPaymentRsp, dynamic>(
@@ -541,30 +556,33 @@ namespace ISPTF.API.Controllers.ExportBC
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
 
-                //var resp = param.Get<int>("@Resp");
-                var resp = param.Get<string>("@Resp");
-                if (PExBcRsp == 1)
+                if (PExBcRsp == 1 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
                 {
-                    return Ok(pexbcpexpaymentrsp);
+                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    //response.Message = resp.ToString(); //= "EXPORT_BC_NO Insert Error";
-                    response.Message = "EXPORT B/C NO does not exit";
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT_BC_NO Select Error";
+                    response.Data = new PEXBCPPaymentRsp();
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCPPaymentRsp();
             }
+            return BadRequest(response);
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> EXBCAcceptTermDueDelete([FromBody] PEXBCPurchasePaymentDeleteReq pExBcPurchasePaymentDelete)
+        public async Task<ActionResult<EXBCResultResponse>> EXBCAcceptTermDueDelete([FromBody] PEXBCPurchasePaymentDeleteReq pExBcPurchasePaymentDelete)
         {
             EXBCResultResponse response = new EXBCResultResponse();
 
