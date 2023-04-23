@@ -154,16 +154,16 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
+        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
         {
-            PEXBCResponse response = new PEXBCResponse();
+            PEXBCListResponse response = new PEXBCListResponse();
 
             // Validate
             if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS";
-                response.Data = new PEXBCRsp();
+                response.Data = new List<PEXBCRsp>();
                 return BadRequest(response);
             }
 
@@ -182,14 +182,14 @@ namespace ISPTF.API.Controllers.ExportBC
                             param);
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
-                response.Data = (PEXBCRsp)results;
+                response.Data = (List<PEXBCRsp>)results;
                 return Ok(response);
             }
             catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCRsp();
+                response.Data = new List<PEXBCRsp>();
             }
             return BadRequest(response);
         }
