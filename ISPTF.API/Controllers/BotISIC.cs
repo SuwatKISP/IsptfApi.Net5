@@ -50,7 +50,7 @@ namespace ISPTF.API.Controllers
             param.Add("@CL_NM_THAI", botisic.CL_NM_THAI);
             param.Add("@CL_NM_ENG", botisic.CL_NM_ENG);
             param.Add("@CL_PCHILD", botisic.CL_PCHILD);
-            param.Add("@ATTRIB", botisic.ATTRIBUTE);
+            param.Add("@ATTRIBUTE", botisic.ATTRIBUTE);
             param.Add("@SEQ_ID", botisic.SEQ_ID);
             param.Add("@LASTSEQ", botisic.LASTSEQ);
             param.Add("@STATUS", botisic.STATUS);

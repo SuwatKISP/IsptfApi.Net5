@@ -815,11 +815,19 @@ namespace ISPTF.API.Controllers.ExportBC
             }
 
             DynamicParameters param = new();
-            param.Add("@CenterID", pExBcAcceptTermDueRelease.CenterID);
+
+            var claimsPrincipal = HttpContext.User;
+            var USER_ID = User.Identity.Name;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+            
+
+            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@EXPORT_BC_NO", pExBcAcceptTermDueRelease.EXPORT_BC_NO);
             param.Add("@EVENT_NO", pExBcAcceptTermDueRelease.EVENT_NO);
+
             //param.Add("@USER_ID", pExBcAcceptTermDueRelease.USER_ID);
-            param.Add("@USER_ID", User.Identity.Name);
+
+            param.Add("@USER_ID", USER_ID);
 
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
@@ -840,7 +848,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export B/C NO Not Exist";
+                    response.Message = "Export B/C do not exist";
                     return BadRequest(response);
                 }
             }
