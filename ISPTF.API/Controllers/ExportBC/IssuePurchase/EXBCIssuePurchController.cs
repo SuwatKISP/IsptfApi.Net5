@@ -31,6 +31,7 @@ namespace ISPTF.API.Controllers.ExportBC
         [HttpGet("newlist")]
         public async Task<ActionResult<EXBCNewPageResponse>> GetAllNew(string? CenterID, string? RegDocNo, string? BENName, int? Page, int? PageSize)
         {
+            
             EXBCNewPageResponse response = new EXBCNewPageResponse();
 
             // Validate
@@ -45,6 +46,12 @@ namespace ISPTF.API.Controllers.ExportBC
             try
             {
                 DynamicParameters param = new();
+
+                // CenterID can remove in future
+                //var claimsPrincipal = HttpContext.User;
+                //var userBranch = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+                //param.Add("@CenterID", userBranch);
+
                 param.Add("@CenterID", CenterID);
                 param.Add("@RegDocNo", RegDocNo);
                 param.Add("@BENName", BENName);
@@ -161,6 +168,7 @@ namespace ISPTF.API.Controllers.ExportBC
         [HttpGet("newselect")]
         public async Task<ActionResult<EXBCIssuePurchaseNewSelectResponse>> GetNewSelect(string? RegDocNo, int? Page, int? PageSize)
         {
+            
             EXBCIssuePurchaseNewSelectResponse response = new EXBCIssuePurchaseNewSelectResponse();
 
             // Validate

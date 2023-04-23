@@ -11,6 +11,8 @@ using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers
 {
@@ -29,6 +31,8 @@ namespace ISPTF.API.Controllers
             _db = db;
             this.jwtAuth = jwtAuth;
         }
+
+        
 
         [HttpPost]
         public async Task<ActionResult<LoginReturn>> Index([FromBody] UserLoginRequest userLogin)

@@ -1,11 +1,13 @@
 using DocumentFormat.OpenXml.Math;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -40,6 +43,7 @@ namespace ISPTF.API
             DapperORM.Configuration = configuration;
         }
 
+
         public IConfiguration Configuration { get; }
         //private readonly string _policyName = "CorsPolicy";
         //private readonly string _anotherPolicy = "AnotherCorsPolicy";
@@ -48,6 +52,7 @@ namespace ISPTF.API
         //[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
         public void ConfigureServices(IServiceCollection services)
         {
+
             ConfigurationHelper.Initialize(Configuration);
             services.AddCors();
             //services.AddCors(opt =>
@@ -65,19 +70,22 @@ namespace ISPTF.API
             //                .AllowAnyMethod();
             //     });
             //});
+
             services.AddDbContext<ISPTFContext>(
                     options => options.UseSqlServer("Server=203.154.158.182;Database=ISPTF;User Id=sa;Password=ispadmin;"));
+
 
             services.AddControllers()
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.PropertyNamingPolicy = null)
-                .AddJsonOptions(options=>
-                    options.JsonSerializerOptions.PropertyNameCaseInsensitive=true)
+                .AddJsonOptions(options =>
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true)
                 ;
             services.AddSwaggerGen(options =>
             {
                 options.CustomSchemaIds(type => $"{type.Name}_{System.Guid.NewGuid()}");
             });
+
 
             var key = Configuration["JwtToken:SecretKey"] + DateTime.Now.ToLongTimeString();
             //var key = Configuration["JwtToken:SecretKey"];
@@ -91,6 +99,7 @@ namespace ISPTF.API
                 x.SaveToken = true;
                 x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
+
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
                     ValidateAudience = false,
@@ -99,6 +108,37 @@ namespace ISPTF.API
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key))
+                };
+                x.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        // Access and modify claims
+                        var claimsIdentity = (ClaimsIdentity)context.Principal.Identity;
+
+                        // Get user ID from the token
+                        var userId = context.Principal.Identity.Name;
+                        if (userId != null)
+                        {
+                            //Get EF context
+                            var db = context.HttpContext.RequestServices.GetRequiredService<ISPTFContext>();
+
+                            //Add user's claims
+                            var data = from row in db.mUsers
+                                       where row.UserId == userId
+                                       select row;
+                            var user = await data.FirstOrDefaultAsync();
+
+                            claimsIdentity.AddClaims(new List<Claim>
+                            {
+                                new Claim("UserBranch", user.UserBran),
+                                new Claim("UserLevel", user.UserLevel),
+                                new Claim("UserRole", user.UserDept)
+                            });
+                        }
+
+                        await Task.CompletedTask;
+                    }
                 };
             });
             services.AddSingleton<IJwtAuth>(new Auth(key, Configuration));
@@ -172,7 +212,7 @@ namespace ISPTF.API
             });
             //services.AddControllers().AddJsonOptions(x =>
             //    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
-            services.AddScoped < ISqlDataAccess,SqlDataAccess > ();
+            services.AddScoped<ISqlDataAccess, SqlDataAccess>();
 
             //services.AddApiVersioning(options =>
             //{
@@ -224,7 +264,7 @@ namespace ISPTF.API
             }
         };
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider provider)
         {
             if (env.IsDevelopment())
             {
@@ -310,8 +350,8 @@ namespace ISPTF.API
             //);
             //app.UseCors();
             app.UseCors(x => x
-              //  .WithOrigins(allowed1)
-               //   .WithHeaders("Content-Type", "Accept", "origin")
+                //  .WithOrigins(allowed1)
+                //   .WithHeaders("Content-Type", "Accept", "origin")
                 //.AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader()
@@ -330,6 +370,9 @@ namespace ISPTF.API
             {
                 endpoints.MapControllers();
             });
+
+
+
         }
     }
 }
