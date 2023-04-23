@@ -30,7 +30,7 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<EXBCPurchasePaymentListPageResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCPurchasePaymentListPageResponse response = new EXBCPurchasePaymentListPageResponse();
-            string USER_ID = User.Identity.Name;
+            var USER_ID = User.Identity.Name;
 
             // Validate
             if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
@@ -97,8 +97,6 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new List<Q_EXBCPurchasePaymentListPageRsp>();
             }
             return BadRequest(response);
-
-            
         }
 
         [HttpGet("query")]
@@ -229,6 +227,7 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<PEXBCPEXPaymentResponse>> Insert([FromBody] PEXBCPEXPaymentSaveReq pexbcsave)
         {
             PEXBCPEXPaymentResponse response = new PEXBCPEXPaymentResponse();
+            string USER_ID = User.Identity.Name;
 
             // Validate
             if (pexbcsave.PEXBC == null)

@@ -28,7 +28,7 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<EXBCAcceptTermDueListPageResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCAcceptTermDueListPageResponse response = new EXBCAcceptTermDueListPageResponse();
-
+            var USER_ID = User.Identity.Name;
             // Validate
             if (string.IsNullOrEmpty(@ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
             {
@@ -38,27 +38,27 @@ namespace ISPTF.API.Controllers.ExportBC
                 return BadRequest(response);
             }
 
+            DynamicParameters param = new();
+            param.Add("@ListType", @ListType);
+            param.Add("@CenterID", CenterID);
+            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+            param.Add("@BENName", BENName);
+            //param.Add("@USER_ID", USER_ID);
+            param.Add("@USER_ID", USER_ID);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (EXPORT_BC_NO == null)
+            {
+                param.Add("@EXPORT_BC_NO", "");
+            }
+            if (BENName == null)
+            {
+                param.Add("@BENName", "");
+            }
+
             try
             {
-                DynamicParameters param = new();
-                param.Add("@ListType", @ListType);
-                param.Add("@CenterID", CenterID);
-                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-                param.Add("@BENName", BENName);
-                //param.Add("@USER_ID", USER_ID);
-                param.Add("@USER_ID", User.Identity.Name);
-                param.Add("@Page", Page);
-                param.Add("@PageSize", PageSize);
-
-                if (EXPORT_BC_NO == null)
-                {
-                    param.Add("@EXPORT_BC_NO", "");
-                }
-                if (BENName == null)
-                {
-                    param.Add("@BENName", "");
-                }
-
                 var results = await _db.LoadData<Q_EXBCAcceptTermDueListPageRsp, dynamic>(
                             storedProcedure: "usp_q_EXBC_AcceptTermDueListPage",
                             param);
@@ -102,27 +102,25 @@ namespace ISPTF.API.Controllers.ExportBC
                 return BadRequest(response);
             }
 
+            DynamicParameters param = new();
+            param.Add("@CenterID", CenterID);
+            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+            param.Add("@BENName", BENName);
+            param.Add("@USER_ID", USER_ID);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (EXPORT_BC_NO == null)
+            {
+                param.Add("@EXPORT_BC_NO", "");
+            }
+            if (BENName == null)
+            {
+                param.Add("@BENName", "");
+            }
+
             try
             {
-                DynamicParameters param = new();
-
-                //param.Add("@ListType", @ListType);
-                param.Add("@CenterID", CenterID);
-                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-                param.Add("@BENName", BENName);
-                param.Add("@USER_ID", USER_ID);
-                param.Add("@Page", Page);
-                param.Add("@PageSize", PageSize);
-
-                if (EXPORT_BC_NO == null)
-                {
-                    param.Add("@EXPORT_BC_NO", "");
-                }
-                if (BENName == null)
-                {
-                    param.Add("@BENName", "");
-                }
-
                 var results = await _db.LoadData<Q_EXBCAcceptTermDueQueryPageRsp, dynamic>(
                             storedProcedure: "usp_q_EXBC_AcceptTermDueQueryPage",
                             param);
@@ -162,21 +160,21 @@ namespace ISPTF.API.Controllers.ExportBC
             if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS";
+                response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS is required";
                 response.Data = new List<PEXBC>();
                 return BadRequest(response);
             }
 
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+            //param.Add("@EVENT_NO", EVENT_NO);
+            //param.Add("@LFROM", LFROM);
+            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
+            param.Add("@RECORD_TYPE", RECORD_TYPE);
+            param.Add("@REC_STATUS", REC_STATUS);
+
             try
             {
-                DynamicParameters param = new();
-                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-                //param.Add("@EVENT_NO", EVENT_NO);
-                //param.Add("@LFROM", LFROM);
-                param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-                param.Add("@RECORD_TYPE", RECORD_TYPE);
-                param.Add("@REC_STATUS", REC_STATUS);
-
                 var results = await _db.LoadData<PEXBC, dynamic>(
                             storedProcedure: "usp_pEXBC_AcceptTermDue_Select",
                             param);
@@ -805,6 +803,9 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<EXBCResultResponse>> PEXBCAcceptTermDueReleaseReq([FromBody] PEXBCAcceptTermDueReleaseReq pExBcAcceptTermDueRelease)
         {
             EXBCResultResponse response = new EXBCResultResponse();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
             // Validate
             if (string.IsNullOrEmpty(pExBcAcceptTermDueRelease.EXPORT_BC_NO))
@@ -814,19 +815,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 return BadRequest(response);
             }
 
-            DynamicParameters param = new();
-
-            var claimsPrincipal = HttpContext.User;
-            var USER_ID = User.Identity.Name;
-            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             
 
+            DynamicParameters param = new();
             param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@EXPORT_BC_NO", pExBcAcceptTermDueRelease.EXPORT_BC_NO);
             param.Add("@EVENT_NO", pExBcAcceptTermDueRelease.EVENT_NO);
-
             //param.Add("@USER_ID", pExBcAcceptTermDueRelease.USER_ID);
-
             param.Add("@USER_ID", USER_ID);
 
             //param.Add("@Resp", dbType: DbType.Int32,
