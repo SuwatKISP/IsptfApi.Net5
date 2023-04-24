@@ -292,8 +292,23 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPPaymentRsp();
                 return BadRequest(response);
             }
+
             try
             {
+                // Check if already exists
+                var is_exists = (from row in _context.pExbcs
+                                where row.EXPORT_BC_NO == pexbcppaymentreq.PEXBC.EXPORT_BC_NO
+                                select row).CountAsync();
+
+                if(await is_exists != 0)
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT BC NO: " + pexbcppaymentreq.PEXBC.EXPORT_BC_NO + " already existed";
+                    response.Data = new PEXBCPPaymentRsp();
+                    return BadRequest(response);
+                }
+
+                
                 DynamicParameters param = new DynamicParameters();
                 //PEXBC
                 param.Add("@RECORD_TYPE", pexbcppaymentreq.PEXBC.RECORD_TYPE);

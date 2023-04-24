@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using Newtonsoft.Json;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
     [Authorize]
@@ -194,7 +195,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "pexbc is required.";
-                response.Data = new PEXBCRsp();
+                response.Data = new PEXBCDataContainer();
                 return BadRequest(response);
             }
 
@@ -355,10 +356,33 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcsave.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcsave.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcsave.DOCUMENT_COPY);
-            param.Add("@SIGHT_BASIS", pexbcsave.SIGHT_BASIS);
-            param.Add("@ART44A", pexbcsave.ART44A);
-            param.Add("@ENDORSED", pexbcsave.ENDORSED);
-            param.Add("@MT750", pexbcsave.MT750);
+
+            // Convert bool to string => DB BIT (0/1)
+            string SIGHT_BASIS = "0";
+            if (pexbcsave.SIGHT_BASIS == true)
+            {
+                SIGHT_BASIS = "1";
+            }
+            string ART44A = "0";
+            if (pexbcsave.ART44A == true)
+            {
+                ART44A = "1";
+            }
+            string ENDORSED = "0";
+            if (pexbcsave.ENDORSED == true)
+            {
+                ENDORSED = "1";
+            }
+            string MT750 = "0";
+            if (pexbcsave.MT750 == true)
+            {
+                MT750 = "1";
+            }
+            param.Add("@SIGHT_BASIS", SIGHT_BASIS);
+            param.Add("@ART44A", ART44A);
+            param.Add("@ENDORSED", ENDORSED);
+            param.Add("@MT750", MT750);
+
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcsave.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcsave.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcsave.ADJUST_COVERING_AMT);
@@ -443,23 +467,28 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                var results = await _db.LoadData<PEXBCRsp, dynamic>(
+                var results = await _db.LoadData<pExbc, dynamic>(
                             storedProcedure: "usp_pEXBC_BCOverDue_Save",
                             param);
                 var resp = param.Get<string>("@Resp");
 
+                var pEXBCContainer = new PEXBCDataContainer(results.FirstOrDefault());
                 if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
-                    response.Data = (PEXBCRsp)results;
-                    return Ok(response);
+                    response.Data = pEXBCContainer;
+
+                    // Manual Serialize need for nested class
+                    string json = JsonConvert.SerializeObject(response);
+
+                    return Content(json, "application/json");
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "EXPORT_BC_NO Save Error";
-                    response.Data = new PEXBCRsp();
+                    response.Message = "EXPORT BC BC OverDue Save Error";
+                    response.Data = new PEXBCDataContainer();
                     return BadRequest(response);
                 }
             }
@@ -467,7 +496,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCRsp();
+                response.Data = new PEXBCDataContainer();
             }
             return BadRequest(response);
         }

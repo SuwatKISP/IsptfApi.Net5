@@ -10,7 +10,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net;
+using System.Text;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
     [Authorize]
@@ -89,7 +93,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCAcceptTermDueQueryPageResponse>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCAcceptTermDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, int? Page, int? PageSize)
         {
             EXBCAcceptTermDueQueryPageResponse response = new EXBCAcceptTermDueQueryPageResponse();
 
@@ -181,6 +185,12 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
                 response.Data = (List<PEXBC>)results;
+
+
+                response.Page = 1;
+                response.Total = response.Data.Count;
+                response.TotalPage = 1;
+
                 return Ok(response);
             }
             catch (Exception e)
@@ -201,7 +211,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "PEXBC is required.";
-                response.Data = new PEXBCRsp();
+                response.Data = new PEXBCDataContainer();
                 return BadRequest(response);
             }
 
@@ -467,8 +477,8 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@PurposeCode", pexbc.PurposeCode);
             //param.Add("@Resp", dbType: DbType.Int32,
 
-            
-           
+
+
 
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
@@ -476,24 +486,29 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                var results = await _db.LoadData<PEXBCRsp, dynamic>(
+                var results = await _db.LoadData<pExbc, dynamic>(
                     storedProcedure: "usp_pEXBC_AcceptTermDue_Save",
                     param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
-
+                var pEXBCContainer = new PEXBCDataContainer(results.FirstOrDefault());
+                
                 if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
-                    response.Data = (PEXBCRsp)results;
-                    return Ok(response);
+                    response.Data = pEXBCContainer;
+
+                    // Manual Serialize need for nested class
+                    string json = JsonConvert.SerializeObject(response);
+
+                    return Content(json, "application/json");
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC Save Error";
-                    response.Data = new PEXBCRsp();
+                    response.Data = new PEXBCDataContainer();
                     return BadRequest(response);
                 }
             }
@@ -501,7 +516,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCRsp();
+                response.Data = new PEXBCDataContainer();
             }
             return BadRequest(response);
         }
@@ -842,7 +857,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 return BadRequest(response);
             }
 
-            
+
 
             DynamicParameters param = new();
             param.Add("@CenterID", USER_CENTER_ID);
