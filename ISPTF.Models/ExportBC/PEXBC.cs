@@ -163,10 +163,10 @@ namespace ISPTF.Models.ExportBC
         public string? DISCREPANCY_TYPE { get; set; }
         public string? SWIFT_DISC { get; set; }
         public string? DOCUMENT_COPY { get; set; }
-        public string? SIGHT_BASIS { get; set; }
-        public string? ART44A { get; set; }
-        public string? ENDORSED { get; set; }
-        public string? MT750 { get; set; }
+        public bool? SIGHT_BASIS { get; set; }
+        public bool? ART44A { get; set; }
+        public bool? ENDORSED { get; set; }
+        public bool? MT750 { get; set; }
         public double? ADJ_TOT_NEGO_AMOUNT { get; set; }
         public double? ADJ_LESS_CHARGE_AMT { get; set; }
         public double? ADJUST_COVERING_AMT { get; set; }
