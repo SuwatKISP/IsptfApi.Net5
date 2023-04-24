@@ -466,6 +466,10 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_EffDate", pexbc.Campaign_EffDate);
             param.Add("@PurposeCode", pexbc.PurposeCode);
             //param.Add("@Resp", dbType: DbType.Int32,
+
+            
+           
+
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);

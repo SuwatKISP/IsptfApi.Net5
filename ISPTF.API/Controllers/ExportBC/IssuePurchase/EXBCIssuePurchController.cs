@@ -557,7 +557,16 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@Resp", dbType: DbType.String,
                    direction: System.Data.ParameterDirection.Output,
                    size: 5215585);
-            
+
+                param.Add("@ResSeqNo", dbType: DbType.Int32,
+                          direction: System.Data.ParameterDirection.Output,
+                          size: 12800);
+
+                param.Add("@ResReceiptNo", dbType: DbType.String,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 5215585);
+                
+
                 var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
                     storedProcedure: "usp_pEXBC_IssuePurchase_Insert",
                     param);
