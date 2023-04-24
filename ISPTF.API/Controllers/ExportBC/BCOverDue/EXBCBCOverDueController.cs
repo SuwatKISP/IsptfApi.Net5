@@ -12,6 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -21,9 +22,11 @@ namespace ISPTF.API.Controllers.ExportBC
     public class EXBCBCOverDueController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXBCBCOverDueController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXBCBCOverDueController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
@@ -92,7 +95,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCBCOverDueQueryPageResponse>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCBCOverDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCBCOverDueQueryPageResponse response = new EXBCBCOverDueQueryPageResponse();
             var USER_ID = User.Identity.Name;
@@ -149,7 +152,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCListResponse response = new PEXBCListResponse();
 
@@ -501,6 +504,97 @@ namespace ISPTF.API.Controllers.ExportBC
             return BadRequest(response);
         }
 
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXBCResultResponse>> Delete([FromBody] PEXBCBCOverDueDeleteRequest data)
+        {
+            EXBCResultResponse response = new EXBCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_BC_NO) ||
+                string.IsNullOrEmpty(data.VOUCH_ID) ||
+                string.IsNullOrEmpty(data.EVENT_DATE)
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, VOUCH_ID, EVENT_DATE is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                // Delete Daily GL
+                var dailyGL = (from row in _context.pDailyGLs
+                               where row.VouchID == data.VOUCH_ID &&
+                                     row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                               select row).ToListAsync();
+
+                foreach (var row in await dailyGL)
+                {
+                    _context.pDailyGLs.Remove(row);
+                }
+
+                // Select EXBC MASTER
+                var pExbc = (from row in _context.pExbcs
+                             where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                   row.RECORD_TYPE == "MASTER"
+                             select row).FirstOrDefault();
+
+                if (pExbc == null)
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C NO Not Exist";
+                    //response.Message = resp.ToString();
+                    return BadRequest(response);
+                }
+                var eventNo = pExbc.EVENT_NO;
+                eventNo++;
+
+                // Delete OverDue
+                var overDueRows = (from row in _context.pExbcs
+                                   where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                         row.EVENT_NO == eventNo &&
+                                         row.EVENT_TYPE == "OverDue" &&
+                                         row.REC_STATUS == "P"
+                                   select row).ToListAsync();
+
+                foreach (var row in await overDueRows)
+                {
+                    _context.pExbcs.Remove(row);
+                }
+
+                // Delete Interest
+                var interestRows = (from row in _context.pEXInterests
+                                    where row.Login == "PEXBC" &&
+                                    row.Event == "OverDue" &&
+                                    row.EventNo == eventNo
+                                    select row).ToListAsync();
+
+                foreach (var row in await interestRows)
+                {
+                    _context.pEXInterests.Remove(row);
+                }
+
+                await _context.SaveChangesAsync();
+
+
+                // Update PEXBC set REC_STATUS = R
+                // Use Raw Query b/c REC_STATUS is part of PK
+                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExbc SET REC_STATUS = 'R' WHERE EXPORT_BC_NO = '{data.EXPORT_BC_NO}' AND RECORD_TYPE = 'MASTER'");
+
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Export B/C Number Deleted";
+                return Ok(response);
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
         ////        [HttpPost("delete")]
         ////        public async Task<ActionResult<string>> EXBCAcceptTermDueDelete([FromBody] PEXBCPurchasePaymentDeleteReq pExBcPurchasePaymentDelete)
         ////        {
@@ -586,12 +680,6 @@ namespace ISPTF.API.Controllers.ExportBC
         ////            }
 
         ////        }
-
-
-
-
-
-
 
 
     }
