@@ -201,7 +201,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "PEXBC is required.";
-                response.Data = new List<PEXBCRsp>();
+                response.Data = new PEXBCRsp();
                 return BadRequest(response);
             }
 
@@ -482,14 +482,14 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
-                    response.Data = (List<PEXBCRsp>)results;
+                    response.Data = (PEXBCRsp)results;
                     return Ok(response);
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC Save Error";
-                    response.Data = new List<PEXBCRsp>();
+                    response.Data = new PEXBCRsp();
                     return BadRequest(response);
                 }
             }
@@ -497,7 +497,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new List<PEXBCRsp>();
+                response.Data = new PEXBCRsp();
             }
             return BadRequest(response);
         }
