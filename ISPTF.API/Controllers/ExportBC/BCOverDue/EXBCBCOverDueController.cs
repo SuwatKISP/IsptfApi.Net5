@@ -543,7 +543,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 if (pExbc == null)
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export B/C NO Not Exist";
+                    response.Message = "Export B/C does not exist";
                     //response.Message = resp.ToString();
                     return BadRequest(response);
                 }
