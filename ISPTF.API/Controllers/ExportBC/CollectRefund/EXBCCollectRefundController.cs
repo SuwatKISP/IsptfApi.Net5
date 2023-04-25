@@ -109,7 +109,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 if (PExBcRsp > 0)
                 {
-                    return Ok(pexbcppaymentrsp);
+                    return Content(pexbcppaymentrsp, "application/json");
                 }
                 else
                 {
@@ -289,10 +289,35 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcppaymentreq.PEXBC.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcppaymentreq.PEXBC.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcppaymentreq.PEXBC.DOCUMENT_COPY);
-            param.Add("@SIGHT_BASIS", pexbcppaymentreq.PEXBC.SIGHT_BASIS);
-            param.Add("@ART44A", pexbcppaymentreq.PEXBC.ART44A);
-            param.Add("@ENDORSED", pexbcppaymentreq.PEXBC.ENDORSED);
-            param.Add("@MT750", pexbcppaymentreq.PEXBC.MT750);
+
+
+            // Convert bool to string => DB BIT (0/1)
+            string SIGHT_BASIS = "0";
+            if (pexbcppaymentreq.PEXBC.SIGHT_BASIS == true)
+            {
+                SIGHT_BASIS = "1";
+            }
+            string ART44A = "0";
+            if (pexbcppaymentreq.PEXBC.ART44A == true)
+            {
+                ART44A = "1";
+            }
+            string ENDORSED = "0";
+            if (pexbcppaymentreq.PEXBC.ENDORSED == true)
+            {
+                ENDORSED = "1";
+            }
+            string MT750 = "0";
+            if (pexbcppaymentreq.PEXBC.MT750 == true)
+            {
+                MT750 = "1";
+            }
+            param.Add("@SIGHT_BASIS", SIGHT_BASIS);
+            param.Add("@ART44A", ART44A);
+            param.Add("@ENDORSED", ENDORSED);
+            param.Add("@MT750", MT750);
+
+
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcppaymentreq.PEXBC.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcppaymentreq.PEXBC.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcppaymentreq.PEXBC.ADJUST_COVERING_AMT);

@@ -363,7 +363,7 @@ namespace ISPTF.API.Controllers
                 if (crsp > 0)
                 {
                     //Response.ContentType = "application/json";
-                    return Ok(ccustrsp);
+                    return Content(ccustrsp, "application/json");
                 }
                 else
                 {
@@ -551,7 +551,7 @@ namespace ISPTF.API.Controllers
                     if (crsp > 0)
                     {
                         Log.Information("CustomerNew Response : {@ccustrsp}", ccustrsp);
-                        return Ok(ccustrsp);
+                        return Content(ccustrsp, "application/json");
                     }
                     else
                     {
@@ -579,7 +579,8 @@ namespace ISPTF.API.Controllers
         public async Task<ActionResult<List<MCustomerNewRsp>>> New2([FromBody] MCustomerNewReq customerreq)
         {
             Log.Information("CustomerNew Request : {@customerreq}", customerreq);
-            if (customerreq.customer.Cust_Code == "NEW" && (customerreq.custRate[0].Def_Cust == "NEW" || customerreq.custRate[0].Def_Cust == "NONE"))
+            if (customerreq.customer.Cust_Code == "NEW" 
+                && (customerreq.custRate[0].Def_Cust == "NEW" || customerreq.custRate[0].Def_Cust == "NONE"))
             {
                 var dt = new DataTable();
 
@@ -764,7 +765,7 @@ namespace ISPTF.API.Controllers
                             {
                                 _db.CommitTransaction();
                                 Log.Information("CustRate Response : {@ccustrsp}", ccustrsp2);
-                                return Ok(ccustrsp2);
+                                return Content(ccustrsp2, "application/json");
                             }
                             else
                             {
@@ -1176,7 +1177,7 @@ namespace ISPTF.API.Controllers
                 if (ccode > 0)
                 {
                     Log.Information("AccountUpdate Response : {@ccustrsp}", ccustrsp);
-                    return Ok(ccustrsp);
+                    return Content(ccustrsp, "application/json");
                 }
                 else
                 {
