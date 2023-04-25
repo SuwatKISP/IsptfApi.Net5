@@ -580,6 +580,11 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 // Update PEXBC set REC_STATUS = R
                 // Use Raw Query b/c REC_STATUS is part of PK
+                // If remove from PK
+                //
+                // pExbc.REC_STATUS = 'R';
+                // await _context.SaveChangesAsync();
+
                 await _context.Database.ExecuteSqlRawAsync($"UPDATE pExbc SET REC_STATUS = 'R' WHERE EXPORT_BC_NO = '{data.EXPORT_BC_NO}' AND RECORD_TYPE = 'MASTER'");
 
 
