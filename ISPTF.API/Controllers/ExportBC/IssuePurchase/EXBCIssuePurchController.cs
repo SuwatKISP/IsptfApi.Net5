@@ -31,7 +31,7 @@ namespace ISPTF.API.Controllers.ExportBC
         [HttpGet("newlist")]
         public async Task<ActionResult<EXBCNewPageResponse>> GetAllNew(string? CenterID, string? RegDocNo, string? BENName, int? Page, int? PageSize)
         {
-            
+
             EXBCNewPageResponse response = new EXBCNewPageResponse();
 
             // Validate
@@ -86,7 +86,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 }
                 return Ok(response);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
@@ -106,7 +106,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, FormType, Page, PageSize is required";
                 response.Data = new List<Q_EXBCEditPageRsp>();
-                return BadRequest(response);                
+                return BadRequest(response);
             }
 
 
@@ -162,12 +162,12 @@ namespace ISPTF.API.Controllers.ExportBC
             }
             return BadRequest(response);
         }
-            
-// Select from pDocRegister
+
+        // Select from pDocRegister
         [HttpGet("newselect")]
         public async Task<ActionResult<EXBCIssuePurchaseNewSelectResponse>> GetNewSelect(string? RegDocNo, int? Page, int? PageSize)
         {
-            
+
             EXBCIssuePurchaseNewSelectResponse response = new EXBCIssuePurchaseNewSelectResponse();
 
             // Validate
@@ -181,9 +181,9 @@ namespace ISPTF.API.Controllers.ExportBC
             try
             {
                 var rows = (from row in _context.pDocRegisters
-                                   where row.Reg_Docno == RegDocNo
-                                        || row.Reg_Docno == null
-                                   select row);
+                            where row.Reg_Docno == RegDocNo
+                                 || row.Reg_Docno == null
+                            select row);
                 var count = await rows.CountAsync();
                 var data = await rows.Skip(((int)Page - 1) * (int)PageSize)
                                    .Take((int)PageSize).ToListAsync();
@@ -206,13 +206,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 }
                 return Ok(response);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return BadRequest(response);
             }
-            
+
         }
-// END Select from pDocRegister
+        // END Select from pDocRegister
         [HttpGet("editselect")]
         public async Task<ActionResult<EXBCIssuePurchaseEditSelectResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
         {
@@ -297,10 +297,10 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 // Check if already exists
                 var is_exists = (from row in _context.pExbcs
-                                where row.EXPORT_BC_NO == pexbcppaymentreq.PEXBC.EXPORT_BC_NO
-                                select row).CountAsync();
+                                 where row.EXPORT_BC_NO == pexbcppaymentreq.PEXBC.EXPORT_BC_NO
+                                 select row).CountAsync();
 
-                if(await is_exists != 0)
+                if (await is_exists != 0)
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT BC NO: " + pexbcppaymentreq.PEXBC.EXPORT_BC_NO + " already existed";
@@ -308,7 +308,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     return BadRequest(response);
                 }
 
-                
+
                 DynamicParameters param = new DynamicParameters();
                 //PEXBC
                 param.Add("@RECORD_TYPE", pexbcppaymentreq.PEXBC.RECORD_TYPE);
@@ -580,7 +580,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@ResReceiptNo", dbType: DbType.String,
                    direction: System.Data.ParameterDirection.Output,
                    size: 5215585);
-                
+
 
                 var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
                     storedProcedure: "usp_pEXBC_IssuePurchase_Insert",
@@ -966,7 +966,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Message = "Export B/C Deleted";
                     return Ok(response);
                 }
-                else if(resp == "99")
+                else if (resp == "99")
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "Export B/C: " + pExBcDelete.EXPORT_BC_NO + " Not Found.";
@@ -979,7 +979,8 @@ namespace ISPTF.API.Controllers.ExportBC
                     try
                     {
                         response.Message = resp.ToString();
-                    }catch (Exception)
+                    }
+                    catch (Exception)
                     {
                         response.Message = "Error Deleting Export B/C";
                     }
@@ -1001,9 +1002,9 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCResultResponse response = new EXBCResultResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(pExBcIssuePurchRelease.CENTER_ID) 
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO) 
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION) 
+            if (string.IsNullOrEmpty(pExBcIssuePurchRelease.CENTER_ID)
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO)
+                || string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION)
                 || string.IsNullOrEmpty(pExBcIssuePurchRelease.METHOD)
                 || string.IsNullOrEmpty(pExBcIssuePurchRelease.PAYMENT_INSTRU)
                 || string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE)

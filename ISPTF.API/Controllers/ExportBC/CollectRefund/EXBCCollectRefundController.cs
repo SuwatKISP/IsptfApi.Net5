@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using Microsoft.EntityFrameworkCore;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
     [ApiController]
@@ -19,9 +20,11 @@ namespace ISPTF.API.Controllers.ExportBC
     public class EXBCCollectRefundController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXBCCollectRefundController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXBCCollectRefundController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
@@ -53,7 +56,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<IEnumerable<Q_EXBCCollectRefundQueryPageRsp>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<IEnumerable<Q_EXBCCollectRefundQueryPageRsp>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             DynamicParameters param = new();
 
@@ -82,8 +85,8 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-//        public async Task<IEnumerable<PEXBCPEXPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
-          public async Task<ActionResult<List<PEXBCPPaymentRsp>>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        //        public async Task<IEnumerable<PEXBCPEXPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<List<PEXBCPPaymentRsp>>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             DynamicParameters param = new();
 
@@ -119,7 +122,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Message = "EXPORT B/C NO does not exit";
                     return BadRequest(response);
                 }
-               
+
             }
             catch (Exception ex)
             {
@@ -133,7 +136,7 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<List<PEXBCPPaymentRsp>>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
             DynamicParameters param = new DynamicParameters();
-//PEXBC
+            //PEXBC
             param.Add("@RECORD_TYPE", pexbcppaymentreq.PEXBC.RECORD_TYPE);
             param.Add("@REC_STATUS", pexbcppaymentreq.PEXBC.REC_STATUS);
             param.Add("@EVENT_NO", pexbcppaymentreq.PEXBC.EVENT_NO);
@@ -395,7 +398,7 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_Code", pexbcppaymentreq.PEXBC.Campaign_Code);
             param.Add("@Campaign_EffDate", pexbcppaymentreq.PEXBC.Campaign_EffDate);
             param.Add("@PurposeCode", pexbcppaymentreq.PEXBC.PurposeCode);
-//PPayment
+            //PPayment
             param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
             param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
             param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
@@ -453,8 +456,106 @@ namespace ISPTF.API.Controllers.ExportBC
 
         }
 
+        /*
+                [HttpPost("delete")]
+                public async Task<ActionResult<EXBCResultResponse>> Delete([FromBody] EXBCCollectRefundDeleteRequest data)
+                {
+
+                    EXBCResultResponse response = new EXBCResultResponse();
+
+                    // Validate
+                    if (string.IsNullOrEmpty(data.EXPORT_BC_NO) ||
+                        string.IsNullOrEmpty(data.VOUCH_ID) ||
+                        string.IsNullOrEmpty(data.EVENT_DATE)
+                        )
+                    {
+                        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                        response.Message = "EXPORT_BC_NO, VOUCH_ID, EVENT_DATE is required";
+                        return BadRequest(response);
+                    }
 
 
+                    try
+                    {
+                        // Delete Daily GL
+                        var dailyGL = (from row in _context.pDailyGLs
+                                       where row.VouchID == data.VOUCH_ID &&
+                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                       select row).ToListAsync();
+
+                        foreach (var row in await dailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+                        // Select EXBC MASTER
+                        var pExbc = (from row in _context.pExbcs
+                                     where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExbc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export B/C does not exist";
+                            //response.Message = resp.ToString();
+                            return BadRequest(response);
+                        }
+                        var eventNo = pExbc.EVENT_NO;
+                        eventNo++;
+
+                        // Delete OverDue
+                        var overDueRows = (from row in _context.pExbcs
+                                           where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                                 row.EVENT_NO == eventNo &&
+                                                 row.EVENT_TYPE == "OverDue" &&
+                                                 row.REC_STATUS == "P"
+                                           select row).ToListAsync();
+
+                        foreach (var row in await overDueRows)
+                        {
+                            _context.pExbcs.Remove(row);
+                        }
+
+                        // Delete Interest
+                        var interestRows = (from row in _context.pEXInterests
+                                            where row.Login == "PEXBC" &&
+                                            row.Event == "OverDue" &&
+                                            row.EventNo == eventNo
+                                            select row).ToListAsync();
+
+                        foreach (var row in await interestRows)
+                        {
+                            _context.pEXInterests.Remove(row);
+                        }
+
+                        await _context.SaveChangesAsync();
+
+
+                        // Update PEXBC set REC_STATUS = R
+                        // Use Raw Query b/c REC_STATUS is part of PK
+                        // If remove from PK
+                        //
+                        // pExbc.REC_STATUS = 'R';
+                        // await _context.SaveChangesAsync();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExbc SET REC_STATUS = 'R' WHERE EXPORT_BC_NO = '{data.EXPORT_BC_NO}' AND RECORD_TYPE = 'MASTER'");
+
+
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Export B/C Number Deleted";
+                        return Ok(response);
+
+                    }
+                    catch (Exception e)
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+                  
+    }
+          */
 
 
 

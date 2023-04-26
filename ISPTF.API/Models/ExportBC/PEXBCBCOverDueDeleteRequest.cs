@@ -1,4 +1,4 @@
-﻿namespace ISPTF.API.Controllers.ExportBC
+﻿namespace ISPTF.Models.ExportBC
 {
     public class PEXBCBCOverDueDeleteRequest
     {

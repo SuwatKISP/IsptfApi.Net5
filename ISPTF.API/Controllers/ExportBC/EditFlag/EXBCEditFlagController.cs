@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using Microsoft.EntityFrameworkCore;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
     [ApiController]
@@ -19,9 +20,11 @@ namespace ISPTF.API.Controllers.ExportBC
     public class EXBCEditFlagController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXBCEditFlagController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXBCEditFlagController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
@@ -53,7 +56,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<IEnumerable<Q_EXBCCollectRefundQueryPageRsp>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<IEnumerable<Q_EXBCCollectRefundQueryPageRsp>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             DynamicParameters param = new();
 
@@ -381,16 +384,83 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = resp.ToString(); //= "EXPORT_BC_NO Insert Error";
+                    response.Message = "EXPORT_BC_NO Insert Error";
                     return BadRequest(response);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                ReturnResponse response = new();
+                response.StatusCode = "400";
+                response.Message = ex.ToString();
+                return BadRequest(response);
             }
         }
 
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXBCResultResponse>> Delete([FromBody] EXBCEditFlagDeleteRequest data)
+        {
+
+            EXBCResultResponse response = new EXBCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_BC_NO) 
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                // Select EXBC MASTER
+                var pExbc = (from row in _context.pExbcs
+                             where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                   row.RECORD_TYPE == "MASTER"
+                             select row).FirstOrDefault();
+
+                if (pExbc == null)
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C does not exist";
+                    //response.Message = resp.ToString();
+                    return BadRequest(response);
+                }
+                var eventNo = pExbc.EVENT_NO;
+                eventNo++;
+
+                // Delete Edit/Flag
+                var overDueRows = (from row in _context.pExbcs
+                                   where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                         row.EVENT_NO == eventNo &&
+                                         row.EVENT_TYPE == "Edit/Flag" &&
+                                         row.REC_STATUS == "P"
+                                   select row).ToListAsync();
+
+                foreach (var row in await overDueRows)
+                {
+                    _context.pExbcs.Remove(row);
+                }
+
+                await _context.SaveChangesAsync();
+
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Export B/C Edit/Flag Deleted";
+                return Ok(response);
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+
+        }
 
 
 
@@ -485,12 +555,6 @@ namespace ISPTF.API.Controllers.ExportBC
         ////            }
 
         ////        }
-
-
-
-
-
-
 
 
     }
