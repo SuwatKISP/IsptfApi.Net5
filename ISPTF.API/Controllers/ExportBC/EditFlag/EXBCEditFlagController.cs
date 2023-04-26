@@ -437,6 +437,7 @@ namespace ISPTF.API.Controllers.ExportBC
                                    where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
                                          row.EVENT_NO == eventNo &&
                                          row.EVENT_TYPE == "Edit/Flag" &&
+                                         row.BUSINESS_TYPE == '11' &&
                                          row.REC_STATUS == "P"
                                    select row).ToListAsync();
 
