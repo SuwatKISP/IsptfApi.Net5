@@ -93,9 +93,10 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCAcceptTermDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCAcceptTermDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCAcceptTermDueQueryPageResponse response = new EXBCAcceptTermDueQueryPageResponse();
+            var USER_ID = User.Identity.Name;
 
             // Validate
             if (string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
@@ -159,6 +160,7 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
         {
             PEXBCListResponse response = new PEXBCListResponse();
+            var USER_ID = User.Identity.Name;
 
             // Validate
             if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS))

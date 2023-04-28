@@ -25,18 +25,27 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("list")]
-        public async Task<IEnumerable<Q_EXBCReversePurchaseListPageRsp>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXBCReversePurchaseListPageResponse>> GetAllList(string? ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
-            DynamicParameters param = new();
+            EXBCReversePurchaseListPageResponse response = new EXBCReversePurchaseListPageResponse();
+            var USER_ID = User.Identity.Name;
+            // Validate
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXBCReversePurchaseListPageRsp>();
+                return BadRequest(response);
+            }
 
-            param.Add("@ListType", @ListType);
+            DynamicParameters param = new();
+            param.Add("@ListType", ListType);
             param.Add("@CenterID", CenterID);
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
             param.Add("@BENName", BENName);
             param.Add("@USER_ID", USER_ID);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
-
             if (EXPORT_BC_NO == null)
             {
                 param.Add("@EXPORT_BC_NO", "");
@@ -46,25 +55,59 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@BENName", "");
             }
 
-            var results = await _db.LoadData<Q_EXBCReversePurchaseListPageRsp, dynamic>(
+            try
+            {
+                var results = await _db.LoadData<Q_EXBCReversePurchaseListPageRsp, dynamic>(
                         storedProcedure: "usp_q_EXBC_ReversePurchaseListPage",
                         param);
-            return results;
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXBCReversePurchaseListPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXBCReversePurchaseListPageRsp>();
+            }
+            return BadRequest(response);
         }
 
         [HttpGet("query")]
-        public async Task<IEnumerable<Q_EXBCReversePurchaseQueryPageRsp>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXBCReversePurchaseQueryPageResponse>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
-            DynamicParameters param = new();
+            EXBCReversePurchaseQueryPageResponse response = new EXBCReversePurchaseQueryPageResponse();
+            var USER_ID = User.Identity.Name;
 
-            //param.Add("@ListType", @ListType);
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXBCReversePurchaseQueryPageRsp>();
+                return BadRequest(response);
+            }
+
+            DynamicParameters param = new();
             param.Add("@CenterID", CenterID);
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
             param.Add("@BENName", BENName);
             param.Add("@USER_ID", USER_ID);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
-
             if (EXPORT_BC_NO == null)
             {
                 param.Add("@EXPORT_BC_NO", "");
@@ -74,32 +117,90 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@BENName", "");
             }
 
-            var results = await _db.LoadData<Q_EXBCReversePurchaseQueryPageRsp, dynamic>(
+            try
+            {
+                var results = await _db.LoadData<Q_EXBCReversePurchaseQueryPageRsp, dynamic>(
                         storedProcedure: "usp_q_EXBC_ReversePurchaseQueryPage",
                         param);
-            return results;
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXBCReversePurchaseQueryPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXBCReversePurchaseQueryPageRsp>();
+            }
+            return BadRequest(response);
         }
 
 
         [HttpGet("select")]
-        public async Task<IEnumerable<PEXBCRsp>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
-        //          public async Task<ActionResult<List<PEXBCjsonRsp>>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
-            DynamicParameters param = new();
+            PEXBCListResponse response = new PEXBCListResponse();
+            var USER_ID = User.Identity.Name;
 
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, EVENT_NO, LFROM is required";
+                response.Data = new List<PEXBC>();
+                return BadRequest(response);
+            }
+
+            DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
             param.Add("@EVENT_NO", EVENT_NO);
             param.Add("@LFROM", LFROM);
 
-            var results = await _db.LoadData<PEXBCRsp, dynamic>(
+            try
+            {
+                var results = await _db.LoadData<PEXBCRsp, dynamic>(
                         storedProcedure: "usp_pEXBC_ReversePurchase_Select",
                         param);
-            return results;
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<PEXBC>)results;
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<PEXBC>();
+            }
+            return BadRequest(response);
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<List<PEXBCRsp>>> Insert([FromBody] PEXBCRsp pexbcsave)
+        public async Task<ActionResult<PEXBCResponse>> Insert([FromBody] PEXBCRsp pexbcsave)
         {
+            PEXBCResponse response = new PEXBCResponse();
+            // Validate
+            if (pexbcsave == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "pexbc is required.";
+                response.Data = new PEXBCDataContainer();
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new DynamicParameters();
             //pExBc
             param.Add("@RECORD_TYPE", pexbcsave.RECORD_TYPE);
@@ -360,37 +461,40 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_Code", pexbcsave.Campaign_Code);
             param.Add("@Campaign_EffDate", pexbcsave.Campaign_EffDate);
             param.Add("@PurposeCode", pexbcsave.PurposeCode);
-
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
             try
             {
-                var results = await _db.LoadData<PEXBCRsp, dynamic>(
+                var results = await _db.LoadData<pExbc, dynamic>(
                             storedProcedure: "usp_pEXBC_ReversePurchase_Save",
                             param);
-
                 var resp = param.Get<string>("@Resp");
+
                 if (resp == "1")
                 {
-                    return Ok(results);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = new PEXBCDataContainer(results.First());
+                    return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = resp.ToString();
-                    //response.Message = "EXPORT B/C NO does not exit";
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT_BC_NO Save Error";
+                    response.Data = new PEXBCDataContainer();
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCDataContainer();
             }
+            return BadRequest(response);
         }
 
 

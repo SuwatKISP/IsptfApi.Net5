@@ -155,6 +155,7 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCListResponse response = new PEXBCListResponse();
+            var USER_ID = User.Identity.Name;
 
             // Validate
             if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))

@@ -50,11 +50,21 @@ namespace ISPTF.API.Controllers.ExportBC
         //}
 
         [HttpGet("list")]
-        public async Task<IEnumerable<Q_EXBCAdviceDiscrepancyPageRsp>> GetAllEdit(string? @ListType,string? CenterID, string? EXPORT_BC_NO, string? BENNAME, string? USER_ID,string? Page, string? PageSize)
+        public async Task<ActionResult<EXBCAdviceDiscrepancyPageResponse>> GetAllEdit(string? ListType,string? CenterID, string? EXPORT_BC_NO, string? BENNAME, int? Page, int? PageSize)
         {
-            DynamicParameters param = new();
+            EXBCAdviceDiscrepancyPageResponse response = new EXBCAdviceDiscrepancyPageResponse();
+            var USER_ID = User.Identity.Name;
+            // Validate
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXBCAdviceDiscrepancyPageRsp>();
+                return BadRequest(response);
+            }
 
-            param.Add("@ListType", @ListType);
+            DynamicParameters param = new();
+            param.Add("@ListType", ListType);
             param.Add("@CenterID", CenterID);
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
             param.Add("@BENName", BENNAME);
@@ -76,10 +86,35 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@USER_ID", "");
             }
 
+            try
+            {
                 var results = await _db.LoadData<Q_EXBCAdviceDiscrepancyPageRsp, dynamic>(
                             storedProcedure: "usp_q_EXBC_AdviceDiscrepancyListPage",
                             param);
-                return results;
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXBCAdviceDiscrepancyPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXBCAdviceDiscrepancyPageRsp>();
+            }
+            return BadRequest(response);
         }
 
         //[HttpGet("releaselist")]
@@ -137,28 +172,57 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<IEnumerable<PEXBC_issue>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
+        public async Task<ActionResult<PEXBCResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
         {
+            PEXBCResponse response = new PEXBCResponse();
+            var USER_ID = User.Identity.Name;
+
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS is required";
+                response.Data = new PEXBCDataContainer();
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
-
-            //param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            //param.Add("@EVENT_TYPE", EVENT_TYPE);
-            //param.Add("@EVENT_NO", EVENT_NO);
-            //param.Add("@LFORM", LFORM);
-
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
             param.Add("@RECORD_TYPE", RECORD_TYPE);
             param.Add("@REC_STATUS", REC_STATUS);
 
-            var results = await _db.LoadData<PEXBC_issue, dynamic>(
+            try
+            {
+                var results = await _db.LoadData<PEXBC, dynamic>(
                         storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Select",
                         param);
-            return results;
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (PEXBCDataContainer)results;
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCDataContainer();
+            }
+            return BadRequest(response);
         }
 
         [HttpPost("insert")]
-        public async Task<ActionResult<List<PEXBC>>> Insert([FromBody] PEXBC_PAYMENT pexbcreq)
+        public async Task<ActionResult<PEXBCResponse>> Insert([FromBody] PEXBC_PAYMENT pexbcreq)
         {
+            PEXBCResponse response = new PEXBCResponse();
+            // Validate
+            if (pexbcreq == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "pexbc is required.";
+                response.Data = new PEXBCDataContainer();
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new DynamicParameters();
             param.Add("@RECORD_TYPE", pexbcreq.RECORD_TYPE);
             param.Add("@REC_STATUS", pexbcreq.REC_STATUS);
@@ -396,40 +460,55 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_Code", pexbcreq.Campaign_Code);
             param.Add("@Campaign_EffDate", pexbcreq.Campaign_EffDate);
             param.Add("@PurposeCode", pexbcreq.PurposeCode);
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
             try
             {
-                var results = await _db.LoadData<PEXBC_issue, dynamic>(
-                    storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Insert",
-                    param);
-                //var resp = param.Get<int>("@Resp");
+                var results = await _db.LoadData<pExbc, dynamic>(
+                            storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Insert",
+                            param);
                 var resp = param.Get<string>("@Resp");
+
                 if (resp == "1")
                 {
-                    return Ok(results);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = new PEXBCDataContainer(results.First());
+                    return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = resp.ToString(); //= "EXPORT_BC_NO Insert Error";
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT_BC_NO Save Error";
+                    response.Data = new PEXBCDataContainer();
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCDataContainer();
             }
+            return BadRequest(response);
         }
 
         [HttpPost("update")]
-        public async Task<ActionResult<List<PEXBCAdviceDiscrepancyUpdReq>>> Update([FromBody] PEXBCAdviceDiscrepancyUpdReq pexbcAdvDisUpdreq)
+        public async Task<ActionResult<PEXBCResponse>> Update([FromBody] PEXBCAdviceDiscrepancyUpdReq pexbcAdvDisUpdreq)
         {
+            PEXBCResponse response = new PEXBCResponse();
+            // Validate
+            if (pexbcAdvDisUpdreq == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "pexbc is required.";
+                response.Data = new PEXBCDataContainer();
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new DynamicParameters();
             param.Add("@EXPORT_BC_NO", pexbcAdvDisUpdreq.EXPORT_BC_NO);
             param.Add("@EVENT_DATE", pexbcAdvDisUpdreq.EVENT_DATE);
@@ -450,122 +529,154 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
             try
             {
-                var results = await _db.LoadData<PEXBC_issue, dynamic>(
-                    storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Update",
-                    param);
-                //var resp = param.Get<int>("@Resp");
+                var results = await _db.LoadData<pExbc, dynamic>(
+                            storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Update",
+                            param);
                 var resp = param.Get<string>("@Resp");
+
                 if (resp == "1")
                 {
-                    return Ok(results);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = new PEXBCDataContainer(results.First());
+                    return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = resp.ToString(); //= "EXPORT_BC_NO Insert Error";
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT_BC_NO Save Error";
+                    response.Data = new PEXBCDataContainer();
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCDataContainer();
             }
+            return BadRequest(response);
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> EXBCAdviceDiscrepancyDelete([FromBody] EXBCAdviceDiscrepancyDelete pExBcADVDiscDelete)
+        public async Task<ActionResult<EXBCResultResponse>> EXBCAdviceDiscrepancyDelete([FromBody] EXBCAdviceDiscrepancyDelete pExBcADVDiscDelete)
         {
+            EXBCResultResponse response = new EXBCResultResponse();
+            if (string.IsNullOrEmpty(pExBcADVDiscDelete.EXPORT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", pExBcADVDiscDelete.EXPORT_BC_NO);
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
+
             try
             {
                 await _db.SaveData(
                   storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Delete", param);
-                //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
                 if (resp == "0")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message = "Export B/C NO Deleted";
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Deleted";
                     return Ok(response);
+                }
+                else if (resp == "99")
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C: " + pExBcADVDiscDelete.EXPORT_BC_NO + " Not Found.";
+                    return BadRequest(response);
                 }
                 else
                 {
 
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    //response.Message = "Export BC No Not Exist";
-                    response.Message = resp.ToString();
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Error Deleting Export B/C";
+                    }
                     return BadRequest(response);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = ex.Message;
+                return BadRequest(response);
             }
-
         }
 
 
         [HttpPost("release")]
-        public async Task<ActionResult<string>> EXBCAdviceDiscrepancyRelease([FromBody] EXBCAdviceDiscrepancyRelease pExBcADVDiscRelease)
+        public async Task<ActionResult<EXBCResultResponse>> EXBCAdviceDiscrepancyRelease([FromBody] EXBCAdviceDiscrepancyRelease pExBcADVDiscRelease)
         {
+            EXBCResultResponse response = new EXBCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(pExBcADVDiscRelease.EXPORT_BC_NO)
+                || string.IsNullOrEmpty(pExBcADVDiscRelease.USER_ID)
+                || string.IsNullOrEmpty(pExBcADVDiscRelease.NARRATIVE)
+               )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, USER_ID, NARRATIVE is required";
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", pExBcADVDiscRelease.EXPORT_BC_NO);
             param.Add("@USER_ID", pExBcADVDiscRelease.USER_ID);
             param.Add("@NARRATIVE", pExBcADVDiscRelease.NARRATIVE);
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
+
             try
             {
                 await _db.SaveData(
                   storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Release", param);
-                //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
                 if (resp == "0")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message = "Export B/C NO Deleted";
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C NO Release Complete";
                     return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    //response.Message = "Export BC No Not Exist";
-                    response.Message = resp.ToString();
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Export BC does not Exist";
+                    }
                     return BadRequest(response);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = ex.ToString();
+                return BadRequest(response);
+
             }
-
         }
-
-
-
-
-
-
-
     }
 }

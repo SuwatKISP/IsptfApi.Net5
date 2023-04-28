@@ -12,6 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -28,10 +29,20 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("list")]
-        public async Task<IEnumerable<Q_EXBCCollectRefundListPageRsp>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXBCCollectRefundListPageResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
-            DynamicParameters param = new();
+            EXBCCollectRefundListPageResponse response = new EXBCCollectRefundListPageResponse();
+            var USER_ID = User.Identity.Name;
+            // Validate
+            if (string.IsNullOrEmpty(@ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXBCCollectRefundListPageRsp>();
+                return BadRequest(response);
+            }
 
+            DynamicParameters param = new();
             param.Add("@ListType", @ListType);
             param.Add("@CenterID", CenterID);
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
@@ -49,17 +60,53 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@BENName", "");
             }
 
-            var results = await _db.LoadData<Q_EXBCCollectRefundListPageRsp, dynamic>(
+            try
+            {
+                var results = await _db.LoadData<Q_EXBCCollectRefundListPageRsp, dynamic>(
                         storedProcedure: "usp_q_EXBC_CollectRefundListPage",
                         param);
-            return results;
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXBCCollectRefundListPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXBCCollectRefundListPageRsp>();
+            }
+            return BadRequest(response);
         }
 
         [HttpGet("query")]
-        public async Task<IEnumerable<Q_EXBCCollectRefundQueryPageRsp>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXBCCollectRefundQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
-            DynamicParameters param = new();
+            EXBCCollectRefundQueryPageResponse response = new EXBCCollectRefundQueryPageResponse();
+            var USER_ID = User.Identity.Name;
 
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_EXBCCollectRefundQueryPageRsp>();
+                return BadRequest(response);
+            }
+
+            DynamicParameters param = new();
             //param.Add("@ListType", @ListType);
             param.Add("@CenterID", CenterID);
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
@@ -77,30 +124,65 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@BENName", "");
             }
 
-            var results = await _db.LoadData<Q_EXBCCollectRefundQueryPageRsp, dynamic>(
-                        storedProcedure: "usp_q_EXBC_CollectRefundQueryPage",
-                        param);
-            return results;
+            try
+            {
+                var results = await _db.LoadData<Q_EXBCAcceptTermDueQueryPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXBC_CollectRefundQueryPage",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXBCCollectRefundQueryPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXBCCollectRefundQueryPageRsp>();
+            }
+            return BadRequest(response);
         }
 
 
         [HttpGet("select")]
-        //        public async Task<IEnumerable<PEXBCPEXPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
-        public async Task<ActionResult<List<PEXBCPPaymentRsp>>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCPPaymentResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
-            DynamicParameters param = new();
+            PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
+            var USER_ID = User.Identity.Name;
 
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, EVENT_NO, LFROM is required";
+                response.Data = new PEXBCPPaymentRsp();
+                return BadRequest(response);
+
+            }
+
+            DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
             param.Add("@EVENT_NO", EVENT_NO);
             param.Add("@LFROM", LFROM);
-
             param.Add("@PExBcRsp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
                        size: 12800);
-
             param.Add("@PEXBCPPaymentRsp", dbType: DbType.String,
                        direction: System.Data.ParameterDirection.Output,
                        size: 5215585);
+
             try
             {
                 var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
@@ -110,31 +192,38 @@ namespace ISPTF.API.Controllers.ExportBC
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcppaymentrsp = param.Get<dynamic>("@PEXBCPPaymentRsp");
 
-                if (PExBcRsp > 0)
+                if (PExBcRsp > 0 && !string.IsNullOrEmpty(pexbcppaymentrsp))
                 {
-                    return Content(pexbcppaymentrsp, "application/json");
+                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcppaymentrsp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
+                    response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT B/C NO does not exit";
+                    response.Data = new PEXBCPPaymentRsp();
                     return BadRequest(response);
                 }
-
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCPPaymentRsp();
             }
-            //return results;
+            return BadRequest(response);
         }
 
 
         [HttpPost("save")]
-        public async Task<ActionResult<List<PEXBCPPaymentRsp>>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
+        public async Task<ActionResult<PEXBCPPaymentResponse>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
+            PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
+            var USER_ID = User.Identity.Name;
+
             DynamicParameters param = new DynamicParameters();
             //PEXBC
             param.Add("@RECORD_TYPE", pexbcppaymentreq.PEXBC.RECORD_TYPE);
@@ -292,8 +381,6 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcppaymentreq.PEXBC.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcppaymentreq.PEXBC.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcppaymentreq.PEXBC.DOCUMENT_COPY);
-
-
             // Convert bool to string => DB BIT (0/1)
             string SIGHT_BASIS = "0";
             if (pexbcppaymentreq.PEXBC.SIGHT_BASIS == true)
@@ -319,8 +406,6 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@ART44A", ART44A);
             param.Add("@ENDORSED", ENDORSED);
             param.Add("@MT750", MT750);
-
-
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcppaymentreq.PEXBC.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcppaymentreq.PEXBC.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcppaymentreq.PEXBC.ADJUST_COVERING_AMT);
@@ -413,47 +498,49 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
             param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
             param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
-
             param.Add("@PExBcRsp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
                        size: 12800);
-
             param.Add("@PEXBCPPaymentRsp", dbType: DbType.String,
                        direction: System.Data.ParameterDirection.Output,
                        size: 5215585);
-
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
             try
             {
                 var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
-                    storedProcedure: "usp_pEXBC_CollectRefund_Save",
-                    param);
-
+                     storedProcedure: "usp_pEXBC_CollectRefund_Save",
+                     param);
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcppaymentrsp = param.Get<dynamic>("@PEXBCPPaymentRsp");
-
                 var resp = param.Get<int>("@PExBcRsp");
+
                 if (PExBcRsp == 1)
                 {
-                    return Ok(pexbcppaymentrsp);
+                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcppaymentrsp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return Ok(response);
                 }
                 else
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
+                    response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Save Error";
+                    response.Data = new PEXBCPPaymentRsp();
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new PEXBCPPaymentRsp();
             }
-
+            return BadRequest(response);
         }
 
         /*
