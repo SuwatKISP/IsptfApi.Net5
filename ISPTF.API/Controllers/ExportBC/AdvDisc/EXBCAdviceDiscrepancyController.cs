@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using Newtonsoft.Json;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
     [ApiController]
@@ -193,13 +194,19 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                var results = await _db.LoadData<PEXBC, dynamic>(
+                var results = await _db.LoadData<pExbc, dynamic>(
                         storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Select",
                         param);
+
+                var pEXBCContainer = new PEXBCDataContainer(results.FirstOrDefault());
+
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
-                response.Data = (PEXBCDataContainer)results;
-                return Ok(response);
+                response.Data = pEXBCContainer;
+
+                // Manual Serialize need for nested class
+                string json = JsonConvert.SerializeObject(response);
+                return Content(json, "application/json");
             }
             catch (Exception e)
             {
