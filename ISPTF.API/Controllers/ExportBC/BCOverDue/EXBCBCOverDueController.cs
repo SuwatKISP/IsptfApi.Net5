@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
+using System.Transactions;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -524,75 +525,90 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                // Delete Daily GL
-                var dailyGL = (from row in _context.pDailyGLs
-                               where row.VouchID == data.VOUCH_ID &&
-                                     row.VouchDate == DateTime.Parse(data.EVENT_DATE)
-                               select row).ToListAsync();
-
-                foreach (var row in await dailyGL)
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    _context.pDailyGLs.Remove(row);
+                    try
+                    {
+                        // Delete Daily GL
+                        var dailyGL = (from row in _context.pDailyGLs
+                                       where row.VouchID == data.VOUCH_ID &&
+                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                       select row).ToListAsync();
+
+                        foreach (var row in await dailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+                        // Select EXBC MASTER
+                        var pExbc = (from row in _context.pExbcs
+                                     where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExbc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export B/C does not exist";
+                            //response.Message = resp.ToString();
+                            return BadRequest(response);
+                        }
+                        var eventNo = pExbc.EVENT_NO;
+                        eventNo++;
+
+                        // Delete OverDue
+                        var overDueRows = (from row in _context.pExbcs
+                                           where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                                                 row.EVENT_NO == eventNo &&
+                                                 row.EVENT_TYPE == "OverDue" &&
+                                                 row.REC_STATUS == "P"
+                                           select row).ToListAsync();
+
+                        foreach (var row in await overDueRows)
+                        {
+                            _context.pExbcs.Remove(row);
+                        }
+
+                        // Delete Interest
+                        var interestRows = (from row in _context.pEXInterests
+                                            where row.Login == "PEXBC" &&
+                                            row.Event == "OverDue" &&
+                                            row.EventNo == eventNo
+                                            select row).ToListAsync();
+
+                        foreach (var row in await interestRows)
+                        {
+                            _context.pEXInterests.Remove(row);
+                        }
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExbc SET REC_STATUS = 'R' WHERE EXPORT_BC_NO = '{data.EXPORT_BC_NO}' AND RECORD_TYPE = 'MASTER'");
+                        
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+
+                    // Update PEXBC set REC_STATUS = R
+                    // Use Raw Query b/c REC_STATUS is part of PK
+                    // If remove from PK
+                    //
+                    // pExbc.REC_STATUS = 'R';
+                    // await _context.SaveChangesAsync();
+
+                    
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Number Deleted";
+                    return Ok(response);
                 }
-
-                // Select EXBC MASTER
-                var pExbc = (from row in _context.pExbcs
-                             where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
-                                   row.RECORD_TYPE == "MASTER"
-                             select row).FirstOrDefault();
-
-                if (pExbc == null)
-                {
-                    response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export B/C does not exist";
-                    //response.Message = resp.ToString();
-                    return BadRequest(response);
-                }
-                var eventNo = pExbc.EVENT_NO;
-                eventNo++;
-
-                // Delete OverDue
-                var overDueRows = (from row in _context.pExbcs
-                                   where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
-                                         row.EVENT_NO == eventNo &&
-                                         row.EVENT_TYPE == "OverDue" &&
-                                         row.REC_STATUS == "P"
-                                   select row).ToListAsync();
-
-                foreach (var row in await overDueRows)
-                {
-                    _context.pExbcs.Remove(row);
-                }
-
-                // Delete Interest
-                var interestRows = (from row in _context.pEXInterests
-                                    where row.Login == "PEXBC" &&
-                                    row.Event == "OverDue" &&
-                                    row.EventNo == eventNo
-                                    select row).ToListAsync();
-
-                foreach (var row in await interestRows)
-                {
-                    _context.pEXInterests.Remove(row);
-                }
-
-                await _context.SaveChangesAsync();
-
-
-                // Update PEXBC set REC_STATUS = R
-                // Use Raw Query b/c REC_STATUS is part of PK
-                // If remove from PK
-                //
-                // pExbc.REC_STATUS = 'R';
-                // await _context.SaveChangesAsync();
-
-                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExbc SET REC_STATUS = 'R' WHERE EXPORT_BC_NO = '{data.EXPORT_BC_NO}' AND RECORD_TYPE = 'MASTER'");
-
-
-                response.Code = Constants.RESPONSE_OK;
-                response.Message = "Export B/C Number Deleted";
-                return Ok(response);
-
             }
             catch (Exception e)
             {
