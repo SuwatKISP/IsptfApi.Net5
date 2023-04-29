@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
 using ISPTF.Models.ExportLC;
@@ -728,7 +728,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                       row.RECORD_TYPE == "EVENT" &&
                                                       row.EVENT_TYPE == "Issue Collect" &&
                                                       row.REC_STATUS == "P" &&
-                                                      (row.RECEIVED_NO != null || row.RECEIVED_NO != "")
+                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
                                                 select row).ToListAsync();
 
                         foreach (var row in await issusCollectExlc)
