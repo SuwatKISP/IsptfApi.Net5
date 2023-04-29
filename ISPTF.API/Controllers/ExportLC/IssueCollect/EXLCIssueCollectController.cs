@@ -12,6 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -21,9 +22,11 @@ namespace ISPTF.API.Controllers.ExportLC
     public class EXLCIssueCollectController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXLCIssueCollectController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXLCIssueCollectController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("newlist")]
@@ -156,7 +159,7 @@ namespace ISPTF.API.Controllers.ExportLC
             }
             return BadRequest(response);
         }
-        
+
         [HttpGet("releaselist")]
         public async Task<ActionResult<EXLCIssueCollectReleasePageResponse>> GetAllRelease(string? CenterID, string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
         {
@@ -681,6 +684,126 @@ namespace ISPTF.API.Controllers.ExportLC
                 return BadRequest(response);
             }
 
+        }
+
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<string>> EXLCDelete([FromBody] PEXLCDeleteRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+            DynamicParameters param = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
+                string.IsNullOrEmpty(data.EVENT_DATE)
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, EVENT_DATE is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                // 0 - Select EXLC MASTER
+                var pExlc = (from row in _context.pExlcs
+                             where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                   row.RECORD_TYPE == "MASTER"
+                             select row).FirstOrDefault();
+
+                if (pExlc == null)
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export L/C does not exist";
+                    return BadRequest(response);
+                }
+
+                // 1 - Cancel PPayment
+                var issusCollectExlc = (from row in _context.pExlcs
+                                        where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                              row.RECORD_TYPE == "EVENT" &&
+                                              row.EVENT_TYPE == "Issue Collect" &&
+                                              row.REC_STATUS == "P" &&
+                                              (row.RECEIVED_NO != null || row.RECEIVED_NO != "")
+                                        select row).ToListAsync();
+
+                foreach (var row in await issusCollectExlc)
+                {
+                    var pPayment = (from row2 in _context.pPayments
+                                    where row2.RpReceiptNo == row.RECEIVED_NO
+                                    select row2).ToListAsync();
+                    foreach (var rowPayment in await pPayment)
+                    {
+                        rowPayment.RpStatus = "C";
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+
+                // 2 - Delete Daily GL
+                var dailyGL = (from row in _context.pDailyGLs
+                               where row.TranDocNo == data.EXPORT_LC_NO &&
+                                     row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                               select row).ToListAsync();
+
+                foreach (var row in await dailyGL)
+                {
+                    _context.pDailyGLs.Remove(row);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // 3 - Update PDOCRegister
+                var pDocRegister = (from row in _context.pDocRegisters
+                                    where row.Reg_Docno == data.EXPORT_LC_NO &&
+                                          row.Reg_Login == "EXLC"
+                                    select row).ToListAsync();
+
+                foreach (var row in await pDocRegister)
+                {
+                    row.Reg_Status = "A";
+                    row.Remark = "N";
+                }
+
+                await _context.SaveChangesAsync();
+
+                // 4 - Delete all pExlc
+                var pExlcs = (from row in _context.pExlcs
+                              where row.EXPORT_LC_NO == data.EXPORT_LC_NO
+                              select row).ToListAsync();
+
+                foreach (var row in await pExlcs)
+                {
+                    _context.pExlcs.Remove(row);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // 5 - Delete pSWExport
+                var pSWExports = (from row in _context.pSWExports
+                                  where row.DocNo == data.EXPORT_LC_NO
+                                  select row).ToListAsync();
+
+                foreach (var row in await pSWExports)
+                {
+                    _context.pSWExports.Remove(row);
+                }
+
+                await _context.SaveChangesAsync();
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Export L/C Deleted";
+                return Ok(response);
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
     }
 }
