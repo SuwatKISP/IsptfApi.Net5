@@ -318,7 +318,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> EXLCIssuePurchaseDelete([FromBody] PEXLCDeleteRequest data)
+        public async Task<ActionResult<EXLCResultResponse>> EXLCIssuePurchaseDelete([FromBody] PEXLCDeleteRequest data)
         {
             EXLCResultResponse response = new EXLCResultResponse();
             DynamicParameters param = new();
