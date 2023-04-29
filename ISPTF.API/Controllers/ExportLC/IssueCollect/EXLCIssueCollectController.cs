@@ -1,9 +1,7 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.LoginRegis;
 using ISPTF.Models.ExportLC;
-using ISPTF.Models.PPayment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -688,7 +686,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> EXLCDelete([FromBody] PEXLCDeleteRequest data)
+        public async Task<ActionResult<string>> EXLCIssueColectDelete([FromBody] PEXLCDeleteRequest data)
         {
             EXLCResultResponse response = new EXLCResultResponse();
             DynamicParameters param = new();
