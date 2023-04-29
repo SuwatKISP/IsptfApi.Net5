@@ -687,10 +687,9 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> EXLCIssueColectDelete([FromBody] PEXLCDeleteRequest data)
+        public async Task<ActionResult<EXLCResultResponse>> EXLCIssueColectDelete([FromBody] PEXLCDeleteRequest data)
         {
             EXLCResultResponse response = new EXLCResultResponse();
-            DynamicParameters param = new();
 
             // Validate
             if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
