@@ -354,7 +354,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // 1 - Cancel PPayment
-                        var issusCollectExlc = (from row in _context.pExlcs
+                        var issueCollectExlc = (from row in _context.pExlcs
                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                                       row.RECORD_TYPE == "EVENT" &&
                                                       row.EVENT_TYPE == "Issue Purchase" &&
@@ -362,7 +362,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                       (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
                                                 select row).ToListAsync();
 
-                        foreach (var row in await issusCollectExlc)
+                        foreach (var row in await issueCollectExlc)
                         {
                             var pPayment = (from row2 in _context.pPayments
                                             where row2.RpReceiptNo == row.RECEIVED_NO
