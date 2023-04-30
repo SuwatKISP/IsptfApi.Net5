@@ -5,3 +5,5 @@ deploy:
   stage: deploy
   script:
     - powershell -Command "Start-Process powershell -Verb RunAs -ArgumentList '-File', 'C:\powershell-cmd\iis-deploy.ps1'"
+  only:
+    - Develop
