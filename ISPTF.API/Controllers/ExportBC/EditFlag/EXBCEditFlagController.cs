@@ -569,100 +569,67 @@ namespace ISPTF.API.Controllers.ExportBC
 
         }
 
+        [HttpPost("release")]
+        public async Task<ActionResult<EXBCResultResponse>> PEXBCEditFlagReleaseReq([FromBody] PEXBCEditFlagReleaseReq pExBcEditFlagRelease)
+        {
+            EXBCResultResponse response = new EXBCResultResponse();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
+            // Validate
+            if (string.IsNullOrEmpty(pExBcEditFlagRelease.EXPORT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
 
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", pExBcEditFlagRelease.EXPORT_BC_NO);
+            param.Add("@BENE_ID", pExBcEditFlagRelease.BENE_ID);
+            //param.Add("@USER_ID", pExBcEditFlagRelease.USER_ID);
+            //param.Add("@CenterID", pExBcEditFlagRelease.CenterID);
+            param.Add("@CenterID", USER_CENTER_ID);
+            param.Add("@USER_ID", USER_ID);
+            param.Add("@EVENT_DATE", pExBcEditFlagRelease.EVENT_DATE);
+            param.Add("@VOUCH_ID", pExBcEditFlagRelease.VOUCH_ID);
+            param.Add("@AUTOOVERDUE", pExBcEditFlagRelease.AUTOOVERDUE);
+            param.Add("@INTFLAG", pExBcEditFlagRelease.INTFLAG);
+            param.Add("@OBASEDAY", pExBcEditFlagRelease.OBASEDAY);
+            param.Add("@INTCODE", pExBcEditFlagRelease.INTCODE);
+            param.Add("@OINTRATE", pExBcEditFlagRelease.OINTRATE);
+            param.Add("@OINTSPDRATE", pExBcEditFlagRelease.OINTSPDRATE);
+            param.Add("@OINTCURRATE", pExBcEditFlagRelease.OINTCURRATE);
 
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
 
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_EditFlag_Release", param);
+                //var resp = param.Get<int>("@Resp");
+                var resp = param.Get<string>("@Resp");
+                if (resp == "1")
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C NO Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C do not exist";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
 
-
-
-
-        ////        [HttpPost("delete")]
-        ////        public async Task<ActionResult<string>> EXBCAcceptTermDueDelete([FromBody] PEXBCPurchasePaymentDeleteReq pExBcPurchasePaymentDelete)
-        ////        {
-        ////            DynamicParameters param = new();
-        ////            param.Add("@EXPORT_BC_NO", pExBcPurchasePaymentDelete.EXPORTT_BC_NO);
-        ////            param.Add("@VOUCH_ID", pExBcPurchasePaymentDelete.VOUCH_ID);
-
-        ////            //param.Add("@Resp", dbType: DbType.Int32,
-        ////            param.Add("@Resp", dbType: DbType.String,
-        ////                direction: System.Data.ParameterDirection.Output,
-        ////                size: 5215585);
-        ////            try
-        ////            {
-        ////                await _db.SaveData(
-        ////                  storedProcedure: "usp_pEXBCPurchasePaymentDelete", param);
-        ////                //var resp = param.Get<int>("@Resp");
-        ////                var resp = param.Get<string>("@Resp");
-        ////                if (resp == "1")
-        ////                {
-
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "200";
-        ////                    response.Message = "Export B/C Number Deleted";
-        ////                    return Ok(response);
-        ////                }
-        ////                else
-        ////                {
-
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "400";
-        ////                    response.Message = "Export B/C NO Does Not Exist";
-        ////                    //response.Message = resp.ToString();
-        ////                    return BadRequest(response);
-        ////                }
-        ////            }
-        ////            catch (Exception ex)
-        ////            {
-        ////                return BadRequest(ex.Message);
-        ////            }
-
-        ////        }
-
-        ////        [HttpPost("release")]
-        ////        public async Task<ActionResult<string>> PEXBCPurchasePaymentReleaseReq([FromBody] PEXBCPurchasePaymentReleaseReq PEXBCPurchasePaymentRelease)
-        ////        {
-        ////            DynamicParameters param = new();
-        ////            param.Add("@CenterID", PEXBCPurchasePaymentRelease.CenterID);
-        ////            param.Add("@EXPORT_BC_NO", PEXBCPurchasePaymentRelease.EXPORT_BC_NO);
-        ////            param.Add("@EVENT_NO", PEXBCPurchasePaymentRelease.EVENT_NO);
-        ////            param.Add("@USER_ID", PEXBCPurchasePaymentRelease.USER_ID);
-
-        ////            //param.Add("@Resp", dbType: DbType.Int32,
-        ////            param.Add("@Resp", dbType: DbType.String,
-        ////                direction: System.Data.ParameterDirection.Output,
-        ////                size: 5215585);
-        ////            try
-        ////            {
-        ////                await _db.SaveData(
-        ////                  storedProcedure: "usp_pEXBCPurchasePaymentRelease", param);
-        ////                //var resp = param.Get<int>("@Resp");
-        ////                var resp = param.Get<string>("@Resp");
-        ////                if (resp == "1")
-        ////                {
-
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "200";
-        ////                    response.Message = "Export B/C NO Release Complete";
-        ////                    return Ok(response);
-        ////                }
-        ////                else
-        ////                {
-
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "400";
-        ////                    //response.Message = "Export BC No Not Exist";
-        ////                    response.Message = resp.ToString();
-        ////                    return BadRequest(response);
-        ////                }
-        ////            }
-        ////            catch (Exception ex)
-        ////            {
-        ////                return BadRequest(ex.Message);
-        ////            }
-
-        ////        }
-
-
+        }
     }
 }
