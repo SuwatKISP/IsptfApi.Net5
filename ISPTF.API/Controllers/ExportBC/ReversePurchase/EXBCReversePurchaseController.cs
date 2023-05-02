@@ -171,7 +171,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                var results = await _db.LoadData<PEXBCRsp, dynamic>(
+                var results = await _db.LoadData<PEXBC, dynamic>(
                         storedProcedure: "usp_pEXBC_ReversePurchase_Select",
                         param);
                 response.Code = Constants.RESPONSE_OK;
