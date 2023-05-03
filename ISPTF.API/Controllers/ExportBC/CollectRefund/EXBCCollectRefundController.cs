@@ -543,6 +543,50 @@ namespace ISPTF.API.Controllers.ExportBC
             return BadRequest(response);
         }
 
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXBCResultResponse>> EXBCCollectRefundDelete([FromBody] PEXBCCollectRefundDeleteReq pExBcCollectRefundDelete)
+        {
+            EXBCResultResponse response = new EXBCResultResponse();
+            if (string.IsNullOrEmpty(pExBcCollectRefundDelete.EXPORT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
+
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", pExBcCollectRefundDelete.EXPORT_BC_NO);
+            param.Add("@DMS", pExBcCollectRefundDelete.DMS);
+
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_CollectRefund_Delete", param);
+                //var resp = param.Get<int>("@Resp");
+                var resp = param.Get<string>("@Resp");
+                if (Int16.Parse(resp) > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Number Deleted";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C NO Not Exist";
+                    //response.Message = resp.ToString();
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
+        }
+
         /*
                 [HttpPost("delete")]
                 public async Task<ActionResult<EXBCResultResponse>> Delete([FromBody] EXBCCollectRefundDeleteRequest data)
@@ -644,9 +688,86 @@ namespace ISPTF.API.Controllers.ExportBC
     }
           */
 
+        [HttpPost("release")]
+        public async Task<ActionResult<EXBCResultResponse>> PEXBCCollectRefundReleaseReq([FromBody] PEXBCCollectRefundReleaseReq pExBcCollectRefundRelease)
+        {
+            EXBCResultResponse response = new EXBCResultResponse();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
+            // Validate
+            if (string.IsNullOrEmpty(pExBcCollectRefundRelease.EXPORT_BC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO is required";
+                return BadRequest(response);
+            }
 
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", pExBcCollectRefundRelease.EXPORT_BC_NO);
+            param.Add("@BENE_ID", pExBcCollectRefundRelease.BENE_ID);
+            //param.Add("@USER_ID", pExBcCollectRefundRelease.USER_ID);
+            //param.Add("@CenterID", pExBcCollectRefundRelease.CenterID);
+            param.Add("@CenterID", USER_CENTER_ID);
+            param.Add("@USER_ID", USER_ID);
+            param.Add("@EVENT_DATE", pExBcCollectRefundRelease.EVENT_DATE);
+            param.Add("@VOUCH_ID", pExBcCollectRefundRelease.VOUCH_ID);
+            param.Add("@PAYMENT_INSTRU", pExBcCollectRefundRelease.PAYMENT_INSTRU);
+            param.Add("@CHARGE_ACC", pExBcCollectRefundRelease.CHARGE_ACC);
+            param.Add("@DRAFT", pExBcCollectRefundRelease.DRAFT);
+            param.Add("@MT202", pExBcCollectRefundRelease.MT202);
+            param.Add("@FB_CURRENCY", pExBcCollectRefundRelease.FB_CURRENCY);
+            param.Add("@FB_AMT", pExBcCollectRefundRelease.FB_AMT);
+            param.Add("@FB_RATE", pExBcCollectRefundRelease.FB_RATE);
+            param.Add("@FB_AMT_THB", pExBcCollectRefundRelease.FB_AMT_THB);
+            param.Add("@NEGO_COMM", pExBcCollectRefundRelease.NEGO_COMM);
+            param.Add("@TELEX_SWIFT", pExBcCollectRefundRelease.TELEX_SWIFT);
+            param.Add("@COURIER_POSTAGE", pExBcCollectRefundRelease.COURIER_POSTAGE);
+            param.Add("@STAMP_FEE", pExBcCollectRefundRelease.STAMP_FEE);
+            param.Add("@COMMONTT", pExBcCollectRefundRelease.COMMONTT);
+            param.Add("@COMM_OTHER", pExBcCollectRefundRelease.COMM_OTHER);
+            param.Add("@HANDING_FEE", pExBcCollectRefundRelease.HANDING_FEE);
+            param.Add("@INT_AMT_THB", pExBcCollectRefundRelease.INT_AMT_THB);
+            param.Add("@TOTAL_CHARGE", pExBcCollectRefundRelease.TOTAL_CHARGE);
+            param.Add("@REFUND_TAX_YN", pExBcCollectRefundRelease.REFUND_TAX_YN);
+            param.Add("@REFUND_TAX_AMT", pExBcCollectRefundRelease.REFUND_TAX_AMT);
+            param.Add("@TOTAL_AMOUNT", pExBcCollectRefundRelease.TOTAL_AMOUNT);
+            param.Add("@COLLECT_REFUND", pExBcCollectRefundRelease.COLLECT_REFUND);
+            param.Add("@METHOD", pExBcCollectRefundRelease.METHOD);
+            param.Add("@NARRATIVE", pExBcCollectRefundRelease.NARRATIVE);
 
+            param.Add("@PExBcRsp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
 
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_CollectRefund_Release", param);
+                var PExBcRsp = param.Get<dynamic>("@PExBcRsp");  // For what?
+                var resp = param.Get<string>("@Resp");
+                if (resp == "1")
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C NO Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C do not exist";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
+
+        }
     }
 }
