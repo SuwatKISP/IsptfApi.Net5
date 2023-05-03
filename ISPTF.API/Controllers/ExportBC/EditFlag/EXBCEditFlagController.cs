@@ -12,6 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -155,9 +156,9 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
-            PEXBCListResponse response = new PEXBCListResponse();
+            PEXBCResponse response = new PEXBCResponse();
             var USER_ID = User.Identity.Name;
 
             // Validate
@@ -165,7 +166,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO, EVENT_NO, LFROM is required";
-                response.Data = new List<PEXBC>();
+                response.Data = new PEXBCDataContainer();
                 return BadRequest(response);
             }
 
@@ -176,19 +177,23 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                var results = await _db.LoadData<PEXBC, dynamic>(
+                var results = await _db.LoadData<pExbc, dynamic>(
                         storedProcedure: "usp_pEXBC_EditFlag_Select",
                         param);
+                var pEXBCContainer = new PEXBCDataContainer(results.FirstOrDefault());
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
-                response.Data = (List<PEXBC>)results;
-                return Ok(response);
+                response.Data = pEXBCContainer;
+
+                // Manual Serialize need for nested class
+                string json = JsonConvert.SerializeObject(response);
+                return Content(json, "application/json");
             }
             catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new List<PEXBC>();
+                response.Data = new PEXBCDataContainer();
             }
             return BadRequest(response);
         }
