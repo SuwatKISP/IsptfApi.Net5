@@ -374,7 +374,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
 
-
                         // 2 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
                                        where row.TranDocNo == data.EXPORT_LC_NO &&
@@ -410,7 +409,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pExlcs.Remove(row);
                         }
 
-                        // 5 - Delete pSWExport
+                        // 5 - Delete pInstall
                         var pInstalls = (from row in _context.pInstalls
                                          where row.LC_NO == data.EXPORT_LC_NO
                                          select row).ToListAsync();
