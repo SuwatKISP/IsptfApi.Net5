@@ -192,15 +192,15 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXBCResponse>> Insert([FromBody] PEXBCRsp pexbcsave)
+        public async Task<ActionResult<PEXBCVouchIdResponse>> Insert([FromBody] PEXBCRsp pexbcsave)
         {
-            PEXBCResponse response = new PEXBCResponse();
+            PEXBCVouchIdResponse response = new PEXBCVouchIdResponse();
             // Validate
             if (pexbcsave == null)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "pexbc is required.";
-                response.Data = new PEXBCDataContainer();
+                response.Data = new PEXBCVouchIdDataContainer();
                 return BadRequest(response);
             }
 
@@ -465,10 +465,19 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_Code", pexbcsave.Campaign_Code);
             param.Add("@Campaign_EffDate", pexbcsave.Campaign_EffDate);
             param.Add("@PurposeCode", pexbcsave.PurposeCode);
-            //param.Add("@Resp", dbType: DbType.Int32,
+
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
+            param.Add("@ResSeqNo", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+
+            param.Add("@PEXBCPRsp", dbType: DbType.String,
+            direction: System.Data.ParameterDirection.Output,
+            size: 5215585);
+
 
             try
             {
@@ -476,13 +485,41 @@ namespace ISPTF.API.Controllers.ExportBC
                             storedProcedure: "usp_pEXBC_BCOverDue_Save",
                             param);
                 var resp = param.Get<string>("@Resp");
+                var resSeqNo = param.Get<int>("@ResSeqNo");
 
-                var pEXBCContainer = new PEXBCDataContainer(results.FirstOrDefault());
+                var pEXBCVouchIdContainer = new PEXBCVouchIdDataContainer(results.FirstOrDefault());
                 if (resp == "1")
                 {
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Success";
-                    response.Data = pEXBCContainer;
+
+                    bool resGL;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcsave.EVENT_DATE.ToString("dd/MM/yyyy");
+                    resVoucherID = "";
+                    resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcsave.EXPORT_BC_NO, eventDate, "", resSeqNo, "OverDue", false, "U");
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    if (resGL == true)
+                    {
+                        pEXBCVouchIdContainer.VouchId = resVoucherID;
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Success";
+                        response.Data = pEXBCVouchIdContainer;
+                    }
+                    else
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error Saving GL";
+                        response.Data = pEXBCVouchIdContainer;
+                    }
 
                     // Manual Serialize need for nested class
                     string json = JsonConvert.SerializeObject(response);
@@ -493,7 +530,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT BC BC OverDue Save Error";
-                    response.Data = new PEXBCDataContainer();
+                    response.Data = new PEXBCVouchIdDataContainer();
                     return BadRequest(response);
                 }
             }
@@ -501,7 +538,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCDataContainer();
+                response.Data = new PEXBCVouchIdDataContainer();
             }
             return BadRequest(response);
         }
@@ -584,7 +621,7 @@ namespace ISPTF.API.Controllers.ExportBC
                         // Commit
                         await _context.SaveChangesAsync();
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExbc SET REC_STATUS = 'R' WHERE EXPORT_BC_NO = '{data.EXPORT_BC_NO}' AND RECORD_TYPE = 'MASTER'");
-                        
+
                         transaction.Complete();
                     }
                     catch (Exception e)
@@ -603,7 +640,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     // pExbc.REC_STATUS = 'R';
                     // await _context.SaveChangesAsync();
 
-                    
+
 
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C Number Deleted";

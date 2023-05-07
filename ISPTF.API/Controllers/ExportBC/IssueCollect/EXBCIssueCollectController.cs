@@ -105,7 +105,7 @@ namespace ISPTF.API.Controllers.ExportBC
         //                param);
         //    return results;
         //}
-// editselect new with jaon
+        // editselect new with jaon
         [HttpGet("editselect")]
         public async Task<ActionResult<PEXBCPPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
         {
@@ -156,7 +156,7 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<List<PEXBCPPaymentRsp>>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
             DynamicParameters param = new DynamicParameters();
-//PEXBC
+            //PEXBC
             param.Add("@RECORD_TYPE", pexbcppaymentreq.PEXBC.RECORD_TYPE);
             param.Add("@REC_STATUS", pexbcppaymentreq.PEXBC.REC_STATUS);
             param.Add("@EVENT_NO", pexbcppaymentreq.PEXBC.EVENT_NO);
@@ -494,7 +494,7 @@ namespace ISPTF.API.Controllers.ExportBC
                         resultJson.VoucherID = resVoucherID;
                         resultJson.PEXBC = JsonConvert.DeserializeObject<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
                         return Ok(resultJson);
-                      //  return Ok(pexbcpexpaymentrsp);
+                        //  return Ok(pexbcpexpaymentrsp);
                     }
                     else
                     {
@@ -811,9 +811,9 @@ namespace ISPTF.API.Controllers.ExportBC
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
 
-              var resp = param.Get<int>("@PExBcRsp");
-               var resSeqNo = param.Get<int>("@ResSeqNo");
-               var resReceiptNo = param.Get<string>("@ResReceiptNo");
+                var resp = param.Get<int>("@PExBcRsp");
+                var resSeqNo = param.Get<int>("@ResSeqNo");
+                var resReceiptNo = param.Get<string>("@ResReceiptNo");
                 if (PExBcRsp == 1)
                 {
                     bool resGL;
@@ -830,7 +830,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     }
                     else
                     {
-                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Issue Collect",false, "U");
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Issue Collect", false, "U");
 
                     }
                     if (resVoucherID != "ERROR")
@@ -859,12 +859,12 @@ namespace ISPTF.API.Controllers.ExportBC
                     {
                         resPayD = true;
                     }
-                    if (resGL==true && resPayD==true )
-                    { 
+                    if (resGL == true && resPayD == true)
+                    {
                         resultJson.VoucherID = resVoucherID;
                         resultJson.PEXBC = JsonConvert.DeserializeObject<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
                         return Ok(resultJson);
-                    //return Ok(pexbcpexpaymentrsp);
+                        //return Ok(pexbcpexpaymentrsp);
                     }
                     else
                     {
@@ -872,7 +872,7 @@ namespace ISPTF.API.Controllers.ExportBC
                         response.StatusCode = "400";
                         response.Message = "EXPORT_BC_NO Update G/L or Payment Error";
                         return BadRequest(response);
-                    }     
+                    }
                 }
                 else
                 {
@@ -906,7 +906,7 @@ namespace ISPTF.API.Controllers.ExportBC
                   storedProcedure: "usp_pEXBC_IssueCollect_Delete", param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
-                if ( Int16.Parse(resp) > 0)
+                if (Int16.Parse(resp) > 0)
                 {
 
                     ReturnResponse response = new();
@@ -959,7 +959,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     eventDate = pExBcRelease.EVENT_DATE.ToString("dd/MM/yyyy");
                     resCustLiab = ISPModule.CustLiabEXBC.EXBC_IssueCollect(eventDate, "ISSUE", "SAVE", pExBcRelease.exporT_BC_NO, pExBcRelease.BENE_ID, pExBcRelease.DRAFT_CCY, pExBcRelease.DRAFT_AMT.ToString(), pExBcRelease.TOT_NEGO_AMOUNT.ToString());
-                    if (resCustLiab!="ERROR")
+                    if (resCustLiab != "ERROR")
                     {
                         ReturnResponse response = new();
                         response.StatusCode = "200";
@@ -991,13 +991,6 @@ namespace ISPTF.API.Controllers.ExportBC
             }
 
         }
-
-
-
-
-
-
-
 
     }
 }

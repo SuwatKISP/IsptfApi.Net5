@@ -26,7 +26,7 @@ namespace ISPTF.API.Controllers.ImportBC
         }
 
         [HttpGet("listpage")]
-        public async Task<IEnumerable<PIMBCListRsp>> GetAll(string? ListType ,string? CenterID, string? BCNumber, string? CustCode, string? CustName,string? UserCode, string? Page, string? PageSize)
+        public async Task<IEnumerable<PIMBCListRsp>> GetAll(string? ListType, string? CenterID, string? BCNumber, string? CustCode, string? CustName, string? UserCode, string? Page, string? PageSize)
         {
             DynamicParameters param = new();
 
@@ -58,7 +58,7 @@ namespace ISPTF.API.Controllers.ImportBC
                         param);
             return results;
         }
-// Old Select
+        // Old Select
         //[HttpGet("select")]
         //public async Task<IEnumerable<PIMBCCollectRefundSelectRsp>> GetAllSelect(string? BCNumber, string? BCSeqno, string? RecType, string? EVENT, string? RecStatus)
         //{
@@ -130,7 +130,7 @@ namespace ISPTF.API.Controllers.ImportBC
             //return Ok();
         }
 
-       [HttpGet("select/master")]
+        [HttpGet("select/master")]
         public async Task<ActionResult<PIMBCMasterRsp>> GetMasterSelect(string? BCNumber)
         {
             DynamicParameters param = new();
@@ -180,7 +180,7 @@ namespace ISPTF.API.Controllers.ImportBC
         public async Task<ActionResult<List<PIMBCPPaymentRsp>>> Insert([FromBody] PIMBCPPaymentRsp pimbcrsp)
         {
             DynamicParameters param = new DynamicParameters();
-//PIMBC
+            //PIMBC
             param.Add("@BCNumber", pimbcrsp.PIMBC.BCNumber);
             param.Add("@RecType", pimbcrsp.PIMBC.RecType);
             param.Add("@BCSeqno", pimbcrsp.PIMBC.BCSeqno);
@@ -395,7 +395,7 @@ namespace ISPTF.API.Controllers.ImportBC
                     string eventDate;
                     string resVoucherID;
                     eventDate = pimbcrsp.PIMBC.EventDate.ToString("dd/MM/yyyy");
-                    resVoucherID = ISPModule.GenerateGL.StartPIMBC(pimbcrsp.PIMBC.BCNumber, eventDate, BCSeqNoRsp, pimbcrsp.PIMBC.Event);
+                    resVoucherID = ISPModuleIMP.GenerateGL.StartPIMBC(pimbcrsp.PIMBC.BCNumber, eventDate, BCSeqNoRsp, pimbcrsp.PIMBC.Event);
                     if (resVoucherID != "ERROR")
                     {
                         PIMBCPPaymentRsp2 resultJson = new();
@@ -646,7 +646,7 @@ namespace ISPTF.API.Controllers.ImportBC
                     string eventDate;
                     string resVoucherID;
                     eventDate = pimbcrsp.PIMBC.EventDate.ToString("dd/MM/yyyy");
-                    resVoucherID = ISPModule.GenerateGL.StartPIMBC(pimbcrsp.PIMBC.BCNumber, eventDate, pimbcrsp.PIMBC.BCSeqno, pimbcrsp.PIMBC.Event);
+                    resVoucherID = ISPModuleIMP.GenerateGL.StartPIMBC(pimbcrsp.PIMBC.BCNumber, eventDate, pimbcrsp.PIMBC.BCSeqno, pimbcrsp.PIMBC.Event);
                     if (resVoucherID != "ERROR")
                     {
                         //var PIMBCPPaymentRspx= new PIMBCPPaymentRsp();
@@ -675,10 +675,10 @@ namespace ISPTF.API.Controllers.ImportBC
                     {
                         ReturnResponse response = new();
                         response.StatusCode = "400";
-                        response.Message = "Gen GL Error-->"+ eventDate ;
+                        response.Message = "Gen GL Error-->" + eventDate;
                         return BadRequest(response);
                     }
-                   
+
                 }
                 else
                 {
