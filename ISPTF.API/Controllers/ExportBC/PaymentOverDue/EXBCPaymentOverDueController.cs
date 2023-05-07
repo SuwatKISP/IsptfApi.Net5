@@ -99,7 +99,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCPaymentOverDueQueryPageResponse>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCPaymentOverDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCPaymentOverDueQueryPageResponse response = new EXBCPaymentOverDueQueryPageResponse();
             string USER_ID = User.Identity.Name;
@@ -401,10 +401,34 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcsave.PEXBC.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcsave.PEXBC.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcsave.PEXBC.DOCUMENT_COPY);
-            param.Add("@SIGHT_BASIS", pexbcsave.PEXBC.SIGHT_BASIS);
-            param.Add("@ART44A", pexbcsave.PEXBC.ART44A);
-            param.Add("@ENDORSED", pexbcsave.PEXBC.ENDORSED);
-            param.Add("@MT750", pexbcsave.PEXBC.MT750);
+
+            // Convert bool to string => DB BIT (0/1)
+            string SIGHT_BASIS = "0";
+            if (pexbcsave.PEXBC.SIGHT_BASIS == true)
+            {
+                SIGHT_BASIS = "1";
+            }
+            string ART44A = "0";
+            if (pexbcsave.PEXBC.ART44A == true)
+            {
+                ART44A = "1";
+            }
+            string ENDORSED = "0";
+            if (pexbcsave.PEXBC.ENDORSED == true)
+            {
+                ENDORSED = "1";
+            }
+            string MT750 = "0";
+            if (pexbcsave.PEXBC.MT750 == true)
+            {
+                MT750 = "1";
+            }
+
+            param.Add("@SIGHT_BASIS", SIGHT_BASIS);
+            param.Add("@ART44A", ART44A);
+            param.Add("@ENDORSED", ENDORSED);
+            param.Add("@MT750", MT750);
+
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcsave.PEXBC.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcsave.PEXBC.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcsave.PEXBC.ADJUST_COVERING_AMT);
@@ -546,6 +570,14 @@ namespace ISPTF.API.Controllers.ExportBC
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
 
+            param.Add("@ResSeqNo", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+
+            param.Add("@ResReceiptNo", dbType: DbType.String,
+           direction: System.Data.ParameterDirection.Output,
+           size: 5215585);
+
             try
             {
                 var results = await _db.LoadData<PEXBCPEXPaymentRsp, dynamic>(
@@ -580,98 +612,170 @@ namespace ISPTF.API.Controllers.ExportBC
             return BadRequest(response);
         }
 
-        ////        [HttpPost("delete")]
-        ////        public async Task<ActionResult<string>> EXBCAcceptTermDueDelete([FromBody] PEXBCPurchasePaymentDeleteReq pExBcPurchasePaymentDelete)
-        ////        {
-        ////            DynamicParameters param = new();
-        ////            param.Add("@EXPORT_BC_NO", pExBcPurchasePaymentDelete.EXPORTT_BC_NO);
-        ////            param.Add("@VOUCH_ID", pExBcPurchasePaymentDelete.VOUCH_ID);
+        [HttpPost("delete")]
+        public async Task<ActionResult<string>> EXPCPaymentOverDueDeleteReq([FromBody] EXPCPaymentOverDueDeleteReq data)
+        {
+            EXBCResultResponse response = new EXBCResultResponse();
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_BC_NO) ||
+                string.IsNullOrEmpty(data.VOUCH_ID) ||
+                string.IsNullOrEmpty(data.EVENT_DATE)
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, VOUCH_ID, EVENT_DATE is required";
+                return BadRequest(response);
+            }
 
-        ////            //param.Add("@Resp", dbType: DbType.Int32,
-        ////            param.Add("@Resp", dbType: DbType.String,
-        ////                direction: System.Data.ParameterDirection.Output,
-        ////                size: 5215585);
-        ////            try
-        ////            {
-        ////                await _db.SaveData(
-        ////                  storedProcedure: "usp_pEXBCPurchasePaymentDelete", param);
-        ////                //var resp = param.Get<int>("@Resp");
-        ////                var resp = param.Get<string>("@Resp");
-        ////                if (resp == "1")
-        ////                {
+            DynamicParameters param = new();
+            param.Add("EXPORT_BC_NO", data.EXPORT_BC_NO);
+            param.Add("VOUCH_ID", data.VOUCH_ID);
+            param.Add("EVENT_DATE", data.EVENT_DATE);
 
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "200";
-        ////                    response.Message = "Export B/C Number Deleted";
-        ////                    return Ok(response);
-        ////                }
-        ////                else
-        ////                {
+            param.Add("PExBcRsp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 12800);
 
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "400";
-        ////                    response.Message = "Export B/C NO Does Not Exist";
-        ////                    //response.Message = resp.ToString();
-        ////                    return BadRequest(response);
-        ////                }
-        ////            }
-        ////            catch (Exception ex)
-        ////            {
-        ////                return BadRequest(ex.Message);
-        ////            }
+            //param.Add("Resp", dbType: DbType.Int32,
+            param.Add("Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_PaymentOverDue_Delete", param);
+                //var resp = param.Get<int>("Resp");
+                var pexbcrsp = param.Get<int>("PExBcRsp");
 
-        ////        }
+                var resp = param.Get<string>("Resp");
 
-        ////        [HttpPost("release")]
-        ////        public async Task<ActionResult<string>> PEXBCPurchasePaymentReleaseReq([FromBody] PEXBCPurchasePaymentReleaseReq PEXBCPurchasePaymentRelease)
-        ////        {
-        ////            DynamicParameters param = new();
-        ////            param.Add("@CenterID", PEXBCPurchasePaymentRelease.CenterID);
-        ////            param.Add("@EXPORT_BC_NO", PEXBCPurchasePaymentRelease.EXPORT_BC_NO);
-        ////            param.Add("@EVENT_NO", PEXBCPurchasePaymentRelease.EVENT_NO);
-        ////            param.Add("@USER_ID", PEXBCPurchasePaymentRelease.USER_ID);
+                if (pexbcrsp > 0)
+                {
 
-        ////            //param.Add("@Resp", dbType: DbType.Int32,
-        ////            param.Add("@Resp", dbType: DbType.String,
-        ////                direction: System.Data.ParameterDirection.Output,
-        ////                size: 5215585);
-        ////            try
-        ////            {
-        ////                await _db.SaveData(
-        ////                  storedProcedure: "usp_pEXBCPurchasePaymentRelease", param);
-        ////                //var resp = param.Get<int>("@Resp");
-        ////                var resp = param.Get<string>("@Resp");
-        ////                if (resp == "1")
-        ////                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Number Deleted";
+                    return Ok(response);
+                }
+                else
+                {
 
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "200";
-        ////                    response.Message = "Export B/C NO Release Complete";
-        ////                    return Ok(response);
-        ////                }
-        ////                else
-        ////                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C Number Delete Error";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
 
-        ////                    ReturnResponse response = new();
-        ////                    response.StatusCode = "400";
-        ////                    //response.Message = "Export BC No Not Exist";
-        ////                    response.Message = resp.ToString();
-        ////                    return BadRequest(response);
-        ////                }
-        ////            }
-        ////            catch (Exception ex)
-        ////            {
-        ////                return BadRequest(ex.Message);
-        ////            }
-
-        ////        }
+        }
 
 
+        [HttpPost("release")]
+        public async Task<ActionResult<string>> EXPCPaymentOverDueReleaseReq([FromBody] EXPCPaymentOverDueReleaseReq exbcpaymentoverduerelease)
+        {
+            EXBCResultResponse response = new EXBCResultResponse();
 
+            // Validate
+            if (string.IsNullOrEmpty(exbcpaymentoverduerelease.EXPORT_BC_NO)
+                || string.IsNullOrEmpty(exbcpaymentoverduerelease.METHOD)
+                || string.IsNullOrEmpty(exbcpaymentoverduerelease.PAYMENT_INSTRU)
+               )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_BC_NO, METHOD, PAYMENT_INSTRU is required";
+                return BadRequest(response);
+            }
 
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", exbcpaymentoverduerelease.EXPORT_BC_NO);
+            param.Add("@BENE_ID", exbcpaymentoverduerelease.BENE_ID);
+            param.Add("@VOUCH_ID", exbcpaymentoverduerelease.VOUCH_ID);
+            param.Add("@EVENT_DATE", exbcpaymentoverduerelease.EVENT_DATE);
+            param.Add("@CenterID", exbcpaymentoverduerelease.CenterID);
+            param.Add("@TxBaseDay", exbcpaymentoverduerelease.TxBaseDay);
+            param.Add("@USER_ID", exbcpaymentoverduerelease.USER_ID);
+            param.Add("@ValueDate", exbcpaymentoverduerelease.ValueDate);
+            param.Add("@NEGO_COMM", exbcpaymentoverduerelease.NEGO_COMM);
+            param.Add("@TELEX_SWIFT", exbcpaymentoverduerelease.TELEX_SWIFT);
+            param.Add("@COURIER_POSTAGE", exbcpaymentoverduerelease.COURIER_POSTAGE);
+            param.Add("@STAMP_FEE", exbcpaymentoverduerelease.STAMP_FEE);
+            param.Add("@BE_STAMP", exbcpaymentoverduerelease.BE_STAMP);
+            param.Add("@COMM_OTHER", exbcpaymentoverduerelease.COMM_OTHER);
+            param.Add("@HANDING_FEE", exbcpaymentoverduerelease.HANDING_FEE);
+            param.Add("@DRAFTCOMM", exbcpaymentoverduerelease.DRAFTCOMM);
+            param.Add("@TOTAL_CHARGE", exbcpaymentoverduerelease.TOTAL_CHARGE);
+            param.Add("@REFUND_TAX_YN", exbcpaymentoverduerelease.REFUND_TAX_YN);
+            param.Add("@REFUND_TAX_AMT", exbcpaymentoverduerelease.REFUND_TAX_AMT);
+            param.Add("@PAYMENTTYPE", exbcpaymentoverduerelease.PAYMENTTYPE);
+            param.Add("@NARRATIVE", exbcpaymentoverduerelease.NARRATIVE);
+            param.Add("@ALLOCATION", exbcpaymentoverduerelease.ALLOCATION);
+            param.Add("@AUTOOVERDUE", exbcpaymentoverduerelease.AUTOOVERDUE);
+            param.Add("@LCOVERDUE", exbcpaymentoverduerelease.LCOVERDUE);
+            param.Add("@PAYMENT_INSTRU", exbcpaymentoverduerelease.PAYMENT_INSTRU);
+            param.Add("@METHOD", exbcpaymentoverduerelease.METHOD);
+            param.Add("@INTCODE", exbcpaymentoverduerelease.INTCODE);
+            param.Add("@OINTRATE", exbcpaymentoverduerelease.OINTRATE);
+            param.Add("@OINTSPDRATE", exbcpaymentoverduerelease.OINTSPDRATE);
+            param.Add("@OINTCURRATE", exbcpaymentoverduerelease.OINTCURRATE);
+            param.Add("@OINTDAY", exbcpaymentoverduerelease.OINTDAY);
+            param.Add("@INTBALANCE", exbcpaymentoverduerelease.INTBALANCE);
+            param.Add("@LASTINTAMT", exbcpaymentoverduerelease.LASTINTAMT);
+            param.Add("@PRNBALANCE", exbcpaymentoverduerelease.PRNBALANCE);
+            param.Add("@TOTAL_NEGO_BALANCE", exbcpaymentoverduerelease.TOTAL_NEGO_BALANCE);
+            param.Add("@VALUE_DATE", exbcpaymentoverduerelease.VALUE_DATE);
+            param.Add("@PASTDUEDATE", exbcpaymentoverduerelease.PASTDUEDATE);
+            param.Add("@int_paid_thb", exbcpaymentoverduerelease.int_paid_thb);
 
+            param.Add("PExBcRsp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 12800);
 
+            //param.Add("Resp", dbType: DbType.Int32,
+            param.Add("Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_PaymentOverDue_Release", param);
+                //var resp = param.Get<int>("Resp");
+                var pexbcrsp = param.Get<int>("PExBcRsp");
 
+                var resp = param.Get<string>("Resp");
+
+                if (pexbcrsp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C NO Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Export BC does not Exist";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+
+        }
 
     }
 }

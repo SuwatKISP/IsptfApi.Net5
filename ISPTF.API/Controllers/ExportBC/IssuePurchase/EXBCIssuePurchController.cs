@@ -1058,11 +1058,10 @@ namespace ISPTF.API.Controllers.ExportBC
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
-                //response.Message = "Export BC No Not Exist";
-                response.Message = ex.ToString();
+                response.Message = e.ToString();
                 return BadRequest(response);
             }
         }
