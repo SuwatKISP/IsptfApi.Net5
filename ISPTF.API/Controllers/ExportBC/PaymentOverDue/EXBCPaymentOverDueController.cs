@@ -678,6 +678,9 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<string>> EXPCPaymentOverDueReleaseReq([FromBody] EXPCPaymentOverDueReleaseReq exbcpaymentoverduerelease)
         {
             EXBCResultResponse response = new EXBCResultResponse();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
             // Validate
             if (string.IsNullOrEmpty(exbcpaymentoverduerelease.EXPORT_BC_NO)
@@ -695,9 +698,9 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@BENE_ID", exbcpaymentoverduerelease.BENE_ID);
             param.Add("@VOUCH_ID", exbcpaymentoverduerelease.VOUCH_ID);
             param.Add("@EVENT_DATE", exbcpaymentoverduerelease.EVENT_DATE);
-            param.Add("@CenterID", exbcpaymentoverduerelease.CenterID);
+            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@TxBaseDay", exbcpaymentoverduerelease.TxBaseDay);
-            param.Add("@USER_ID", exbcpaymentoverduerelease.USER_ID);
+            param.Add("@USER_ID", USER_ID);
             param.Add("@ValueDate", exbcpaymentoverduerelease.ValueDate);
             param.Add("@NEGO_COMM", exbcpaymentoverduerelease.NEGO_COMM);
             param.Add("@TELEX_SWIFT", exbcpaymentoverduerelease.TELEX_SWIFT);

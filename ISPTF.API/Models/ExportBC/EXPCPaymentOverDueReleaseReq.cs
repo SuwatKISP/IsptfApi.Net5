@@ -8,9 +8,7 @@ namespace ISPTF.Models.ExportBC
 		public string? BENE_ID { get; set; }
 		public string? VOUCH_ID { get; set; }
 		public DateTime? EVENT_DATE { get; set; }
-		public string? CenterID { get; set; }
 		public int? TxBaseDay { get; set; }
-		public string? USER_ID { get; set; }
 		public DateTime? ValueDate { get; set; }
 		public double? NEGO_COMM { get; set; }
 		public double? TELEX_SWIFT { get; set; }

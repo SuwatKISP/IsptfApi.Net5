@@ -7,8 +7,6 @@ namespace ISPTF.Models.Controllers.ExportBC
 		public string? EXPORT_BC_NO { get; set; }
 		public string? BENE_ID { get; set; }
 		public int? EVENT_NO { get; set; }
-		public string? USER_ID { get; set; }
-		public string? CenterID { get; set; }
 		public string? VOUCHID { get; set; }
 		public DateTime? EVENTDATE { get; set; }
 		public double? TOTAL_NEGO_BAL_THB { get; set; }
