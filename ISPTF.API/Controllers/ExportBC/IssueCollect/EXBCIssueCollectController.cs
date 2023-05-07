@@ -455,12 +455,22 @@ namespace ISPTF.API.Controllers.ExportBC
                     eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
                     if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "PAID")
                     {
-                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Issue Collect");
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, 
+                            eventDate, 
+                            pexbcppaymentreq.PEXBC.EVENT_TYPE, 
+                            resSeqNo, 
+                            "Issue Collect");
 
                     }
                     else
                     {
-                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Issue Collect", false, "U");
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, 
+                            eventDate, 
+                            pexbcppaymentreq.PEXBC.EVENT_TYPE, 
+                            resSeqNo, 
+                            "Issue Collect", 
+                            false, 
+                            "U");
 
                     }
                     if (resVoucherID != "ERROR")

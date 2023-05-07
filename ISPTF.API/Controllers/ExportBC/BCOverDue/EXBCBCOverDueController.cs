@@ -498,7 +498,15 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     eventDate = pexbcsave.EVENT_DATE.ToString("dd/MM/yyyy");
                     resVoucherID = "";
-                    resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcsave.EXPORT_BC_NO, eventDate, "", resSeqNo, "OverDue", false, "U");
+
+                    resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcsave.EXPORT_BC_NO, 
+                        eventDate, 
+                        pexbcsave.EVENT_TYPE, 
+                        resSeqNo, 
+                        pexbcsave.EVENT_TYPE, 
+                        false, 
+                        "U");
+
                     if (resVoucherID != "ERROR")
                     {
                         resGL = true;
@@ -510,7 +518,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     if (resGL == true)
                     {
-                        pEXBCVouchIdContainer.VouchId = resVoucherID;
+                        pEXBCVouchIdContainer.VOUCH_ID = resVoucherID;
                         response.Code = Constants.RESPONSE_OK;
                         response.Message = "Success";
                         response.Data = pEXBCVouchIdContainer;
