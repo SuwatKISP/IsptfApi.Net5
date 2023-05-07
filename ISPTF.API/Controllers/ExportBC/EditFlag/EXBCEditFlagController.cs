@@ -576,7 +576,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXBCResultResponse>> PEXBCEditFlagReleaseReq([FromBody] PEXBCEditFlagReleaseReq pExBcEditFlagRelease)
+        public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] PEXBCEditFlagReleaseReq pExBcEditFlagRelease)
         {
             EXBCResultResponse response = new EXBCResultResponse();
             var USER_ID = User.Identity.Name;
@@ -631,13 +631,15 @@ namespace ISPTF.API.Controllers.ExportBC
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export B/C do not exist";
+                    response.Message = "Export B/C does not exist";
                     return BadRequest(response);
                 }
             }
             catch (Exception e)
             {
-                return BadRequest(e.ToString());
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
             }
 
         }

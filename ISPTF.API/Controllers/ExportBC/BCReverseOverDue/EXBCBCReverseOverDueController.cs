@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using ISPTF.Models.Controllers.ExportBC;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
     [Authorize]
@@ -90,7 +91,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCBCReverseOverDueQueryPageResponse>> GetAllQuery( string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCBCReverseOverDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCBCReverseOverDueQueryPageResponse response = new EXBCBCReverseOverDueQueryPageResponse();
             var USER_ID = User.Identity.Name;
@@ -144,7 +145,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCListResponse response = new PEXBCListResponse();
 
@@ -466,6 +467,76 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCDataContainer();
             }
             return BadRequest(response);
+        }
+
+        [HttpPost("release")]
+        public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] EXBCBCReverseOverDueReleaseReq exbcreverseoverduerelease)
+        {
+            EXBCResultResponse response = new EXBCResultResponse();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", exbcreverseoverduerelease.EXPORT_BC_NO);
+            param.Add("@BENE_ID", exbcreverseoverduerelease.BENE_ID);
+            param.Add("@EVENT_NO", exbcreverseoverduerelease.EVENT_NO);
+            //param.Add("@USER_ID", exbcreverseoverduerelease.USER_ID);
+            //param.Add("@CenterID", exbcreverseoverduerelease.CenterID);
+            param.Add("@USER_ID", USER_ID);
+            param.Add("@CenterID", USER_CENTER_ID);
+            param.Add("@VOUCHID", exbcreverseoverduerelease.VOUCHID);
+            param.Add("@EVENTDATE", exbcreverseoverduerelease.EVENTDATE);
+            param.Add("@TOTAL_NEGO_BAL_THB", exbcreverseoverduerelease.TOTAL_NEGO_BAL_THB);
+            param.Add("@TENOR_OF_COLL", exbcreverseoverduerelease.TENOR_OF_COLL);
+            param.Add("@VALUE_DATE", exbcreverseoverduerelease.VALUE_DATE);
+            param.Add("@CFRRate", exbcreverseoverduerelease.CFRRate);
+            param.Add("@IntRateCode", exbcreverseoverduerelease.IntRateCode);
+            param.Add("@INT_BASE_RATE", exbcreverseoverduerelease.INT_BASE_RATE);
+            param.Add("@INT_SPREAD_RATE", exbcreverseoverduerelease.INT_SPREAD_RATE);
+            param.Add("@DISCOUNT_RATE", exbcreverseoverduerelease.DISCOUNT_RATE);
+            param.Add("@CURRENT_DIS_RATE", exbcreverseoverduerelease.CURRENT_DIS_RATE);
+            param.Add("@CURRENT_INT_RATE", exbcreverseoverduerelease.CURRENT_INT_RATE);
+
+            param.Add("@PExBcRsp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 12800);
+
+            //param.Add("@Resp", dbType: DbType.Int32,
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_BCReverseOverDue_Release", param);
+                //var resp = param.Get<int>("@Resp");
+
+                var pexbcrsp = param.Get<int>("@PExBcRsp");
+                var resp = param.Get<string>("@Resp");
+
+                if (pexbcrsp > 0)
+                {
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C NO Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export B/C does not exist";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
     }
 }
