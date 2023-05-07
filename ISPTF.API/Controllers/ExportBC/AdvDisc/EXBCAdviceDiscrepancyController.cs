@@ -386,10 +386,34 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcreq.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcreq.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcreq.DOCUMENT_COPY);
-            param.Add("@SIGHT_BASIS", pexbcreq.SIGHT_BASIS);
-            param.Add("@ART44A", pexbcreq.ART44A);
-            param.Add("@ENDORSED", pexbcreq.ENDORSED);
-            param.Add("@MT750", pexbcreq.MT750);
+
+            // Convert bool to string => DB BIT (0/1)
+            string SIGHT_BASIS = "0";
+            if (pexbcreq.SIGHT_BASIS == true)
+            {
+                SIGHT_BASIS = "1";
+            }
+            string ART44A = "0";
+            if (pexbcreq.ART44A == true)
+            {
+                ART44A = "1";
+            }
+            string ENDORSED = "0";
+            if (pexbcreq.ENDORSED == true)
+            {
+                ENDORSED = "1";
+            }
+            string MT750 = "0";
+            if (pexbcreq.MT750 == true)
+            {
+                MT750 = "1";
+            }
+
+            param.Add("@SIGHT_BASIS", SIGHT_BASIS);
+            param.Add("@ART44A", ART44A);
+            param.Add("@ENDORSED", ENDORSED);
+            param.Add("@MT750", MT750);
+
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcreq.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcreq.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcreq.ADJUST_COVERING_AMT);
