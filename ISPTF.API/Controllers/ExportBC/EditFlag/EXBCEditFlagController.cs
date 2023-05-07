@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXBCEditFlagController : ControllerBase
@@ -210,7 +211,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCDataContainer();
                 return BadRequest(response);
             }
-                
+
             DynamicParameters param = new DynamicParameters();
             param.Add("@RECORD_TYPE", pexbc.RECORD_TYPE);
             param.Add("@REC_STATUS", pexbc.REC_STATUS);
@@ -516,7 +517,7 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCResultResponse response = new EXBCResultResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(data.EXPORT_BC_NO) 
+            if (string.IsNullOrEmpty(data.EXPORT_BC_NO)
                 )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -610,6 +611,10 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
+
+            param.Add("@PExBcRsp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
 
             try
             {

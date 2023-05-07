@@ -16,10 +16,10 @@ namespace ISPTF.Models.ExportBC
         public string VOUCH_ID { get; set; }
         public string AUTOOVERDUE { get; set; }
         public string INTFLAG { get; set; }
-        public string OBASEDAY { get; set; }
+        public int OBASEDAY { get; set; }
         public string INTCODE { get; set; }
-        public string OINTRATE { get; set; }
-        public string OINTSPDRATE { get; set; }
-        public string OINTCURRATE { get; set; }
+        public float OINTRATE { get; set; }
+        public float OINTSPDRATE { get; set; }
+        public float OINTCURRATE { get; set; }
     }
 }
