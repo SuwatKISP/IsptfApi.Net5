@@ -12,6 +12,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -20,9 +22,11 @@ namespace ISPTF.API.Controllers.ExportLC
     public class EXLCCoveringLetterController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXLCCoveringLetterController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXLCCoveringLetterController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
@@ -184,6 +188,94 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLC_PSWExport_PEXDOC_Rsp();
             }
             return BadRequest(response);
+        }
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
+                string.IsNullOrEmpty(data.EVENT_DATE)
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, EVENT_DATE is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        // 0 - Select EXLC MASTER
+                        var pExlc = (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExlc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C does not exist";
+                            return BadRequest(response);
+                        }
+
+                        // 1 - Delete Covering EVENT
+                        var coveringExlc = (from row in _context.pExlcs
+                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                      row.RECORD_TYPE == "EVENT" &&
+                                                      row.REC_STATUS == "P" &&
+                                                      row.EVENT_TYPE == "Covering"
+                                                select row).ToListAsync();
+
+                        foreach (var row in await coveringExlc)
+                        {
+                            _context.pExlcs.Remove(row);
+                        }
+
+                        // 2 - AUTO Check
+
+                        var targetEventNo = 2;
+
+                        // 3 - Delete pSWExport
+                        var pSWExports = (from row in _context.pSWExports
+                                          where row.DocNo == data.EXPORT_LC_NO &&
+                                                row.Event_No == targetEventNo
+                                          select row).ToListAsync();
+
+                        foreach (var row in await pSWExports)
+                        {
+                            _context.pSWExports.Remove(row);
+                        }
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+                }
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Export L/C Deleted";
+                return Ok(response);
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
 
     }

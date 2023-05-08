@@ -685,9 +685,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
         }
 
-
         [HttpPost("delete")]
-        public async Task<ActionResult<EXLCResultResponse>> EXLCIssueColectDelete([FromBody] PEXLCDeleteRequest data)
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
         {
             EXLCResultResponse response = new EXLCResultResponse();
 
