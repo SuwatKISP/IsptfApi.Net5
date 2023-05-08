@@ -125,12 +125,12 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<EXLCCoveringLetterSelectResponse>> GetAllSelect(string? EXPORT_LC_NO,int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
+        public async Task<ActionResult<EXLCCoveringLetterSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
         {
             EXLCCoveringLetterSelectResponse response = new EXLCCoveringLetterSelectResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO==null || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, EVENT_NO, REC_STATUS, LFROM is required";
@@ -156,7 +156,7 @@ namespace ISPTF.API.Controllers.ExportLC
                    direction: System.Data.ParameterDirection.Output,
                    size: 5215585);
 
-               
+
                 var results = await _db.LoadData<PEXLC_PSWExport_PEXDOC_Rsp, dynamic>(
                                storedProcedure: "usp_pEXLC_CoveringLetter_Select",
                                param);
@@ -191,20 +191,19 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteCoveringRequest data)
         {
             EXLCResultResponse response = new EXLCResultResponse();
 
             // Validate
             if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
-                string.IsNullOrEmpty(data.EVENT_DATE)
+                data.IS_AUTO == null
                 )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_LC_NO, EVENT_DATE is required";
+                response.Message = "EXPORT_LC_NO, IS_AUTO is required";
                 return BadRequest(response);
             }
-
 
             try
             {
@@ -225,13 +224,14 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
+
                         // 1 - Delete Covering EVENT
                         var coveringExlc = (from row in _context.pExlcs
-                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                      row.RECORD_TYPE == "EVENT" &&
-                                                      row.REC_STATUS == "P" &&
-                                                      row.EVENT_TYPE == "Covering"
-                                                select row).ToListAsync();
+                                            where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                  row.RECORD_TYPE == "EVENT" &&
+                                                  row.REC_STATUS == "P" &&
+                                                  row.EVENT_TYPE == "Covering"
+                                            select row).ToListAsync();
 
                         foreach (var row in await coveringExlc)
                         {
@@ -240,7 +240,20 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 2 - AUTO Check
 
-                        var targetEventNo = 2;
+                        var targetEventNo = pExlc.EVENT_NO + 1;
+                        if(data.IS_AUTO == false)
+                        {
+                            var pExlcNotInUse = (from row in _context.pExlcs
+                                         where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                               row.RECORD_TYPE == "MASTER" &&
+                                               row.IN_USE == 0
+                                         select row).FirstOrDefault();
+                            pExlcNotInUse.REC_STATUS = "R";
+                        }
+                        else if(data.IS_AUTO == true)
+                        {
+                            pExlc.DMS = null;
+                        }
 
                         // 3 - Delete pSWExport
                         var pSWExports = (from row in _context.pSWExports
