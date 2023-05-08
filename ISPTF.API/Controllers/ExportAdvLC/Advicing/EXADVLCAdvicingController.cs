@@ -60,7 +60,7 @@ namespace ISPTF.API.Controllers.ExportAdvLC
         {
             try
             {
-                // 0 - Select EXLC MASTER
+                // Select pExad
                 var pExad = (from row in _context.pExads
                              where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
                                    row.RECORD_TYPE == RECORD_TYPE &&
