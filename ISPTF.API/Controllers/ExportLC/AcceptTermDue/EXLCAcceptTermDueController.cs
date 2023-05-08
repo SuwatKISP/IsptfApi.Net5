@@ -233,7 +233,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         var issueCollectExlc = (from row in _context.pExlcs
                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                                       row.RECORD_TYPE == "EVENT" &&
-                                                      row.EVENT_TYPE == "Issue Purchase" &&
+                                                      row.EVENT_TYPE == "Accept Due" &&
                                                       row.REC_STATUS == "P" &&
                                                       (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
                                                 select row).ToListAsync();
