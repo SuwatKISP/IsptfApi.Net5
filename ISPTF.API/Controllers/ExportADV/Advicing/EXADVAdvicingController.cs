@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.ExportAdvLC;
+using ISPTF.Models.ExportADV;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,20 +15,21 @@ using ISPTF.Models.LoginRegis;
 using System.Transactions;
 using Microsoft.AspNetCore.Http;
 
-namespace ISPTF.API.Controllers.ExportAdvLC
+namespace ISPTF.API.Controllers.ExportADV
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class EXADVLCAdvicingController : ControllerBase
+    public class EXADVAdvicingController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
-        public EXADVLCAdvicingController(ISqlDataAccess db, ISPTFContext context)
+        public EXADVAdvicingController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
             _context = context;
         }
+
         [HttpGet("select")]
         public async Task<ActionResult<PEXADResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
         {
@@ -51,36 +52,33 @@ namespace ISPTF.API.Controllers.ExportAdvLC
             param.Add("@RECORD_TYPE", RECORD_TYPE);
             param.Add("@REC_STATUS", REC_STATUS);
             param.Add("@EVENT_NO", EVENT_NO);
-            //param.Add("@LFROM", LFROM);
 
             try
             {
                 // Select pExad
-                var pExad = await (from row in _context.pExads
-                                   where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                         row.RECORD_TYPE == RECORD_TYPE &&
-                                         row.REC_STATUS == REC_STATUS &&
-                                         row.EVENT_NO == int.Parse(EVENT_NO)
-                                   select row).FirstOrDefaultAsync();
-                if (pExad == null)
-                {
-                    response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export Advice L/C does not exist";
-                    return BadRequest(response);
-                }
-                else
+                var pExad = await (
+                    from row in _context.pExads
+                    where
+                    row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
+                    row.RECORD_TYPE == RECORD_TYPE &&
+                    row.REC_STATUS == REC_STATUS &&
+                    row.EVENT_NO == int.Parse(EVENT_NO)
+                    select row
+                    ).FirstOrDefaultAsync();
+                if (pExad != null)
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Data = pExad;
                     return Ok(response);
                 }
+                response.Message = "Export Advice L/C does not exist";
             }
             catch (Exception e)
             {
-                response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new pExad();
             }
+            response.Code = Constants.RESPONSE_ERROR;
+            response.Data = new pExad();
             return BadRequest(response);
         }
     }
