@@ -1,24 +1,33 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
-using ISPTF.Models.ExportLC;
 using ISPTF.Models;
+using ISPTF.Models.LoginRegis;
+using ISPTF.Models.ExportBC;
+using ISPTF.Models.ExportLC;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text.Json;
+using System.Linq;
 using System.Threading.Tasks;
-using System;
+using System.Text.Json;
+using System.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXLCAdviceDiscrepancyController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXLCAdviceDiscrepancyController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXLCAdviceDiscrepancyController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
@@ -122,7 +131,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXLCRecordResponse>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
+        public async Task<ActionResult<PEXLCRecordResponse>> Select(string? EXPORT_LC_NO, string? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
         {
             PEXLCRecordResponse response = new PEXLCRecordResponse();
 
@@ -179,6 +188,100 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCRecordRsp();
             }
             return BadRequest(response);
+        }
+
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCAdviceDiscrepancyDeleteRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+            DynamicParameters param = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_LC_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        // 0 - Select EXLC MASTER
+                        var pExlc = (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExlc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C does not exist";
+                            return BadRequest(response);
+                        }
+
+                        // 1 - Update pExlc EVENT
+
+                        var pExlcs = (from row in _context.pExlcs
+                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_TYPE == "Advice Discrepancy" &&
+                                            row.REC_STATUS == "P" &&
+                                            row.RECORD_TYPE == "EVENT"
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExlcs)
+                        {
+                            _context.pExlcs.Remove(row);
+                        }
+
+
+                        // 2 - Update pExlc Master
+                        var targetEventNo = pExlc.EVENT_NO + 1;
+
+
+                        /* 
+                        var pExlcMasters = (from row in _context.pExlcs
+                                         where  row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "MASTER"
+                                         select row).ToListAsync();
+
+                        foreach (var row in await pExlcMasters)
+                        {
+                            row.REC_STATUS = "R";
+                            //row.EVENT_NO = targetEventNo;
+                        }*/
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {targetEventNo} WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE = 'MASTER'");
+
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export L/C Deleted";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
     }
 }
