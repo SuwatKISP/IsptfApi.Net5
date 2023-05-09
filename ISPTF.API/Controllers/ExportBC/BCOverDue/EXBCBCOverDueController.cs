@@ -688,8 +688,8 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@USER_ID", USER_ID);
             //param.Add("@USER_ID", pExBcBcOverDueRelease.USER_ID);
             //param.Add("@CenterID", pExBcBcOverDueRelease.CenterID);
-            param.Add("@VOUCHID", pExBcBcOverDueRelease.VOUCHID);
-            param.Add("@EVENTDATE", pExBcBcOverDueRelease.EVENTDATE);
+            param.Add("@VOUCHID", pExBcBcOverDueRelease.VOUCH_ID);
+            param.Add("@EVENTDATE", pExBcBcOverDueRelease.EVENT_DATE);
             param.Add("@TOTAL_NEGO_BAL_THB", pExBcBcOverDueRelease.TOTAL_NEGO_BAL_THB);
             param.Add("@OBASEDAY", pExBcBcOverDueRelease.OBASEDAY);
             param.Add("@INTCODE", pExBcBcOverDueRelease.INTCODE);
