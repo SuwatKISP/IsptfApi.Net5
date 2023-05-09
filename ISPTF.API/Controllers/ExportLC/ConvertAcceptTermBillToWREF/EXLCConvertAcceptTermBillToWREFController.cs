@@ -139,7 +139,11 @@ namespace ISPTF.API.Controllers.ExportLC
 
             EXLCConvertAcceptTermBillToWREFSelectResponse response = new EXLCConvertAcceptTermBillToWREFSelectResponse();
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
+                EVENT_NO == null || 
+                string.IsNullOrEmpty(RECORD_TYPE) || 
+                string.IsNullOrEmpty(REC_STATUS) || 
+                string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, RECORD_TYPE, REC_STATUS, LFROM is required";
@@ -262,7 +266,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 2 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
-                                       where row.TranDocNo == data.EXPORT_LC_NO &&
+                                       where row.VouchID == data.VOUCH_ID &&
                                              row.VouchDate == DateTime.Parse(data.EVENT_DATE)
                                        select row).ToListAsync();
 

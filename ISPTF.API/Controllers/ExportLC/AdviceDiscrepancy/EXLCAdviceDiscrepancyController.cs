@@ -31,12 +31,15 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCAdviceDiscrepancyListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCAdviceDiscrepancyListResponse>> List(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCAdviceDiscrepancyListResponse response = new EXLCAdviceDiscrepancyListResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -136,7 +139,9 @@ namespace ISPTF.API.Controllers.ExportLC
             PEXLCRecordResponse response = new PEXLCRecordResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
+                string.IsNullOrEmpty(EVENT_NO) || 
+                string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";

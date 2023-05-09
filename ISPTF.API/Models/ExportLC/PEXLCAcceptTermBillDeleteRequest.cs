@@ -10,5 +10,6 @@
         public string FACILITY_NO { get; set; }
         public string DRAFT_CCY { get; set; }
         public double DRAFT_AMT1 { get; set; }
+        public string VOUCH_ID { get; set; }
     }
 }

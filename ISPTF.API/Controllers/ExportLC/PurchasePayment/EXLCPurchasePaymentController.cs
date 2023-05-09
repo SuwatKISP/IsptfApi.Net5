@@ -1,11 +1,6 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.LoginRegis;
-using ISPTF.Models.ExportBC;
-using ISPTF.Models.ExportLC;
-using ISPTF.Models.PEXPayment;
-using Microsoft.AspNetCore.Authorization;
 using ISPTF.Models.ExportLC;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -241,7 +236,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 1 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
-                                       where row.TranDocNo == data.EXPORT_LC_NO &&
+                                       where row.VouchID == data.VOUCH_ID &&
                                              row.VouchDate == DateTime.Parse(data.EVENT_DATE)
                                        select row).ToListAsync();
 
