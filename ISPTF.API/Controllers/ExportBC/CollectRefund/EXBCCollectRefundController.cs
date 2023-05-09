@@ -403,10 +403,12 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 MT750 = "1";
             }
+
             param.Add("@SIGHT_BASIS", SIGHT_BASIS);
             param.Add("@ART44A", ART44A);
             param.Add("@ENDORSED", ENDORSED);
             param.Add("@MT750", MT750);
+
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcppaymentreq.PEXBC.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcppaymentreq.PEXBC.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcppaymentreq.PEXBC.ADJUST_COVERING_AMT);
@@ -485,43 +487,72 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_EffDate", pexbcppaymentreq.PEXBC.Campaign_EffDate);
             param.Add("@PurposeCode", pexbcppaymentreq.PEXBC.PurposeCode);
             //PPayment
-            param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
-            param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
-            param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
-            param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
-            param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
-            param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
-            param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
-            param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
-            param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
-            param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
-            param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
-            param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
-            param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
-            param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+            if (pexbcppaymentreq.PPayment != null)
+            {
+                param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
+                param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
+                param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
+                param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
+                param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
+                param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
+                param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
+                param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
+                param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
+                param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
+                param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
+                param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
+                param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
+                param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+            }
             param.Add("@PExBcRsp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
                        size: 12800);
+
             param.Add("@PEXBCPPaymentRsp", dbType: DbType.String,
                        direction: System.Data.ParameterDirection.Output,
                        size: 5215585);
+
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
 
+            param.Add("@ResSeqNo", dbType: DbType.Int32,
+                                   direction: System.Data.ParameterDirection.Output,
+                                   size: 12800);
+
+            param.Add("@ResReceiptNo", dbType: DbType.String,
+           direction: System.Data.ParameterDirection.Output,
+           size: 5215585);
+
             try
             {
                 var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
-                     storedProcedure: "usp_pEXBC_CollectRefund_Save",
-                     param);
-                var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
-                var pexbcppaymentrsp = param.Get<dynamic>("@PEXBCPPaymentRsp");
-                var resp = param.Get<int>("@PExBcRsp");
+                    storedProcedure: "usp_pEXBC_CollectRefund_Save",
+                    param);
 
-                if (PExBcRsp == 1)
+
+                var resp = param.Get<int>("@PExBcRsp");
+                var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
+                var resSeqNo = param.Get<int>("@ResSeqNo");
+                var resReceiptNo = param.Get<string>("@ResReceiptNo");
+                if (resp == 1)
                 {
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcppaymentrsp);
+
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+                    PEXBCPPaymentRspGL resultJson = new();
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    resVoucherID = "";
+                    resGL = true;
+                    resPayD = true;
+
+                    // RETURN VOUCH_ID
+
+                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;

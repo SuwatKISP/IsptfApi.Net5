@@ -844,7 +844,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXBCResultResponse>> PEXBCAcceptTermDueReleaseReq([FromBody] PEXBCAcceptTermDueReleaseReq pExBcAcceptTermDueRelease)
+        public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] PEXBCAcceptTermDueReleaseReq pExBcAcceptTermDueRelease)
         {
             EXBCResultResponse response = new EXBCResultResponse();
             var USER_ID = User.Identity.Name;
@@ -860,36 +860,16 @@ namespace ISPTF.API.Controllers.ExportBC
             }
 
             DynamicParameters param = new();
+            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@EXPORT_BC_NO", pExBcAcceptTermDueRelease.EXPORT_BC_NO);
             param.Add("@EVENT_NO", pExBcAcceptTermDueRelease.EVENT_NO);
-            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@USER_ID", USER_ID);
             param.Add("@VOUCH_ID", pExBcAcceptTermDueRelease.VOUCH_ID);
-            param.Add("@PAYMENT_INSTRU", pExBcAcceptTermDueRelease.PAYMENT_INSTRU);
-            param.Add("@CONFIRM_DATE", pExBcAcceptTermDueRelease.CONFIRM_DATE);
-            param.Add("@TERM_START_DATE", pExBcAcceptTermDueRelease.TERM_START_DATE);
-            param.Add("@TERM_DUE_DATE", pExBcAcceptTermDueRelease.TERM_DUE_DATE);
-            param.Add("@PLUS_MINUS_DISC ", pExBcAcceptTermDueRelease.PLUS_MINUS_DISC);
-            param.Add("@SEQ_ACCEPT_DUE", pExBcAcceptTermDueRelease.SEQ_ACCEPT_DUE);
-            param.Add("@DISC_DAYS_PLUS_MINUS", pExBcAcceptTermDueRelease.DISC_DAYS_PLUS_MINUS);
-            param.Add("@REFUND_DISC_RECEIVE", pExBcAcceptTermDueRelease.REFUND_DISC_RECEIVE);
-            param.Add("@DISC_RECEIVE", pExBcAcceptTermDueRelease.DISC_RECEIVE);
-            param.Add("@DRAFT_CCY", pExBcAcceptTermDueRelease.DRAFT_CCY);
-            param.Add("@RECEIVE_PAY_AMT", pExBcAcceptTermDueRelease.RECEIVE_PAY_AMT);
-            param.Add("@EXCHANGE_RATE", pExBcAcceptTermDueRelease.EXCHANGE_RATE);
-            param.Add("@TOTAL_AMOUNT", pExBcAcceptTermDueRelease.TOTAL_AMOUNT);
-            param.Add("@NARRATIVE", pExBcAcceptTermDueRelease.NARRATIVE);
-            param.Add("@CFRRate", pExBcAcceptTermDueRelease.CFRRate);
-            param.Add("@IntRateCode", pExBcAcceptTermDueRelease.IntRateCode);
-            param.Add("@TENOR_OF_COLL", pExBcAcceptTermDueRelease.TENOR_OF_COLL);
-            param.Add("@TENOR_TYPE", pExBcAcceptTermDueRelease.TENOR_TYPE);
-            param.Add("@DISCOUNT_DAY", pExBcAcceptTermDueRelease.DISCOUNT_DAY);
-            param.Add("@CURRENT_DIS_RATE", pExBcAcceptTermDueRelease.CURRENT_DIS_RATE);
-            param.Add("@METHOD", pExBcAcceptTermDueRelease.METHOD);
+
+            //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
-
             try
             {
                 await _db.SaveData(
@@ -911,7 +891,9 @@ namespace ISPTF.API.Controllers.ExportBC
             }
             catch (Exception e)
             {
-                return BadRequest(e.ToString());
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
             }
 
         }
