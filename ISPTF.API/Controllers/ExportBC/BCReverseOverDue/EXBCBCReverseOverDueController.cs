@@ -476,7 +476,7 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@EXPORT_BC_NO", exbcreverseoverduedelete.EXPORT_BC_NO);
             param.Add("@BENE_ID", exbcreverseoverduedelete.BENE_ID);
             param.Add("@VOUCHID", exbcreverseoverduedelete.VOUCHID);
-            param.Add("@EVENTDATE", exbcreverseoverduedelete.EVENTDATE);
+            param.Add("@EVENTDATE", exbcreverseoverduedelete.EVENT_DATE);
 
             param.Add("PExBcRsp", dbType: DbType.Int32,
                direction: System.Data.ParameterDirection.Output,

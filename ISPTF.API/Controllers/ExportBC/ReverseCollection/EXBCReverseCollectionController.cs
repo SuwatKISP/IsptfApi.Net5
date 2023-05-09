@@ -501,6 +501,59 @@ namespace ISPTF.API.Controllers.ExportBC
             return BadRequest(response);
         }
 
+        [HttpPost("delete")]
+        public async Task<ActionResult<string>> Delete([FromBody] PEXBCReverseCollectionDeleteReq EXBCReverseCollectionDel)
+        {
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", EXBCReverseCollectionDel.EXPORT_BC_NO);
+            param.Add("@VOUCH_ID", EXBCReverseCollectionDel.VOUCHID);
+            param.Add("@EVENT_DATE", EXBCReverseCollectionDel.EVENT_DATE);
+
+
+            param.Add("PExBcRsp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 12800);
+
+            //param.Add("@Resp", dbType: DbType.Int32,
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_ReverseCollection_Delete", param);
+                //var resp = param.Get<int>("@Resp");
+
+                var pexbcrsp = param.Get<int>("@PExBcRsp");
+                var resp = param.Get<string>("@Resp");
+
+                if (resp == "1")
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    response.Message = "Export B/C Number Deleted";
+                    return Ok(response);
+                }
+                else
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Export B/C NO does not exist";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                ReturnResponse response = new();
+                response.StatusCode = "400";
+                response.Message = e.Message;
+                return BadRequest(response);
+            }
+
+        }
 
         [HttpPost("release")]
         public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] PEXBCReverseCollectionReleaseReq PEXBCReversePurchRelease)
