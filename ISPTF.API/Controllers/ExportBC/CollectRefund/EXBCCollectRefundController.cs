@@ -16,6 +16,7 @@ using System.Text.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXBCCollectRefundController : ControllerBase
@@ -690,7 +691,7 @@ namespace ISPTF.API.Controllers.ExportBC
           */
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXBCResultResponse>> PEXBCCollectRefundReleaseReq([FromBody] PEXBCCollectRefundReleaseReq pExBcCollectRefundRelease)
+        public async Task<ActionResult<EXBCResultResponse>> PEXBCCollectRefundReleaseReq([FromBody] PEXBCCollectRefundReleaseReq pexbccollectrefund)
         {
             EXBCResultResponse response = new EXBCResultResponse();
             var USER_ID = User.Identity.Name;
@@ -698,60 +699,74 @@ namespace ISPTF.API.Controllers.ExportBC
             var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
             // Validate
-            if (string.IsNullOrEmpty(pExBcCollectRefundRelease.EXPORT_BC_NO))
+            if (string.IsNullOrEmpty(pexbccollectrefund.EXPORT_BC_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO is required";
                 return BadRequest(response);
             }
 
+            var pExbc = (from row in _context.pExbcs
+                         where row.EXPORT_BC_NO == pexbccollectrefund.EXPORT_BC_NO &&
+                               row.RECORD_TYPE == "MASTER"
+                         select row).FirstOrDefault();
+
+            if (pExbc == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "Export B/C does not exist";
+                //response.Message = resp.ToString();
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
-            param.Add("@EXPORT_BC_NO", pExBcCollectRefundRelease.EXPORT_BC_NO);
-            param.Add("@BENE_ID", pExBcCollectRefundRelease.BENE_ID);
-            //param.Add("@USER_ID", pExBcCollectRefundRelease.USER_ID);
-            //param.Add("@CenterID", pExBcCollectRefundRelease.CenterID);
-            param.Add("@CenterID", USER_CENTER_ID);
-            param.Add("@USER_ID", USER_ID);
-            param.Add("@EVENT_DATE", pExBcCollectRefundRelease.EVENT_DATE);
-            param.Add("@VOUCH_ID", pExBcCollectRefundRelease.VOUCH_ID);
-            param.Add("@PAYMENT_INSTRU", pExBcCollectRefundRelease.PAYMENT_INSTRU);
-            param.Add("@CHARGE_ACC", pExBcCollectRefundRelease.CHARGE_ACC);
-            param.Add("@DRAFT", pExBcCollectRefundRelease.DRAFT);
-            param.Add("@MT202", pExBcCollectRefundRelease.MT202);
-            param.Add("@FB_CURRENCY", pExBcCollectRefundRelease.FB_CURRENCY);
-            param.Add("@FB_AMT", pExBcCollectRefundRelease.FB_AMT);
-            param.Add("@FB_RATE", pExBcCollectRefundRelease.FB_RATE);
-            param.Add("@FB_AMT_THB", pExBcCollectRefundRelease.FB_AMT_THB);
-            param.Add("@NEGO_COMM", pExBcCollectRefundRelease.NEGO_COMM);
-            param.Add("@TELEX_SWIFT", pExBcCollectRefundRelease.TELEX_SWIFT);
-            param.Add("@COURIER_POSTAGE", pExBcCollectRefundRelease.COURIER_POSTAGE);
-            param.Add("@STAMP_FEE", pExBcCollectRefundRelease.STAMP_FEE);
-            param.Add("@COMMONTT", pExBcCollectRefundRelease.COMMONTT);
-            param.Add("@COMM_OTHER", pExBcCollectRefundRelease.COMM_OTHER);
-            param.Add("@HANDING_FEE", pExBcCollectRefundRelease.HANDING_FEE);
-            param.Add("@INT_AMT_THB", pExBcCollectRefundRelease.INT_AMT_THB);
-            param.Add("@TOTAL_CHARGE", pExBcCollectRefundRelease.TOTAL_CHARGE);
-            param.Add("@REFUND_TAX_YN", pExBcCollectRefundRelease.REFUND_TAX_YN);
-            param.Add("@REFUND_TAX_AMT", pExBcCollectRefundRelease.REFUND_TAX_AMT);
-            param.Add("@TOTAL_AMOUNT", pExBcCollectRefundRelease.TOTAL_AMOUNT);
-            param.Add("@COLLECT_REFUND", pExBcCollectRefundRelease.COLLECT_REFUND);
-            param.Add("@METHOD", pExBcCollectRefundRelease.METHOD);
-            param.Add("@NARRATIVE", pExBcCollectRefundRelease.NARRATIVE);
+            param.Add("@EXPORT_BC_NO", pexbccollectrefund.EXPORT_BC_NO);
+            param.Add("@BENE_ID", pexbccollectrefund.BENE_ID);
+            param.Add("@USER_ID", pexbccollectrefund.USER_ID);
+            param.Add("@CenterID", pexbccollectrefund.CenterID);
+            param.Add("@EVENT_DATE", pexbccollectrefund.EVENT_DATE);
+            param.Add("@VOUCH_ID", pexbccollectrefund.VOUCH_ID);
+            param.Add("@PAYMENT_INSTRU", pexbccollectrefund.PAYMENT_INSTRU);
+            param.Add("@CHARGE_ACC", pexbccollectrefund.CHARGE_ACC);
+            param.Add("@DRAFT", pexbccollectrefund.DRAFT);
+            param.Add("@MT202", pexbccollectrefund.MT202);
+            param.Add("@FB_CURRENCY", pexbccollectrefund.FB_CURRENCY);
+            param.Add("@FB_AMT", pexbccollectrefund.FB_AMT);
+            param.Add("@FB_RATE", pexbccollectrefund.FB_RATE);
+            param.Add("@FB_AMT_THB", pexbccollectrefund.FB_AMT_THB);
+            param.Add("@NEGO_COMM", pexbccollectrefund.NEGO_COMM);
+            param.Add("@TELEX_SWIFT", pexbccollectrefund.TELEX_SWIFT);
+            param.Add("@COURIER_POSTAGE", pexbccollectrefund.COURIER_POSTAGE);
+            param.Add("@STAMP_FEE", pexbccollectrefund.STAMP_FEE);
+            param.Add("@COMMONTT", pexbccollectrefund.COMMONTT);
+            param.Add("@COMM_OTHER", pexbccollectrefund.COMM_OTHER);
+            param.Add("@HANDING_FEE", pexbccollectrefund.HANDING_FEE);
+            param.Add("@INT_AMT_THB", pexbccollectrefund.INT_AMT_THB);
+            param.Add("@TOTAL_CHARGE", pexbccollectrefund.TOTAL_CHARGE);
+            param.Add("@REFUND_TAX_YN", pexbccollectrefund.REFUND_TAX_YN);
+            param.Add("@REFUND_TAX_AMT", pexbccollectrefund.REFUND_TAX_AMT);
+            param.Add("@TOTAL_AMOUNT", pexbccollectrefund.TOTAL_AMOUNT);
+            param.Add("@COLLECT_REFUND", pexbccollectrefund.COLLECT_REFUND);
+            param.Add("@METHOD", pexbccollectrefund.METHOD);
+            param.Add("@NARRATIVE", pexbccollectrefund.NARRATIVE);
 
             param.Add("@PExBcRsp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
                        size: 12800);
+
             param.Add("@Resp", dbType: DbType.String,
-                direction: System.Data.ParameterDirection.Output,
-                size: 5215585);
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
 
             try
             {
                 await _db.SaveData(
                   storedProcedure: "usp_pEXBC_CollectRefund_Release", param);
-                var PExBcRsp = param.Get<dynamic>("@PExBcRsp");  // For what?
+
+                var pexbcrsp = param.Get<int>("@PExBcRsp");
                 var resp = param.Get<string>("@Resp");
-                if (resp == "1")
+
+                if (pexbcrsp > 0)
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";
@@ -766,7 +781,9 @@ namespace ISPTF.API.Controllers.ExportBC
             }
             catch (Exception e)
             {
-                return BadRequest(e.ToString());
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
             }
 
         }
