@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models.ExportBC
 {
-    public class PEXBCCollectRefundDeleteReq
+    public class PEXBCCollectRefundDelete
     {
         public string EXPORT_BC_NO { get; set; }
-        public string DMS { get; set; }
+        public string VOUCH_ID { get; set; }
+
     }
 }

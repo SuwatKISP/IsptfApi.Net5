@@ -544,7 +544,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<EXBCResultResponse>> EXBCCollectRefundDelete([FromBody] PEXBCCollectRefundDeleteReq pExBcCollectRefundDelete)
+        public async Task<ActionResult<EXBCResultResponse>> EXBCCollectRefundDelete([FromBody] PEXBCCollectRefundDelete pExBcCollectRefundDelete)
         {
             EXBCResultResponse response = new EXBCResultResponse();
             if (string.IsNullOrEmpty(pExBcCollectRefundDelete.EXPORT_BC_NO))
@@ -556,7 +556,8 @@ namespace ISPTF.API.Controllers.ExportBC
 
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", pExBcCollectRefundDelete.EXPORT_BC_NO);
-            param.Add("@DMS", pExBcCollectRefundDelete.DMS);
+            param.Add("@VOUCH_ID", pExBcCollectRefundDelete.VOUCH_ID);
+
 
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
