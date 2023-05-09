@@ -469,6 +469,60 @@ namespace ISPTF.API.Controllers.ExportBC
             return BadRequest(response);
         }
 
+        [HttpPost("delete")]
+        public async Task<ActionResult<string>> Delete([FromBody] EXBCBCReverseOverDueDeleteReq exbcreverseoverduedelete)
+        {
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", exbcreverseoverduedelete.EXPORT_BC_NO);
+            param.Add("@BENE_ID", exbcreverseoverduedelete.BENE_ID);
+            param.Add("@VOUCHID", exbcreverseoverduedelete.VOUCHID);
+            param.Add("@EVENTDATE", exbcreverseoverduedelete.EVENTDATE);
+
+            param.Add("PExBcRsp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 12800);
+
+            //param.Add("@Resp", dbType: DbType.Int32,
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_BCReverseOverDue_Delete", param);
+                //var resp = param.Get<int>("@Resp");
+
+                var pexbcrsp = param.Get<int>("@PExBcRsp");
+                var resp = param.Get<string>("@Resp");
+
+                if (pexbcrsp > 0)
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    response.Message = "Export B/C Number Deleted";
+                    return Ok(response);
+                }
+                else
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Export B/C NO does not exist";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                ReturnResponse response = new();
+                response.StatusCode = "400";
+                response.Message = e.Message;
+                return BadRequest(response);
+            }
+
+        }
+
         [HttpPost("release")]
         public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] EXBCBCReverseOverDueReleaseReq exbcreverseoverduerelease)
         {
