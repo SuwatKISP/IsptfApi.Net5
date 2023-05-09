@@ -276,7 +276,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             row.REC_STATUS = "T";
                         }
 
-                        // 5 - Update pExlc Master
+                        // 4 - Update pExlc Master
                         var targetEventNo = pExlc.EVENT_NO + 1;
                         /* 
                         var pExlcMasters = (from row in _context.pExlcs
