@@ -27,13 +27,16 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXBCPaymentOverDueListPageResponse>> GetAllList(string? ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCPaymentOverDueListPageResponse>> List(string? ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCPaymentOverDueListPageResponse response = new EXBCPaymentOverDueListPageResponse();
             string USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            if (string.IsNullOrEmpty(ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                Page == null || 
+                PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -99,13 +102,15 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCPaymentOverDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCPaymentOverDueQueryPageResponse>> Query(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCPaymentOverDueQueryPageResponse response = new EXBCPaymentOverDueQueryPageResponse();
             string USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            if (string.IsNullOrEmpty(CenterID) || 
+                Page == null || 
+                PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -164,17 +169,19 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCPEXPaymentResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCPEXPaymentResponse>> Select(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCPEXPaymentResponse response = new PEXBCPEXPaymentResponse();
             string USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_BC_NO) || 
+                string.IsNullOrEmpty(EVENT_NO) || 
+                string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO, EVENT_NO, LFROM is required";
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
 
@@ -199,7 +206,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 if (PExBcRsp > 0 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
                 {
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                    PEXBCPEXPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPEXPaymentRsp>(pexbcpexpaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -209,7 +216,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Select Error";
-                    response.Data = new PEXBCPPaymentRsp();
+                    response.Data = new PEXBCPEXPaymentRsp();
                     return BadRequest(response);
                 }
             }
@@ -217,7 +224,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
             }
             return BadRequest(response);
         }
@@ -233,14 +240,14 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "PEXBC is required.";
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
             if (pexbcsave.PEXPayment == null)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "PEXPayment is required.";
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
 
@@ -589,7 +596,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 if (PExBcRsp == 1 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
                 {
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                    PEXBCPEXPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPEXPaymentRsp>(pexbcpexpaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -599,7 +606,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Select Error";
-                    response.Data = new PEXBCPPaymentRsp();
+                    response.Data = new PEXBCPEXPaymentRsp();
                     return BadRequest(response);
                 }
             }
@@ -607,7 +614,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
             }
             return BadRequest(response);
         }

@@ -178,7 +178,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO, EVENT_NO, LFROM is required";
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
 
@@ -203,7 +203,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 if (PExBcRsp == 1 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
                 {
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                    PEXBCPEXPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPEXPaymentRsp>(pexbcpexpaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -213,7 +213,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Select Error";
-                    response.Data = new PEXBCPPaymentRsp();
+                    response.Data = new PEXBCPEXPaymentRsp();
                     return BadRequest(response);
                 }
             }
@@ -221,7 +221,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
             }
             return BadRequest(response);
         }
@@ -237,14 +237,14 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "PEXBC is required.";
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
             if (pexbcsave.PEXPayment == null)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "PEXPayment is required.";
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
             try
@@ -586,7 +586,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 if (PExBcRsp == 1 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
                 {
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                    PEXBCPEXPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPEXPaymentRsp>(pexbcpexpaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -596,7 +596,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Select Error";
-                    response.Data = new PEXBCPPaymentRsp();
+                    response.Data = new PEXBCPEXPaymentRsp();
                     return BadRequest(response);
                 }
             }
@@ -604,7 +604,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new PEXBCPEXPaymentRsp();
             }
             return BadRequest(response);
         }
