@@ -513,7 +513,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     return BadRequest(response);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 ReturnResponse response = new();
                 response.StatusCode = "400";
