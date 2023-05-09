@@ -506,7 +506,7 @@ namespace ISPTF.API.Controllers.ExportBC
         {
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", EXBCReverseCollectionDel.EXPORT_BC_NO);
-            param.Add("@VOUCH_ID", EXBCReverseCollectionDel.VOUCHID);
+            param.Add("@VOUCH_ID", EXBCReverseCollectionDel.VOUCH_ID);
             param.Add("@EVENT_DATE", EXBCReverseCollectionDel.EVENT_DATE);
 
 
