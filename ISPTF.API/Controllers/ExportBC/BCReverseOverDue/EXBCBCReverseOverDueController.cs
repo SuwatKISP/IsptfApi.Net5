@@ -27,7 +27,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXBCBCReverseOverDueListPageResponse>> GetAllList(string? ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCBCReverseOverDueListPageResponse>> List(string? ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCBCReverseOverDueListPageResponse response = new EXBCBCReverseOverDueListPageResponse();
             var USER_ID = User.Identity.Name;
@@ -91,7 +91,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCBCReverseOverDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCBCReverseOverDueQueryPageResponse>> Query(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCBCReverseOverDueQueryPageResponse response = new EXBCBCReverseOverDueQueryPageResponse();
             var USER_ID = User.Identity.Name;
@@ -145,7 +145,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCListResponse>> Select(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCListResponse response = new PEXBCListResponse();
 

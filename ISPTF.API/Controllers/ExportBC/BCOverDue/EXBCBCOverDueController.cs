@@ -31,13 +31,16 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXBCBCOverDueListPageResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCBCOverDueListPageResponse>> List(string? @ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCBCOverDueListPageResponse response = new EXBCBCOverDueListPageResponse();
             var USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(@ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            if (string.IsNullOrEmpty(@ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                Page == null || 
+                PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -96,7 +99,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCBCOverDueQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCBCOverDueQueryPageResponse>> Query(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCBCOverDueQueryPageResponse response = new EXBCBCOverDueQueryPageResponse();
             var USER_ID = User.Identity.Name;
@@ -153,7 +156,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCListResponse>> Select(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCListResponse response = new PEXBCListResponse();
             var USER_ID = User.Identity.Name;
@@ -665,7 +668,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXBCResultResponse>> PEXBCBCOverDueReleaseReq([FromBody] PEXBCBCOverDueReleaseReq pExBcBcOverDueRelease)
+        public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] PEXBCBCOverDueReleaseReq pExBcBcOverDueRelease)
         {
             EXBCResultResponse response = new EXBCResultResponse();
             var USER_ID = User.Identity.Name;

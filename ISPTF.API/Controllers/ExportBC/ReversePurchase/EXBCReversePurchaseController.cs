@@ -27,12 +27,15 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXBCReversePurchaseListPageResponse>> GetAllList(string? ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCReversePurchaseListPageResponse>> List(string? ListType, string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCReversePurchaseListPageResponse response = new EXBCReversePurchaseListPageResponse();
             var USER_ID = User.Identity.Name;
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || Page == null || PageSize == null)
+            if (string.IsNullOrEmpty(ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                Page == null || 
+                PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -89,7 +92,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<EXBCReversePurchaseQueryPageResponse>> GetAllQuery(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
+        public async Task<ActionResult<EXBCReversePurchaseQueryPageResponse>> Query(string? CenterID, string? EXPORT_BC_NO, string? BENName, int? Page, int? PageSize)
         {
             EXBCReversePurchaseQueryPageResponse response = new EXBCReversePurchaseQueryPageResponse();
             var USER_ID = User.Identity.Name;
@@ -152,7 +155,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCResponse>> Select(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCListResponse response = new PEXBCListResponse();
             var USER_ID = User.Identity.Name;
