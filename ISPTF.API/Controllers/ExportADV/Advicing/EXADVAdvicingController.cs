@@ -31,27 +31,18 @@ namespace ISPTF.API.Controllers.ExportADV
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXADResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
+        public async Task<ActionResult<PEXADResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
         {
-            PEXADResponse response = new PEXADResponse();
-            var USER_ID = User.Identity.Name;
-            var claimsPrincipal = HttpContext.User;
-            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+            PEXADResponse response = new();
 
             // Validate
             if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(EVENT_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
-                response.Data = new pExad();
+                response.Data = new();
                 return BadRequest(response);
             }
-
-            DynamicParameters param = new();
-            param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
-            param.Add("@RECORD_TYPE", RECORD_TYPE);
-            param.Add("@REC_STATUS", REC_STATUS);
-            param.Add("@EVENT_NO", EVENT_NO);
 
             try
             {
@@ -62,9 +53,10 @@ namespace ISPTF.API.Controllers.ExportADV
                     row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
                     row.RECORD_TYPE == RECORD_TYPE &&
                     row.REC_STATUS == REC_STATUS &&
-                    row.EVENT_NO == int.Parse(EVENT_NO)
+                    row.EVENT_NO == EVENT_NO
                     select row
                     ).FirstOrDefaultAsync();
+
                 if (pExad != null)
                 {
                     response.Code = Constants.RESPONSE_OK;
@@ -78,9 +70,39 @@ namespace ISPTF.API.Controllers.ExportADV
                 response.Message = e.ToString();
             }
             response.Code = Constants.RESPONSE_ERROR;
-            response.Data = new pExad();
+            response.Data = new();
+            return BadRequest(response);
+        }
+
+        [HttpPost("save")]
+        public async Task<ActionResult<PEXADResponse>> Save([FromBody] PEXADRequest pexadreq)
+        {
+            PEXADResponse response = new();
+
+            // Validate
+            if (pexadreq == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "p is required.";
+                response.Data = new();
+                return BadRequest(response);
+            }
+
+            // Get USER_ID, CenterID
+            pexadreq.USER_ID = User.Identity.Name;
+            pexadreq.CenterID = HttpContext.User.FindFirst("UserBranch").Value.ToString();
+
+            try
+            {
+                
+            }
+            catch(Exception e)
+            {
+                response.Message = e.ToString();
+            }
+            response.Code = Constants.RESPONSE_ERROR;
+            response.Data = new();
             return BadRequest(response);
         }
     }
-
 }
