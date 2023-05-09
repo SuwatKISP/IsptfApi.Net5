@@ -9,6 +9,6 @@
         public string BANK_CODE { get; set; }
         public string FACILITY_NO { get; set; }
         public string DRAFT_CCY { get; set; }
-        public double DRAFT_AMT { get; set; }
+        public double DRAFT_AMT1 { get; set; }
     }
 }

@@ -12,6 +12,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -20,13 +22,15 @@ namespace ISPTF.API.Controllers.ExportLC
     public class EXLCConvertAcceptTermBillToWREFController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXLCConvertAcceptTermBillToWREFController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXLCConvertAcceptTermBillToWREFController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCConvertAcceptTermBillToWREFListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCConvertAcceptTermBillToWREFListResponse>> List(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCConvertAcceptTermBillToWREFListResponse response = new EXLCConvertAcceptTermBillToWREFListResponse();
 
@@ -130,7 +134,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<EXLCConvertAcceptTermBillToWREFSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
+        public async Task<ActionResult<EXLCConvertAcceptTermBillToWREFSelectResponse>> Select(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS, string? LFROM)
         {
 
             EXLCConvertAcceptTermBillToWREFSelectResponse response = new EXLCConvertAcceptTermBillToWREFSelectResponse();
@@ -197,5 +201,165 @@ namespace ISPTF.API.Controllers.ExportLC
             return BadRequest(response);
         }
 
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCAcceptTermBillDeleteRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+            DynamicParameters param = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
+                string.IsNullOrEmpty(data.EVENT_DATE) ||
+                data.WITHOUT_RECOURSE == null
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, EVENT_DATE, WITHOUT_RECOURSE is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        // 0 - Select EXLC MASTER
+                        var pExlc = (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExlc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C does not exist";
+                            return BadRequest(response);
+                        }
+
+                        // 1 - Cancel PPayment
+                        var issueCollectExlc = (from row in _context.pExlcs
+                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                      row.RECORD_TYPE == "EVENT" &&
+                                                      row.EVENT_TYPE == "Convert Accept Bill WREF" &&
+                                                      row.REC_STATUS == "P" &&
+                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
+                                                select row).ToListAsync();
+
+                        foreach (var row in await issueCollectExlc)
+                        {
+                            var pPayment = (from row2 in _context.pPayments
+                                            where row2.RpReceiptNo == row.RECEIVED_NO
+                                            select row2).ToListAsync();
+                            foreach (var rowPayment in await pPayment)
+                            {
+                                rowPayment.RpStatus = "C";
+                            }
+                        }
+
+
+                        // 2 - Delete Daily GL
+                        var dailyGL = (from row in _context.pDailyGLs
+                                       where row.TranDocNo == data.EXPORT_LC_NO &&
+                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                       select row).ToListAsync();
+
+                        foreach (var row in await dailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+
+                        // 3 - Update pExlc EVENT
+
+                        var pExlcs = (from row in _context.pExlcs
+                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_TYPE == "Convert Accept Bill WREF" &&
+                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                            row.RECORD_TYPE == "EVENT"
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExlcs)
+                        {
+                            row.REC_STATUS = "T";
+                        }
+
+                        // 4 - Without recourse
+
+                        if (data.WITHOUT_RECOURSE == true)
+                        {
+                            var pCustApprvs = (from row in _context.pCustAppvs
+                                               where row.Appv_No == data.APPROVE_NO
+                                               select row).ToListAsync();
+                            foreach (var row in await pCustApprvs)
+                            {
+                                row.RecStatus = "R";
+                                row.Appv_Status = "N";
+                                row.Appv_Cancel = "V";
+                            }
+
+                            var pBankLiabs = (from row in _context.pBankLiabs
+                                              where row.Bank_Code == data.BANK_CODE &&
+                                                    row.Facility_No == data.FACILITY_NO &&
+                                                    row.Currency == data.DRAFT_CCY
+                                              select row).ToListAsync();
+                            foreach (var row in await pBankLiabs)
+                            {
+                                double XLCP_Book = 0;
+                                if (row.XLCP_Book != null)
+                                {
+                                    XLCP_Book = (double)row.XLCP_Book;
+                                }
+                                row.XLCP_Book = XLCP_Book - data.DRAFT_AMT1;
+                                row.UpdateDate = DateTime.Now;
+                            }
+                        }
+
+
+                        // 5 - Update pExlc Master
+                        var targetEventNo = pExlc.EVENT_NO + 1;
+
+
+                        /* 
+                        var pExlcMasters = (from row in _context.pExlcs
+                                         where  row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "MASTER"
+                                         select row).ToListAsync();
+
+                        foreach (var row in await pExlcMasters)
+                        {
+                            row.REC_STATUS = "R";
+                            //row.EVENT_NO = targetEventNo;
+                        }*/
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {targetEventNo} WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE = 'MASTER'");
+
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export L/C Deleted";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
     }
 }

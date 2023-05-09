@@ -306,7 +306,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 {
                                     XLCP_Book = (double)row.XLCP_Book;
                                 }
-                                row.XLCP_Book = XLCP_Book - data.DRAFT_AMT;
+                                row.XLCP_Book = XLCP_Book - data.DRAFT_AMT1;
                                 row.UpdateDate = DateTime.Now;
                             }
                         }
