@@ -26,7 +26,7 @@ namespace ISPTF.Models.ExportBC
         public int CLAIM_TYPE { get; set; }
         public int EVENT_NO { get; set; }
         public string VOUCH_ID { get; set; }
-        public DateTime EVENT_DATE { get; set; }
+        public DateTime? EVENT_DATE { get; set; }
 
     }
 }
