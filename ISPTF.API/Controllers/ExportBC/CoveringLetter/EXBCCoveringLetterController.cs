@@ -262,10 +262,13 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcreq.PEXBC.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcreq.PEXBC.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcreq.PEXBC.DOCUMENT_COPY);
+
+            // ISP WILL DO IT
             param.Add("@SIGHT_BASIS", pexbcreq.PEXBC.SIGHT_BASIS);
             param.Add("@ART44A", pexbcreq.PEXBC.ART44A);
             param.Add("@ENDORSED", pexbcreq.PEXBC.ENDORSED);
             param.Add("@MT750", pexbcreq.PEXBC.MT750);
+
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcreq.PEXBC.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcreq.PEXBC.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcreq.PEXBC.ADJUST_COVERING_AMT);

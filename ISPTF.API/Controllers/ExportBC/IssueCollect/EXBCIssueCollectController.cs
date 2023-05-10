@@ -692,10 +692,10 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcppaymentreq.PEXBC.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcppaymentreq.PEXBC.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcppaymentreq.PEXBC.DOCUMENT_COPY);
-            param.Add("@SIGHT_BASIS", pexbcppaymentreq.PEXBC.SIGHT_BASIS);
-            param.Add("@ART44A", pexbcppaymentreq.PEXBC.ART44A);
-            param.Add("@ENDORSED", pexbcppaymentreq.PEXBC.ENDORSED);
-            param.Add("@MT750", pexbcppaymentreq.PEXBC.MT750);
+            param.Add("@SIGHT_BASIS", null);
+            param.Add("@ART44A", null);
+            param.Add("@ENDORSED", null);
+            param.Add("@MT750", null);
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcppaymentreq.PEXBC.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcppaymentreq.PEXBC.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcppaymentreq.PEXBC.ADJUST_COVERING_AMT);
