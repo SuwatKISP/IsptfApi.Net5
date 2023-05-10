@@ -362,12 +362,10 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcsave.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcsave.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcsave.DOCUMENT_COPY);
-
             param.Add("@SIGHT_BASIS", null);
             param.Add("@ART44A", null);
             param.Add("@ENDORSED", null);
             param.Add("@MT750", null);
-
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcsave.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcsave.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcsave.ADJUST_COVERING_AMT);
@@ -447,8 +445,15 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@PurposeCode", pexbcsave.PurposeCode);
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
-               direction: System.Data.ParameterDirection.Output,
-               size: 5215585);
+              direction: System.Data.ParameterDirection.Output,
+              size: 5215585);
+            param.Add("@ResSeqNo", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+
+            param.Add("@PEXBCPRsp", dbType: DbType.String,
+            direction: System.Data.ParameterDirection.Output,
+            size: 5215585);
 
             try
             {
