@@ -843,7 +843,7 @@ namespace ISPTF.API.Controllers.ExportBC
             DynamicParameters param = new();
             param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@EXPORT_BC_NO", pExBcAcceptTermDueRelease.EXPORT_BC_NO);
-            param.Add("@EVENT_NO", pExBcAcceptTermDueRelease.EVENT_NO);
+            param.Add("@EVENT_NO", pExBcAcceptTermDueRelease.EVENT_NO.ToString());
             param.Add("@USER_ID", USER_ID);
             param.Add("@VOUCH_ID", pExBcAcceptTermDueRelease.VOUCH_ID);
 

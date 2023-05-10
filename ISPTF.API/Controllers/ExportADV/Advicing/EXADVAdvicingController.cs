@@ -74,7 +74,7 @@ namespace ISPTF.API.Controllers.ExportADV
             return BadRequest(response);
         }
 
-        [HttpPost("save")]
+        /*[HttpPost("save")]
         public async Task<ActionResult<PEXADResponse>> Save([FromBody] PEXADRequest pexadreq)
         {
             PEXADResponse response = new();
@@ -94,7 +94,113 @@ namespace ISPTF.API.Controllers.ExportADV
 
             try
             {
-                
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        // 0 - Select existence pExad or Create new one #2861
+                        var pExad = (
+                            from row in _context.pExads
+                            where row.EXPORT_ADVICE_NO == pexadreq.EXPORT_ADVICE_NO &&
+                                  row.RECORD_TYPE == pexadreq.RECORD_TYPE &&
+                                  row.EVENT_NO == pexadreq.EVENT_NO
+                            select row).FirstOrDefault();
+                        if (pExad == null)
+                        {
+                            _context.pExads.Add(pExad);
+                        }
+
+
+                        // 0 - Delete pExad MASTER
+                        var pExad = (from row in _context.pExads
+                                     where row.EXPORT_ADVICE_NO == pexadreq.EXPORT_ADVICE_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExad == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export Advice no. does not exist";
+                            return BadRequest(response);
+                        }
+
+                        // 1 - Cancel PPayment
+                        var issueCollectExlc = (from row in _context.pExlcs
+                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                      row.RECORD_TYPE == "EVENT" &&
+                                                      row.EVENT_TYPE == "Accept Due" &&
+                                                      row.REC_STATUS == "P" &&
+                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
+                                                select row).ToListAsync();
+
+                        foreach (var row in await issueCollectExlc)
+                        {
+                            var pPayment = (from row2 in _context.pPayments
+                                            where row2.RpReceiptNo == row.RECEIVED_NO
+                                            select row2).ToListAsync();
+                            foreach (var rowPayment in await pPayment)
+                            {
+                                rowPayment.RpStatus = "C";
+                            }
+                        }
+
+
+                        // 2 - Delete Daily GL
+                        var dailyGL = (from row in _context.pDailyGLs
+                                       where row.VouchID == data.VOUCH_ID &&
+                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                       select row).ToListAsync();
+
+                        foreach (var row in await dailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+
+                        // 3 - Update pExlc EVENT
+
+                        var pExlcs = (from row in _context.pExlcs
+                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_TYPE == "Accept Due" &&
+                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                            row.RECORD_TYPE == "EVENT"
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExlcs)
+                        {
+                            row.REC_STATUS = "T";
+                        }
+
+                        // 4 - Update pExlc Master
+                        var targetEventNo = pExlc.EVENT_NO + 1;
+                        /* 
+                        var pExlcMasters = (from row in _context.pExlcs
+                                         where  row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "MASTER"
+                                         select row).ToListAsync();
+
+                        foreach (var row in await pExlcMasters)
+                        {
+                            row.REC_STATUS = "R";
+                            //row.EVENT_NO = targetEventNo;
+                        }
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export L/C Deleted";
+                    return Ok(response);
+                }
             }
             catch(Exception e)
             {
@@ -103,6 +209,6 @@ namespace ISPTF.API.Controllers.ExportADV
             response.Code = Constants.RESPONSE_ERROR;
             response.Data = new();
             return BadRequest(response);
-        }
+        }*/
     }
 }

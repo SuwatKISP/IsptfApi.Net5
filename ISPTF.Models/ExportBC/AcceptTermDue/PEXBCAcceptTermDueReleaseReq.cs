@@ -9,7 +9,7 @@ namespace ISPTF.Models.ExportBC
     public class PEXBCAcceptTermDueReleaseReq
     {
         public string EXPORT_BC_NO { get; set; }
-        public string EVENT_NO { get; set; }
+        public int EVENT_NO { get; set; }
         public string VOUCH_ID { get; set; }
     }
 }
