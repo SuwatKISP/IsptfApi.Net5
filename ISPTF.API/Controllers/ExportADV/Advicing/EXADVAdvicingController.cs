@@ -47,7 +47,7 @@ namespace ISPTF.API.Controllers.ExportADV
             try
             {
                 // Select pExad
-                var pExad = await (
+                var exad = await (
                     from row in _context.pExads
                     where
                     row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
@@ -57,10 +57,10 @@ namespace ISPTF.API.Controllers.ExportADV
                     select row
                     ).FirstOrDefaultAsync();
 
-                if (pExad != null)
+                if (exad != null)
                 {
                     response.Code = Constants.RESPONSE_OK;
-                    response.Data = pExad;
+                    response.Data = exad;
                     return Ok(response);
                 }
                 response.Message = "Export Advice L/C does not exist";
@@ -74,8 +74,8 @@ namespace ISPTF.API.Controllers.ExportADV
             return BadRequest(response);
         }
 
-        /*[HttpPost("save")]
-        public async Task<ActionResult<PEXADResponse>> Save([FromBody] PEXADRequest pexadreq)
+        [HttpPost("save")]
+        public async Task<ActionResult<PEXADResponse>> Save([FromBody] PEXADRequest pexadreq, [FromBody] pPayment ppaymentreq)
         {
             PEXADResponse response = new();
 
@@ -83,7 +83,7 @@ namespace ISPTF.API.Controllers.ExportADV
             if (pexadreq == null)
             {
                 response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "p is required.";
+                response.Message = "pExad is required.";
                 response.Data = new();
                 return BadRequest(response);
             }
@@ -98,96 +98,122 @@ namespace ISPTF.API.Controllers.ExportADV
                 {
                     try
                     {
-                        // 0 - Select existence pExad or Create new one #2861
-                        var pExad = (
+                        // -1 - Get Requirement
+                        //pexadreq.RECEIPT_NO = ?
+                        
+                        // 0 - Insert exad if not exist #2861
+                        var exad = (
                             from row in _context.pExads
                             where row.EXPORT_ADVICE_NO == pexadreq.EXPORT_ADVICE_NO &&
                                   row.RECORD_TYPE == pexadreq.RECORD_TYPE &&
                                   row.EVENT_NO == pexadreq.EVENT_NO
                             select row).FirstOrDefault();
-                        if (pExad == null)
+                        if (exad == null)
                         {
-                            _context.pExads.Add(pExad);
+                            _context.pExads.Add(exad);
                         }
 
-
-                        // 0 - Delete pExad MASTER
-                        var pExad = (from row in _context.pExads
-                                     where row.EXPORT_ADVICE_NO == pexadreq.EXPORT_ADVICE_NO &&
-                                           row.RECORD_TYPE == "MASTER"
-                                     select row).FirstOrDefault();
-
-                        if (pExad == null)
+                        // 1 - Delete pPayment, pPayDetail, pDailyGL if *UNPAID* #2980
+                        if (exad.PAYMENT_INSTRU == "2")
                         {
-                            response.Code = Constants.RESPONSE_ERROR;
-                            response.Message = "Export Advice no. does not exist";
-                            return BadRequest(response);
-                        }
-
-                        // 1 - Cancel PPayment
-                        var issueCollectExlc = (from row in _context.pExlcs
-                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                      row.RECORD_TYPE == "EVENT" &&
-                                                      row.EVENT_TYPE == "Accept Due" &&
-                                                      row.REC_STATUS == "P" &&
-                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
-                                                select row).ToListAsync();
-
-                        foreach (var row in await issueCollectExlc)
-                        {
-                            var pPayment = (from row2 in _context.pPayments
-                                            where row2.RpReceiptNo == row.RECEIVED_NO
-                                            select row2).ToListAsync();
-                            foreach (var rowPayment in await pPayment)
+                            var payments = (
+                                from row in _context.pPayments
+                                where row.RpReceiptNo == pexadreq.RECEIPT_NO
+                                select row).ToListAsync();
+                            foreach (var row in await payments)
                             {
-                                rowPayment.RpStatus = "C";
+                                _context.pPayments.Remove(row);
+                            }
+
+                            var payDetails = (
+                                from row in _context.pPayDetails
+                                where row.DpReceiptNo == pexadreq.RECEIPT_NO
+                                select row).ToListAsync();
+                            foreach (var row in await payDetails)
+                            {
+                                _context.pPayDetails.Remove(row);
+                            }
+
+                            var dailyGLs = (
+                                from row in _context.pDailyGLs
+                                where row.VouchID == pexadreq.VOUCH_ID &&
+                                      row.VouchDate == pexadreq.EVENT_DATE
+                                select row).ToListAsync();
+                            foreach (var row in await dailyGLs)
+                            {
+                                _context.pDailyGLs.Remove(row);
                             }
                         }
 
+                        // 2 - Insert pPayment if not exist #2989 #334
+                        var payment = (
+                            from row in _context.pPayments
+                            where row.RpReceiptNo == pexadreq.EXPORT_ADVICE_NO
+                            select row).FirstOrDefault();
+                        if (payment == null)
+                        {
+                            _context.pPayments.Add(ppaymentreq);
+                        }
 
-                        // 2 - Delete Daily GL
-                        var dailyGL = (from row in _context.pDailyGLs
-                                       where row.VouchID == data.VOUCH_ID &&
-                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                        // 3 - Delete pPayDetail and insert new #2989 #369
+                        var paydetails = (from row in _context.pPayDetails
+                                       where row.DpReceiptNo == pexadreq.RECEIPT_NO
                                        select row).ToListAsync();
-
-                        foreach (var row in await dailyGL)
+                        foreach (var row in await paydetails)
                         {
-                            _context.pDailyGLs.Remove(row);
+                            _context.pPayDetails.Remove(row);
                         }
 
+                        var dpSeq = 1;
 
-                        // 3 - Update pExlc EVENT
-
-                        var pExlcs = (from row in _context.pExlcs
-                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == "Accept Due" &&
-                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
-                                            row.RECORD_TYPE == "EVENT"
-                                      select row).ToListAsync();
-
-                        foreach (var row in await pExlcs)
+                        pPayDetail paydetail;
+                        if (pexadreq.ADVICE_COM != null)
                         {
-                            row.REC_STATUS = "T";
+                            paydetail = (
+                                from row in _context.pPayDetails
+                                where row.DpReceiptNo == pexadreq.RECEIPT_NO &&
+                                      row.DpPayName == "Advice Comm."
+                                select row).FirstOrDefault();
+                            if (paydetail == null)
+                            {
+                                paydetail = new();
+                                paydetail.DpReceiptNo = pexadreq.RECEIPT_NO;
+                                paydetail.DpSeq = dpSeq;
+                                _context.pPayDetails.Add(paydetail);
+                            }
+                            paydetail.DpPayName = "ADVICE L/C COMM.";
+                            paydetail.DpPayAmt = pexadreq.ADVICE_COM;
+                            _context.pPayDetails.Update(paydetail);
+                            dpSeq++;
                         }
-
-                        // 4 - Update pExlc Master
-                        var targetEventNo = pExlc.EVENT_NO + 1;
-                        /* 
-                        var pExlcMasters = (from row in _context.pExlcs
-                                         where  row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                row.RECORD_TYPE == "MASTER"
-                                         select row).ToListAsync();
-
-                        foreach (var row in await pExlcMasters)
+                        if (pexadreq.AMEND_COM != null)
                         {
-                            row.REC_STATUS = "R";
-                            //row.EVENT_NO = targetEventNo;
-                        }
 
-                        // Commit
-                        await _context.SaveChangesAsync();
-                        transaction.Complete();
+                        }
+                        if (pexadreq.TRANSFER_COM != null)
+                        {
+
+                        }
+                        if (pexadreq.AMENDTRN_COM != null)
+                        {
+
+                        }
+                        if (pexadreq.CABLE_COM != null)
+                        {
+
+                        }
+                        if (pexadreq.CONFIRM_COM != null)
+                        {
+
+                        }
+                        if (pexadreq.OTHER_CHARGE != null)
+                        {
+
+                        }
+                        if (pexadreq.PAY_REFUND == "Y")
+                        {
+
+                        }
                     }
                     catch (Exception e)
                     {
@@ -209,6 +235,6 @@ namespace ISPTF.API.Controllers.ExportADV
             response.Code = Constants.RESPONSE_ERROR;
             response.Data = new();
             return BadRequest(response);
-        }*/
+        }
     }
 }
