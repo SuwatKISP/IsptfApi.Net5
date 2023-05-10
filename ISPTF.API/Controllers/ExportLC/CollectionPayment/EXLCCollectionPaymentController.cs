@@ -225,29 +225,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
 
-
-                        // 1 - Cancel PPayment
-
-                        var collectionPaymentExlcs = (from row in _context.pExlcs
-                                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                            row.RECORD_TYPE == "EVENT" &&
-                                                            row.EVENT_TYPE == "Payment Collect" &&
-                                                            row.REC_STATUS == "P" &&
-                                                            (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
-                                                      select row).ToListAsync();
-
-                        foreach (var row in await collectionPaymentExlcs)
-                        {
-                            var pPayment = (from row2 in _context.pPayments
-                                            where row2.RpReceiptNo == row.RECEIVED_NO
-                                            select row2).ToListAsync();
-                            foreach (var rowPayment in await pPayment)
-                            {
-                                rowPayment.RpStatus = "C";
-                            }
-                        }
-
-                        // 2 - Delete Daily GL
+                        // 1 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
                                        where row.VouchID == data.VOUCH_ID &&
                                              row.VouchDate == DateTime.Parse(data.EVENT_DATE)
@@ -259,7 +237,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
 
-                        // 3 - Update pExlc EVENT
+                        // 2 - Update pExlc EVENT
                         var pExlcs = (from row in _context.pExlcs
                                       where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                             row.EVENT_TYPE == "Payment Collect" &&
@@ -273,7 +251,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
 
-                        // 4 - Cancel PExPayment
+                        // 3 - Delete PExPayment
                         var targetEventNo = pExlc.EVENT_NO + 1;
                         var pExPayments = (from row in _context.pExPayments
                                            where row.DOCNUMBER == data.EXPORT_LC_NO &&
@@ -285,7 +263,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             _context.pExPayments.Remove(row);
                         }
-                        // 5 - Update pExlc Master
+                        // 4 - Update pExlc Master
 
                         /* 
                         var pExlcMasters = (from row in _context.pExlcs

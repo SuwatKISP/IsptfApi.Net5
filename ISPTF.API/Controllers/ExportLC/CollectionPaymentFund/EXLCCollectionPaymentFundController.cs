@@ -1,10 +1,7 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.LoginRegis;
-using ISPTF.Models.ExportBC;
 using ISPTF.Models.ExportLC;
-using ISPTF.Models.PEXPayment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -13,17 +10,22 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXLCCollectionPaymentFundController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXLCCollectionPaymentFundController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXLCCollectionPaymentFundController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
@@ -193,6 +195,134 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCPEXPaymentRsp();
             }
             return BadRequest(response);
+        }
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+            DynamicParameters param = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
+                string.IsNullOrEmpty(data.EVENT_DATE)
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, EVENT_DATE is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        // 0 - Select EXLC MASTER
+                        var pExlc = (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExlc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C does not exist";
+                            return BadRequest(response);
+                        }
+
+                        // 1 - Delete Daily GL
+                        var dailyGL = (from row in _context.pDailyGLs
+                                       where row.VouchID == data.VOUCH_ID &&
+                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                       select row).ToListAsync();
+
+                        foreach (var row in await dailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+                        // 2 - Delete pExlc EVENT
+                        var pExlcsEventP = (from row in _context.pExlcs
+                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_TYPE == "PAYMENT-WREF-FUND" &&
+                                            (row.REC_STATUS == "P" ) &&
+                                            row.RECORD_TYPE == "EVENT"
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExlcsEventP)
+                        {
+                            _context.pExlcs.Remove(row);
+                        }
+
+                        // 3 - Update pExlc EVENT
+                        var pExlcs = (from row in _context.pExlcs
+                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_TYPE == "PAYMENT-WREF-FUND" &&
+                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                            row.RECORD_TYPE == "EVENT"
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExlcs)
+                        {
+                            row.REC_STATUS = "T";
+                        }
+
+
+                        // 3 - Delete PExPayment
+                        var targetEventNo = pExlc.EVENT_NO + 1;
+                        var pExPayments = (from row in _context.pExPayments
+                                           where row.DOCNUMBER == data.EXPORT_LC_NO &&
+                                                 row.EVENT_TYPE == "PAYMENT-WREF-FUND" &&
+                                                 row.EVENT_NO == targetEventNo
+                                           select row).ToListAsync();
+
+                        foreach (var row in await pExPayments)
+                        {
+                            _context.pExPayments.Remove(row);
+                        }
+                        // 4 - Update pExlc Master
+
+                        /* 
+                        var pExlcMasters = (from row in _context.pExlcs
+                                         where  row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "MASTER"
+                                         select row).ToListAsync();
+
+                        foreach (var row in await pExlcMasters)
+                        {
+                            row.REC_STATUS = "R";
+                            //row.EVENT_NO = targetEventNo;
+                        }*/
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {targetEventNo} WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE = 'MASTER'");
+
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export L/C Deleted";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
     }
 }
