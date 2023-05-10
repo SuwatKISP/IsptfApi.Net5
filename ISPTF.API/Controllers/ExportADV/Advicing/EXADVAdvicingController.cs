@@ -116,6 +116,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         // 1 - Delete pPayment, pPayDetail, pDailyGL if *UNPAID* #2980
                         if (exad.PAYMENT_INSTRU == "2")
                         {
+                            //Delete pPayment
                             var payments = (
                                 from row in _context.pPayments
                                 where row.RpReceiptNo == pexadreq.RECEIPT_NO
@@ -125,6 +126,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                 _context.pPayments.Remove(row);
                             }
 
+                            //Delete pPayDetail
                             var payDetails = (
                                 from row in _context.pPayDetails
                                 where row.DpReceiptNo == pexadreq.RECEIPT_NO
@@ -134,6 +136,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                 _context.pPayDetails.Remove(row);
                             }
 
+                            //Delete pDailyGL
                             var dailyGLs = (
                                 from row in _context.pDailyGLs
                                 where row.VouchID == pexadreq.VOUCH_ID &&
@@ -163,10 +166,10 @@ namespace ISPTF.API.Controllers.ExportADV
                         {
                             _context.pPayDetails.Remove(row);
                         }
-
-                        var dpSeq = 1;
-
+                        
+                            // Insert and/or Update pPayDetail
                         pPayDetail paydetail;
+                        var dpSeq = 1;
                         if (pexadreq.ADVICE_COM != null)
                         {
                             paydetail = (
@@ -224,7 +227,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     }
 
                     response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Export L/C Deleted";
+                    response.Message = "Export Advice Saved";
                     return Ok(response);
                 }
             }
