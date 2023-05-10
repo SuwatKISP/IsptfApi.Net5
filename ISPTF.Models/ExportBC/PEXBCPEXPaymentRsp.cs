@@ -11,6 +11,6 @@ namespace ISPTF.Models.PurchasePayment
     public class PEXBCPEXPaymentRsp
     {
         public PEXBCRsp PEXBC { get; set; }
-        public PEXPaymentRsp PEXPayment{ get; set; }
+        public PEXPaymentRsp PEXPAYMENT { get; set; }
     }
 }
