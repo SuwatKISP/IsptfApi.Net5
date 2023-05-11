@@ -562,108 +562,48 @@ namespace ISPTF.API.Controllers.ExportBC
 
             // Validate
             if (string.IsNullOrEmpty(data.EXPORT_BC_NO) ||
-                string.IsNullOrEmpty(data.VOUCH_ID) ||
-                string.IsNullOrEmpty(data.EVENT_DATE)
+                string.IsNullOrEmpty(data.VOUCH_ID) 
                 )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_BC_NO, VOUCH_ID, EVENT_DATE is required";
+                response.Message = "EXPORT_BC_NO, VOUCH_ID is required";
                 return BadRequest(response);
             }
 
 
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", data.EXPORT_BC_NO);
+            param.Add("@VOUCH_ID", data.VOUCH_ID);
+
+            //param.Add("@Resp", dbType: DbType.Int32,
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
             try
             {
-                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                await _db.SaveData(
+                  storedProcedure: "usp_pEXBC_BCOverDue_Delete", param);
+                //var resp = param.Get<int>("@Resp");
+                var resp = param.Get<string>("@Resp");
+                if (resp == "1")
                 {
-                    try
-                    {
-                        // Delete Daily GL
-                        var dailyGL = (from row in _context.pDailyGLs
-                                       where row.VouchID == data.VOUCH_ID &&
-                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
-                                       select row).ToListAsync();
 
-                        foreach (var row in await dailyGL)
-                        {
-                            _context.pDailyGLs.Remove(row);
-                        }
-
-                        // Select EXBC MASTER
-                        var pExbc = (from row in _context.pExbcs
-                                     where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
-                                           row.RECORD_TYPE == "MASTER"
-                                     select row).FirstOrDefault();
-
-                        if (pExbc == null)
-                        {
-                            response.Code = Constants.RESPONSE_ERROR;
-                            response.Message = "Export B/C does not exist";
-                            //response.Message = resp.ToString();
-                            return BadRequest(response);
-                        }
-                        var eventNo = pExbc.EVENT_NO;
-                        eventNo++;
-
-                        // Delete OverDue
-                        var overDueRows = (from row in _context.pExbcs
-                                           where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
-                                                 row.EVENT_NO == eventNo &&
-                                                 row.EVENT_TYPE == "OverDue" &&
-                                                 row.REC_STATUS == "P"
-                                           select row).ToListAsync();
-
-                        foreach (var row in await overDueRows)
-                        {
-                            _context.pExbcs.Remove(row);
-                        }
-
-                        // Delete Interest
-                        var interestRows = (from row in _context.pEXInterests
-                                            where row.Login == "PEXBC" &&
-                                            row.Event == "OverDue" &&
-                                            row.EventNo == eventNo
-                                            select row).ToListAsync();
-
-                        foreach (var row in await interestRows)
-                        {
-                            _context.pEXInterests.Remove(row);
-                        }
-
-                        // Commit
-                        await _context.SaveChangesAsync();
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExbc SET REC_STATUS = 'R' WHERE EXPORT_BC_NO = '{data.EXPORT_BC_NO}' AND RECORD_TYPE = 'MASTER'");
-
-                        transaction.Complete();
-                    }
-                    catch (Exception e)
-                    {
-                        // Rollback
-                        response.Code = Constants.RESPONSE_ERROR;
-                        response.Message = e.ToString();
-                        return BadRequest(response);
-                    }
-
-
-                    // Update PEXBC set REC_STATUS = R
-                    // Use Raw Query b/c REC_STATUS is part of PK
-                    // If remove from PK
-                    //
-                    // pExbc.REC_STATUS = 'R';
-                    // await _context.SaveChangesAsync();
-
-
-
-                    response.Code = Constants.RESPONSE_OK;
+                    response.Code = "200";
                     response.Message = "Export B/C Number Deleted";
                     return Ok(response);
                 }
+                else
+                {
+
+                    response.Code = "400";
+                    response.Message = "Export B/C NO Does Not Exist";
+                    //response.Message = resp.ToString();
+                    return BadRequest(response);
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = e.ToString();
-                return BadRequest(response);
+                return BadRequest(ex.Message);
             }
         }
 
