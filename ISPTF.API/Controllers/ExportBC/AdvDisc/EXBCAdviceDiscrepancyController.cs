@@ -638,11 +638,10 @@ namespace ISPTF.API.Controllers.ExportBC
             // Validate
             if (string.IsNullOrEmpty(pExBcADVDiscRelease.EXPORT_BC_NO)
                 || string.IsNullOrEmpty(pExBcADVDiscRelease.USER_ID)
-                || string.IsNullOrEmpty(pExBcADVDiscRelease.NARRATIVE)
                )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_BC_NO, USER_ID, NARRATIVE is required";
+                response.Message = "EXPORT_BC_NO, USER_ID is required";
                 return BadRequest(response);
             }
 
