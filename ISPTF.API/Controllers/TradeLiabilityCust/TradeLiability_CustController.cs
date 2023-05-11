@@ -50,9 +50,73 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             }
 
             var results = await _db.LoadData<ReferenceNoListRsp, dynamic>(
-                        storedProcedure: "usp_TradeLiability_Cust_RefNo_SelectPage",
+                        storedProcedure: "usp_TradeLiability_Cust_RefNo_List",
                         param);
             return results;
+        }
+
+        [HttpGet("ReferenceNoSelect")]
+        public async Task<ActionResult<List<ReferenceNoSelectRsp>>> ReferenceSelect(string? CustCode, string? ReferDocNo)
+        {
+            try
+            {
+               ISPModule.modLiability.RevalueLiab(CustCode, "");
+               DynamicParameters param = new();
+                param.Add("@Cust_Code", CustCode);
+                param.Add("@Reg_Docno", ReferDocNo);
+
+                
+
+            if (CustCode == null)
+            {
+                param.Add("@CustCode", "");
+            }
+            if (ReferDocNo == null)
+            {
+                param.Add("@Refer_DocNo", "");
+            }
+
+            param.Add("@ReferNoRsp", dbType: DbType.String,
+           direction: System.Data.ParameterDirection.Output,
+           size: 5215585);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+
+                var results = await _db.LoadData<ReferenceNoSelectRsp, dynamic>(
+                            storedProcedure: "usp_TradeLiability_Cust_RefNo_Select",
+                            param);
+
+                var resp = param.Get<dynamic>("@Resp");
+
+                var refernorsp = param.Get<dynamic>("@ReferNoRsp");
+
+                if (resp == 1)
+                {
+                    return Ok(refernorsp);
+                }
+                else if (resp == 9)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Reference No. is not USED !!!";
+                    return BadRequest(response);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error for Select Facility No";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet("InsGrdFacility")]
@@ -68,14 +132,97 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             return results;
         }
 
-
-
-        [HttpGet("InsGrdAppvList")]
-        public async Task<IEnumerable<InsGrdAppvRsp>> GetInsGrdAppvList(string? CenterID, string? CustCode, string? CustName, int? Page, int? PageSize)
+        [HttpGet("InsGrdFacilitySelect")]
+        public async Task<ActionResult<InsGrdFacilitySelectJSON_Rsp>> GetInsGrdFacility(string Login , string? CustCode, string? ReferDocNo,string? Facility_No, string? Facility_No_Old)
         {
             DynamicParameters param = new();
+            param.Add("@Reg_Login", Login);
+            param.Add("@Cust_Code", CustCode);
+            param.Add("@Reg_Docno", ReferDocNo);
+            param.Add("@Facility_No", Facility_No);
+            param.Add("@Facility_Old", Facility_No_Old);
 
+
+
+            if (CustCode == null)
+            {
+                param.Add("@CustCode", "");
+            }
+            if (Facility_No == null)
+            {
+                param.Add("@Facility_No", "");
+            }
+            if (ReferDocNo == null)
+            {
+                param.Add("@Refer_DocNo", "");
+            }
+
+            param.Add("@ReferNoRsp", dbType: DbType.String,
+           direction: System.Data.ParameterDirection.Output,
+           size: 5215585);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+            try
+            {
+                var results = await _db.LoadData<InsGrdFacilitySelectJSON_Rsp, dynamic>(
+                            storedProcedure: "usp_TradeLiability_Cust_InsGrdFac_Select",
+                            param);
+
+                var resp = param.Get<dynamic>("@Resp");
+
+                var refernorsp = param.Get<dynamic>("@ReferNoRsp");
+    
+                if (resp == 1)
+                {
+                    return Ok(refernorsp);
+                }
+                else if (resp == 2)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Can not use Auto Create Facility or One Time";
+                    return BadRequest(response);
+                }
+                else if (resp == 3)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Credit Line in used Please select new or wait and save again";
+                    return BadRequest(response);
+                }
+
+                else if (resp == 4)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Selected Facility does not Support This Product";
+                    return BadRequest(response);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error for Select Facility No";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpGet("InsGrdAppvList")]
+        public async Task<IEnumerable<InsGrdAppvRsp>> GetInsGrdAppvList(string? ListType ,string? CenterID,string?UserCode, string? CustCode, string? CustName, int? Page, int? PageSize)
+        {
+            DynamicParameters param = new();
+            param.Add("@listtype", ListType);
             param.Add("@CenterID", CenterID);
+            param.Add("@UserCode", UserCode);
             param.Add("@Cust_Code", CustCode);
             param.Add("Cust_Name", CustName);
             param.Add("@Page", Page);
@@ -98,26 +245,26 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
 
         [HttpGet("InsGrdAppvSelect")]
         //public async Task<IEnumerable<ReleaseCustLisPageRsp>> GetSelect(string? CustCode, string? FacilityNo)
-        public async Task<ActionResult<CustReleaseSelectRsp>> GetSelect(string? Cust_Code, string? Facility_No, string? Appv_No, string? Refer_DocNo)
+        public async Task<ActionResult<InsGrdAppvSelectRsp>> GetSelect(string? Cust_Code, string? Facility_No, string? Appv_No)
         {
             DynamicParameters param = new();
 
             param.Add("@Cust_Code", Cust_Code);
             param.Add("@Facility_No", Facility_No);
             param.Add("@Appv_No", Appv_No);
-            param.Add("@Refer_DocNo", Refer_DocNo);
 
             param.Add("@CustReleaseSelectRsp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
 
-            var results = await _db.LoadData<CustReleaseSelectRsp, dynamic>(
+            var results = await _db.LoadData<InsGrdAppvSelectRsp, dynamic>(
                         storedProcedure: "usp_TradeLiability_Cust_InsGrdAppvSelect",
                         param);
             var CustReleaseSelectRsp = param.Get<dynamic>("@CustReleaseSelectRsp");
 
             return Ok(CustReleaseSelectRsp);
         }
+
 
 
         //[HttpGet("ReleaseList")]
@@ -213,7 +360,7 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
 
-            //param.Add("@PCustLimitRsp", dbType: DbType.String,
+            //param.Add("@Resp2", dbType: DbType.String,
             //   direction: System.Data.ParameterDirection.Output,
             //   size: 5215585);
 
@@ -228,10 +375,11 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
                 var resp = param.Get<int>("@Resp");
                 if (resp == 1)
                 {
+                    ISPModule.modLiability.RevalueLiab(pCustAppvReq.Cust_Code, "");
                     //return Ok(PCustLimitRsp);
                     ReturnResponse response = new();
                     response.StatusCode = "200";
-                    response.Message = "Save Customer Liability Complete";
+                    response.Message =  "Save Customer Liability Complete";
                     return Ok(response);
                 }
                 else
@@ -296,12 +444,44 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
 
         }
 
+        [HttpPost("UpdateUsing")]
+        public async Task<ActionResult<List<UpdateUsingReq>>> chkinuse([FromBody] UpdateUsingReq updateusing)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@Using_Type", updateusing.Using_Type);
+            param.Add("@Cust_Code", updateusing.Cust_Code);
+            param.Add("@Facility_No", updateusing.Facility_No);
+            param.Add("@UsingRec", updateusing.UsingRec);
 
-
-
-
-
-
-
+            param.Add("@Resp", dbType: DbType.Int32,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                var results = await _db.LoadData<UpdateUsingReq, dynamic>(
+                    storedProcedure: "usp_TradeLiability_UpdateUsingRec",
+                    param);
+                var resp = param.Get<int>("@Resp");
+                if (resp == 1)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    response.Message = "Update UsingRec Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Update UsingRec Not Complete";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
+
 }

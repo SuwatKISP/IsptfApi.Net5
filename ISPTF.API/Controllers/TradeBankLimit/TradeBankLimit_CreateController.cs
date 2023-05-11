@@ -101,6 +101,13 @@ namespace ISPTF.API.Controllers.TradeBankLimit
         public async Task<ActionResult<PBankLimitRsp>> Save([FromBody] PBankLimitReq pBankLimitReq)
         {
             DynamicParameters param = new();
+            param.Add("@Bank_Code", pBankLimitReq.pbanklimit.Bank_Code);
+            param.Add("@Facility_No", pBankLimitReq.pbanklimit.Facility_No);
+            param.Add("@Seq_No", pBankLimitReq.pbanklimit.Seq_No);
+            param.Add("@CCS_No", pBankLimitReq.pbanklimit.CCS_No);
+            param.Add("@Limit_Code", pBankLimitReq.pbanklimit.Limit_Code);
+            param.Add("@Status", pBankLimitReq.pbanklimit.Status);
+            param.Add("@RecStatus", pBankLimitReq.pbanklimit.RecStatus);
             param.Add("@UsingRec", pBankLimitReq.pbanklimit.UsingRec);
             param.Add("@StartDate", pBankLimitReq.pbanklimit.StartDate);
             param.Add("@ExpiryDate", pBankLimitReq.pbanklimit.ExpiryDate);

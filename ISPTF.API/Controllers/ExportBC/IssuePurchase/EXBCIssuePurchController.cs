@@ -960,7 +960,7 @@ namespace ISPTF.API.Controllers.ExportBC
                   storedProcedure: "usp_pEXBC_IssuePurchase_Delete", param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
-                if (resp == "0")
+                if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C Deleted";

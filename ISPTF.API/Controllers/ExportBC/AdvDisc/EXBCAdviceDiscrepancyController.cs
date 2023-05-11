@@ -660,7 +660,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 await _db.SaveData(
                   storedProcedure: "usp_pEXBC_AdviceDiscrepancy_Release", param);
                 var resp = param.Get<string>("@Resp");
-                if (resp == "0")
+                if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";

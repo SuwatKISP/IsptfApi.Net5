@@ -528,7 +528,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     }
                     else
                     {
-                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Code = Constants.RESPONSE_OK;
                         response.Message = "Error Saving GL";
                         response.Data = pEXBCVouchIdContainer;
                     }
