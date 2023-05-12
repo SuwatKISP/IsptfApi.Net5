@@ -606,7 +606,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] PEXBCBCOverDueReleaseReq pExBcBcOverDueRelease)
+        public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] PEXBCBCOverDueReleaseReq exbcoverduerelease)
         {
             EXBCResultResponse response = new EXBCResultResponse();
             var USER_ID = User.Identity.Name;
@@ -614,7 +614,7 @@ namespace ISPTF.API.Controllers.ExportBC
             var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
             // Validate
-            if (string.IsNullOrEmpty(pExBcBcOverDueRelease.EXPORT_BC_NO))
+            if (string.IsNullOrEmpty(exbcoverduerelease.EXPORT_BC_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO is required";
@@ -622,31 +622,30 @@ namespace ISPTF.API.Controllers.ExportBC
             }
 
             DynamicParameters param = new();
-            param.Add("@EXPORT_BC_NO", pExBcBcOverDueRelease.EXPORT_BC_NO);
-            param.Add("@BENE_ID", pExBcBcOverDueRelease.BENE_ID);
-            param.Add("@EVENT_NO", pExBcBcOverDueRelease.EVENT_NO);
-            param.Add("@CenterID", USER_CENTER_ID);
+            param.Add("@EXPORT_BC_NO", exbcoverduerelease.EXPORT_BC_NO);
+            param.Add("@BENE_ID", exbcoverduerelease.BENE_ID);
+            param.Add("@EVENT_NO", exbcoverduerelease.EVENT_NO);
             param.Add("@USER_ID", USER_ID);
-            //param.Add("@USER_ID", pExBcBcOverDueRelease.USER_ID);
-            //param.Add("@CenterID", pExBcBcOverDueRelease.CenterID);
-            param.Add("@VOUCHID", pExBcBcOverDueRelease.VOUCH_ID);
-            param.Add("@EVENTDATE", pExBcBcOverDueRelease.EVENT_DATE);
-            param.Add("@TOTAL_NEGO_BAL_THB", pExBcBcOverDueRelease.TOTAL_NEGO_BAL_THB);
-            param.Add("@OBASEDAY", pExBcBcOverDueRelease.OBASEDAY);
-            param.Add("@INTCODE", pExBcBcOverDueRelease.INTCODE);
-            param.Add("@OINTDAY", pExBcBcOverDueRelease.OINTDAY);
-            param.Add("@OINTRATE", pExBcBcOverDueRelease.OINTRATE);
-            param.Add("@OINTSPDRATE", pExBcBcOverDueRelease.OINTSPDRATE);
-            param.Add("@OINTCURRATE", pExBcBcOverDueRelease.OINTCURRATE);
-            param.Add("@INTBALANCE", pExBcBcOverDueRelease.INTBALANCE);
-            param.Add("@PRNBALANCE", pExBcBcOverDueRelease.PRNBALANCE);
-            param.Add("@LASTINTDATE", pExBcBcOverDueRelease.LASTINTDATE);
-            param.Add("@VALUE_DATE", pExBcBcOverDueRelease.VALUE_DATE);
-            param.Add("@OVESEQNO", pExBcBcOverDueRelease.OVESEQNO);
-            param.Add("@AUTOOVERDUE", pExBcBcOverDueRelease.AUTOOVERDUE);
-            param.Add("@INTFLAG", pExBcBcOverDueRelease.INTFLAG);
-            param.Add("@DateStartAccru", pExBcBcOverDueRelease.DateStartAccru);
-            param.Add("@DateToStop", pExBcBcOverDueRelease.DateToStop);
+            param.Add("@CenterID", USER_CENTER_ID);
+            param.Add("@VOUCHID", exbcoverduerelease.VOUCH_ID);
+            param.Add("@EVENTDATE", exbcoverduerelease.EVENT_DATE);
+            param.Add("@TOTAL_NEGO_BAL_THB", exbcoverduerelease.TOTAL_NEGO_BAL_THB);
+            param.Add("@OBASEDAY", exbcoverduerelease.OBASEDAY);
+            param.Add("@INTCODE", exbcoverduerelease.INTCODE);
+            param.Add("@OINTDAY", exbcoverduerelease.OINTDAY);
+            param.Add("@OINTRATE", exbcoverduerelease.OINTRATE);
+            param.Add("@OINTSPDRATE", exbcoverduerelease.OINTSPDRATE);
+            param.Add("@OINTCURRATE", exbcoverduerelease.OINTCURRATE);
+            param.Add("@INTBALANCE", exbcoverduerelease.INTBALANCE);
+            param.Add("@PRNBALANCE", exbcoverduerelease.PRNBALANCE);
+            param.Add("@LASTINTDATE", exbcoverduerelease.LASTINTDATE);
+            param.Add("@VALUE_DATE", exbcoverduerelease.VALUE_DATE);
+            param.Add("@OVESEQNO", exbcoverduerelease.OVESEQNO);
+            param.Add("@AUTOOVERDUE", exbcoverduerelease.AUTOOVERDUE);
+            param.Add("@INTFLAG", exbcoverduerelease.INTFLAG);
+            param.Add("@DateStartAccru", exbcoverduerelease.DateStartAccru);
+            param.Add("@DateToStop", exbcoverduerelease.DateToStop);
+
 
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
