@@ -443,10 +443,12 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@Campaign_Code", pexbcsave.Campaign_Code);
             param.Add("@Campaign_EffDate", pexbcsave.Campaign_EffDate);
             param.Add("@PurposeCode", pexbcsave.PurposeCode);
+
+
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
-              direction: System.Data.ParameterDirection.Output,
-              size: 5215585);
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
             param.Add("@ResSeqNo", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
                        size: 12800);
@@ -454,6 +456,7 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@PEXBCPRsp", dbType: DbType.String,
             direction: System.Data.ParameterDirection.Output,
             size: 5215585);
+
 
             try
             {
