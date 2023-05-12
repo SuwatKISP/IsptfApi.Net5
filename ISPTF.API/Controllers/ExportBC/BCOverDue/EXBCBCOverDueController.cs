@@ -561,12 +561,10 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCResultResponse response = new EXBCResultResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(data.EXPORT_BC_NO) ||
-                string.IsNullOrEmpty(data.VOUCH_ID) 
-                )
+            if (string.IsNullOrEmpty(data.EXPORT_BC_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_BC_NO, VOUCH_ID is required";
+                response.Message = "EXPORT_BC_NO is required";
                 return BadRequest(response);
             }
 
