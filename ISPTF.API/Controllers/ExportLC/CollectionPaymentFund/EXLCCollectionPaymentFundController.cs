@@ -233,7 +233,27 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
-                        // 1 - Delete Daily GL
+                        // 1 - Cancel PPayment
+                        var collectionPaymentFundExlc = (from row in _context.pExlcs
+                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                      row.RECORD_TYPE == "EVENT" &&
+                                                      row.EVENT_TYPE == "PAYMENT-WREF-FUND" &&
+                                                      row.REC_STATUS == "P" &&
+                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
+                                                select row).ToListAsync();
+
+                        foreach (var row in await collectionPaymentFundExlc)
+                        {
+                            var pPayment = (from row2 in _context.pPayments
+                                            where row2.RpReceiptNo == row.RECEIVED_NO
+                                            select row2).ToListAsync();
+                            foreach (var rowPayment in await pPayment)
+                            {
+                                rowPayment.RpStatus = "C";
+                            }
+                        }
+
+                        // 2 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
                                        where row.VouchID == data.VOUCH_ID &&
                                              row.VouchDate == DateTime.Parse(data.EVENT_DATE)
@@ -244,18 +264,6 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pDailyGLs.Remove(row);
                         }
 
-                        // 2 - Delete pExlc EVENT
-                        var pExlcsEventP = (from row in _context.pExlcs
-                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == "PAYMENT-WREF-FUND" &&
-                                            (row.REC_STATUS == "P" ) &&
-                                            row.RECORD_TYPE == "EVENT"
-                                      select row).ToListAsync();
-
-                        foreach (var row in await pExlcsEventP)
-                        {
-                            _context.pExlcs.Remove(row);
-                        }
 
                         // 3 - Update pExlc EVENT
                         var pExlcs = (from row in _context.pExlcs
