@@ -173,9 +173,6 @@ namespace ISPTF.API.Controllers.ExportBC
 
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            //param.Add("@EVENT_NO", EVENT_NO);
-            //param.Add("@LFROM", LFROM);
-            param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
             param.Add("@RECORD_TYPE", RECORD_TYPE);
             param.Add("@REC_STATUS", REC_STATUS);
 
