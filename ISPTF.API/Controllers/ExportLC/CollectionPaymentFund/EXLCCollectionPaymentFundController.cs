@@ -293,18 +293,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         // 4 - Update pExlc Master
 
-                        /* 
-                        var pExlcMasters = (from row in _context.pExlcs
-                                         where  row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                row.RECORD_TYPE == "MASTER"
-                                         select row).ToListAsync();
-
-                        foreach (var row in await pExlcMasters)
-                        {
-                            row.REC_STATUS = "R";
-                            //row.EVENT_NO = targetEventNo;
-                        }*/
-
                         // Commit
                         await _context.SaveChangesAsync();
 
