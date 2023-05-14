@@ -1,24 +1,35 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
-using ISPTF.Models.ExportLC;
 using ISPTF.Models;
+using ISPTF.Models.LoginRegis;
+using ISPTF.Models.ExportBC;
+using ISPTF.Models.ExportLC;
+using ISPTF.Models.PEXPayment;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text.Json;
+using System.Linq;
 using System.Threading.Tasks;
-using System;
+using ISPTF.Models.ExportLC.PaymentOverDueWREF;
+using System.Text.Json;
+using System.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXLCPaymentPastDueWREFController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXLCPaymentPastDueWREFController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+        public EXLCPaymentPastDueWREFController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
@@ -179,6 +190,127 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCPEXPaymentRsp();
             }
             return BadRequest(response);
+        }
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+            DynamicParameters param = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
+                string.IsNullOrEmpty(data.EVENT_DATE)
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, EVENT_DATE is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        // 0 - Select EXLC MASTER
+                        var pExlc = (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExlc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C does not exist";
+                            return BadRequest(response);
+                        }
+
+                        // 1 - Cancel PPayment
+                        var paymentPastdueExlcs = (from row in _context.pExlcs
+                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                      row.RECORD_TYPE == "EVENT" &&
+                                                      row.EVENT_TYPE == "PAYMENT PAST DUE" &&
+                                                      row.REC_STATUS == "P" &&
+                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
+                                                select row).ToListAsync();
+
+                        foreach (var row in await paymentPastdueExlcs)
+                        {
+                            var pPayment = (from row2 in _context.pPayments
+                                            where row2.RpReceiptNo == row.RECEIVED_NO
+                                            select row2).ToListAsync();
+                            foreach (var rowPayment in await pPayment)
+                            {
+                                rowPayment.RpStatus = "C";
+                            }
+                        }
+
+
+                        // 2 - Delete Daily GL
+                        var dailyGL = (from row in _context.pDailyGLs
+                                       where row.VouchID == data.VOUCH_ID &&
+                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                       select row).ToListAsync();
+
+                        foreach (var row in await dailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+
+                        // 3 - Update pExPastDue1
+                        var targetEventNo = pExlc.EVENT_NO + 1;
+                        var pExPastDues1 = (from row in _context.pExPastDues
+                                      where row.DocNumber == data.EXPORT_LC_NO &&
+                                            row.EventNo == targetEventNo &&
+                                            row.RecType == "E"
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExPastDues1)
+                        {
+                            row.Status = "T";
+                            row.RecStatus = "T";
+                        }
+
+
+                        // 4 - Update pExPastDue2
+                        var pExPastDues2 = (from row in _context.pExPastDues
+                                           where row.DocNumber == data.EXPORT_LC_NO &&
+                                                 row.RecType == "M"
+                                           select row).ToListAsync();
+
+                        foreach (var row in await pExPastDues2)
+                        {
+                            row.RecStatus = "R";
+                        }
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export L/C Deleted";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
 
     }
