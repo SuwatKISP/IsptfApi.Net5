@@ -331,7 +331,7 @@ namespace ISPTF.API.Controllers.ExportLC
         [HttpPost("save")]
         public async Task<ActionResult<EXLCIssueCollectSaveResponse>> Save([FromBody] PEXLCPPaymentRsp pexlcppaymentreq)
         {
-            EXLCIssueCollectSaveResponse response = new EXLCIssueCollectSaveResponse();
+            PEXLCPPaymentSaveResponse response = new();
             // Class validate
 
             try
@@ -661,7 +661,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 var resp = param.Get<int>("@PExLcRsp");
                 if (PExLcRsp == 1)
                 {
-                    PEXLCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXLCPPaymentRsp>(pexLcpexpaymentrsp);
+                    PEXLCPPaymentDataContainer jsonResponse = JsonSerializer.Deserialize<PEXLCPPaymentDataContainer>(pexLcpexpaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -671,7 +671,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_LC_NO Insert Error";
-                    response.Data = new PEXLCPPaymentRsp();
+                    response.Data = new PEXLCPPaymentDataContainer();
                     return BadRequest(response);
                 }
             }
@@ -679,7 +679,7 @@ namespace ISPTF.API.Controllers.ExportLC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXLCPPaymentRsp();
+                response.Data = new PEXLCPPaymentDataContainer();
                 return BadRequest(response);
             }
 
