@@ -444,7 +444,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         
                         var pExlcs = (from row in _context.pExlcs
                                       where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == "Accept Due" &&
+                                            row.EVENT_TYPE == EVENT_TYPE &&
                                             (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
                                             row.RECORD_TYPE == "EVENT"
                                       select row).ToListAsync();
