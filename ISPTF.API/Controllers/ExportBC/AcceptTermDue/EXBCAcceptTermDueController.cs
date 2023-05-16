@@ -157,13 +157,13 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? RECORD_TYPE, string? REC_STATUS)
+        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCListResponse response = new PEXBCListResponse();
             var USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS))
+            if (string.IsNullOrEmpty(EXPORT_BC_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS is required";
@@ -173,8 +173,8 @@ namespace ISPTF.API.Controllers.ExportBC
 
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", EXPORT_BC_NO);
-            param.Add("@RECORD_TYPE", RECORD_TYPE);
-            param.Add("@REC_STATUS", REC_STATUS);
+            param.Add("@EVENT_NO", EVENT_NO);
+            param.Add("@LFROM", LFROM);
 
             try
             {

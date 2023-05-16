@@ -17,13 +17,15 @@ namespace ISPTF.Models.ExportBC
         public string NEGO_AMT { get; set; }
         public string TENOR_TYPE { get; set; }
         public string INVOICE { get; set; }
-        public string SEQ_of_ACCEPT { get; set; }
+        public string SEQ_ACCEPT_DUE { get; set; }
         public string EVENT_TYPE { get; set; }
         public string RECORD_TYPE { get; set; }
         public string REC_STATUS { get; set; }
         public string USER_ID { get; set; }
         public string COLLECT_AGENT { get; set; }
         public string CLAIM_TYPE { get; set; }
+        public string VOUCH_ID { get; set; }
         public int EVENT_NO { get; set; }
+        public DateTime EVENT_DATE { get; set; }
     }
 }

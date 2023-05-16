@@ -24,7 +24,7 @@ namespace ISPTF.Models.ExportBC
         public string EVENT_NO { get; set; }
         public string VOUCH_ID { get; set; }
 
-       // public string INVOICE { get; set; }
+        public DateTime EVENT_DATE { get; set; }
 
 
     }

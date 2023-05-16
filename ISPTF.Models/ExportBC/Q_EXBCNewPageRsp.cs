@@ -21,6 +21,6 @@ namespace ISPTF.Models.ExportBC
         public string Event_Type { get; set; }
         public string Record_Type { get; set; }
         public string Rec_Status { get; set; }
-
+        public DateTime EVENT_DATE { get; set; }
     }
 }
