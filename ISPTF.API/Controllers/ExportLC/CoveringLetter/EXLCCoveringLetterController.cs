@@ -24,6 +24,9 @@ namespace ISPTF.API.Controllers.ExportLC
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+
+        private const string BUSINESS_TYPE = "3";
+        private const string EVENT_TYPE = "Covering";
         public EXLCCoveringLetterController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -227,14 +230,14 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 3 - Select Existing EVENT
                         var pExlcEvent = (from row in _context.pExlcs
-                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
-                                                 row.RECORD_TYPE == "EVENT" &&
-                                                 row.REC_STATUS == "P" &&
-                                                 row.EVENT_TYPE == "Covering" &&
-                                                 row.EVENT_NO == targetEventNo
-                                           select row).FirstOrDefault();
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).FirstOrDefault();
 
-                      
+
                         // 3 - Insert EVENT
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
@@ -243,12 +246,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlc eventRow = data.PEXLC;
 
                         eventRow.CenterID = USER_CENTER_ID;
-                        eventRow.BUSINESS_TYPE = "3";
+                        eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_NO = targetEventNo;
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_MODE = "E";
-                        eventRow.EVENT_TYPE = "Covering";
+                        eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = DateTime.Today; // Without Time
@@ -300,10 +303,20 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        // Rollback
-                        response.Code = Constants.RESPONSE_ERROR;
-                        response.Message = e.ToString();
-                        return BadRequest(response);
+                        if (e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        {
+                            // Key already exists
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists";
+                            return BadRequest(response);
+                        }
+                        else
+                        {
+                            // Rollback
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = e.ToString();
+                            return BadRequest(response);
+                        }
                     }
                 }
             }
@@ -356,7 +369,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                             where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                                   row.RECORD_TYPE == "EVENT" &&
                                                   row.REC_STATUS == "P" &&
-                                                  row.EVENT_TYPE == "Covering"
+                                                  row.EVENT_TYPE == EVENT_TYPE
                                             select row).ToListAsync();
 
                         foreach (var row in await coveringExlc)
@@ -367,16 +380,16 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 2 - AUTO Check
 
                         var targetEventNo = pExlc.EVENT_NO + 1;
-                        if(data.IS_AUTO == false)
+                        if (data.IS_AUTO == false)
                         {
                             var pExlcNotInUse = (from row in _context.pExlcs
-                                         where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                               row.RECORD_TYPE == "MASTER" &&
-                                               row.IN_USE == 0
-                                         select row).FirstOrDefault();
+                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                       row.RECORD_TYPE == "MASTER" &&
+                                                       row.IN_USE == 0
+                                                 select row).FirstOrDefault();
                             pExlcNotInUse.REC_STATUS = "R";
                         }
-                        else if(data.IS_AUTO == true)
+                        else if (data.IS_AUTO == true)
                         {
                             pExlc.DMS = null;
                         }

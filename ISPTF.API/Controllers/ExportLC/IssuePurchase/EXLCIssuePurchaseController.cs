@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using ISPTF.Models.LoginRegis;
 using System.Transactions;
 using AutoMapper;
+using CSharpTest.Net;
+using System.Data.SqlClient;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -24,6 +26,10 @@ namespace ISPTF.API.Controllers.ExportLC
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+
+        private const string BUSINESS_TYPE = "1";
+        private const string EVENT_TYPE = "Issue Purchase";
+
         public EXLCIssuePurchaseController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -345,7 +351,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             pExlc.EXPORT_LC_NO = data.PEXLC.EXPORT_LC_NO;
                             pExlc.EVENT_NO = 1;
                             pExlc.RECORD_TYPE = "MASTER";
-                            pExlc.EVENT_TYPE = "Issue Purchase";
+                            pExlc.EVENT_TYPE = EVENT_TYPE;
 
                             _context.pExlcs.Add(pExlc);
                             _context.SaveChanges();
@@ -385,10 +391,10 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         eventRow.CenterID = USER_CENTER_ID;
-                        eventRow.BUSINESS_TYPE = "1";
+                        eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
-                        eventRow.EVENT_TYPE = "Issue Purchase";
+                        eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.VOUCH_ID = "ISSUE-PURC";
                         eventRow.USER_ID = USER_ID;
@@ -440,10 +446,20 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        // Rollback
-                        response.Code = Constants.RESPONSE_ERROR;
-                        response.Message = e.ToString();
-                        return BadRequest(response);
+                        if (e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        {
+                            // Key already exists
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists";
+                            return BadRequest(response);
+                        }
+                        else
+                        {
+                            // Rollback
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = e.ToString();
+                            return BadRequest(response);
+                        }
                     }
                 }
             }
@@ -496,7 +512,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         var issueCollectExlc = (from row in _context.pExlcs
                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                                       row.RECORD_TYPE == "EVENT" &&
-                                                      row.EVENT_TYPE == "Issue Purchase" &&
+                                                      row.EVENT_TYPE == EVENT_TYPE &&
                                                       row.REC_STATUS == "P" &&
                                                       (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
                                                 select row).ToListAsync();
@@ -564,10 +580,20 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        // Rollback
-                        response.Code = Constants.RESPONSE_ERROR;
-                        response.Message = e.ToString();
-                        return BadRequest(response);
+                        if (e is ArgumentException || e is DuplicateKeyException)
+                        {
+                            // Key already exists
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC "+EVENT_TYPE+" Event Already exists";
+                            return BadRequest(response);
+                        }
+                        else
+                        {
+                            // Rollback
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = e.ToString();
+                            return BadRequest(response);
+                        }
                     }
 
                     response.Code = Constants.RESPONSE_OK;
