@@ -233,7 +233,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             checkNew = true;
                         }
-                        if(data.PEXLC.WithOut=="1" || data.PEXLC.WithOutFlag == "1")
+                        if(data.PEXLC.WithOutFlag == "1")
                         {
                             // Call Save Back Liability with checkNew param
                         }

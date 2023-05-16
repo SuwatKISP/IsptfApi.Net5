@@ -262,33 +262,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.GENACC_DATE = DateTime.Today; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
 
-                        if (eventRow.PAYMENT_INSTRU == "PAID")
-                        {
-                            eventRow.METHOD = data.PEXLC.METHOD;
-                            // Call Save PaymentDetail
-                        }
-                        else
-                        {
-                            // UNPAID
-                            eventRow.METHOD = "";
-
-                            var existingPaymentRows = (from row in _context.pPayments
-                                                       where row.RpReceiptNo == eventRow.RECEIVED_NO
-                                                       select row).ToListAsync();
-                            foreach (var row in await existingPaymentRows)
-                            {
-                                _context.pPayments.Remove(row);
-                            }
-
-                            var existingPPayDetailRows = (from row in _context.pPayDetails
-                                                          where row.DpReceiptNo == eventRow.RECEIVED_NO
-                                                          select row).ToListAsync();
-                            foreach (var row in await existingPPayDetailRows)
-                            {
-                                _context.pPayDetails.Remove(row);
-                            }
-                        }
-
                         // Commit
                         if (pExlcEvent == null) {
                             // Insert
