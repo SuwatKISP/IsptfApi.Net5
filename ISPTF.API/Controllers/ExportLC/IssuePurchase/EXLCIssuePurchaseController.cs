@@ -320,9 +320,9 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXLCPPaymentPPayDetailSaveResponse>> Save([FromBody] PEXLCPPaymentPPayDetailSaveRequest data)
+        public async Task<ActionResult<PEXLCPPaymentPPayDetailsSaveResponse>> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
         {
-            PEXLCPPaymentPPayDetailSaveResponse response = new();
+            PEXLCPPaymentPPayDetailsSaveResponse response = new();
             // Class validate
 
             try
@@ -364,7 +364,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlc eventRow = data.PEXLC;
 
 
-                        // X - Select PDOCRegister >> find cust approve
+                        // 3 - Select PDOCRegister >> find cust approve
                         var pDocRegister = (from row in _context.pDocRegisters
                                             where row.Reg_Docno == data.PEXLC.EXPORT_LC_NO
                                             select row).FirstOrDefault();

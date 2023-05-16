@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXLCCoveringLetterController : ControllerBase
@@ -188,6 +189,131 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLC_PSWExport_PEXDOC_Rsp();
             }
             return BadRequest(response);
+        }
+
+        [HttpPost("save")]
+        public async Task<ActionResult<PEXLCSaveResponse>> Save([FromBody] PEXLCSaveRequest data)
+        {
+            PEXLCSaveResponse response = new();
+            // Class validate
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+                        // 2 - Update Master
+                        pExlcMaster.REC_STATUS = "P";
+                        pExlcMaster.DMS = data.PEXLC.DMS;
+                        _context.SaveChanges();
+
+                        var targetEventNo = pExlcMaster.EVENT_NO + 1;
+
+                        // 3 - Select Existing EVENT
+                        var pExlcEvent = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "EVENT" &&
+                                                 row.REC_STATUS == "P" &&
+                                                 row.EVENT_TYPE == "Covering" &&
+                                                 row.EVENT_NO == targetEventNo
+                                           select row).FirstOrDefault();
+
+                      
+                        // 3 - Insert EVENT
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlc eventRow = data.PEXLC;
+
+                        eventRow.CenterID = USER_CENTER_ID;
+                        eventRow.BUSINESS_TYPE = "3";
+                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = targetEventNo;
+                        eventRow.REC_STATUS = "P";
+                        eventRow.EVENT_MODE = "E";
+                        eventRow.EVENT_TYPE = "Covering";
+                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.VOUCH_ID = "COVERING";
+                        eventRow.USER_ID = USER_ID;
+                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.IN_USE = 1;
+
+                        if (eventRow.PAYMENT_INSTRU == "PAID")
+                        {
+                            eventRow.METHOD = data.PEXLC.METHOD;
+                            // Call Save PaymentDetail
+                        }
+                        else
+                        {
+                            // UNPAID
+                            eventRow.METHOD = "";
+
+                            var existingPaymentRows = (from row in _context.pPayments
+                                                       where row.RpReceiptNo == eventRow.RECEIVED_NO
+                                                       select row).ToListAsync();
+                            foreach (var row in await existingPaymentRows)
+                            {
+                                _context.pPayments.Remove(row);
+                            }
+
+                            var existingPPayDetailRows = (from row in _context.pPayDetails
+                                                          where row.DpReceiptNo == eventRow.RECEIVED_NO
+                                                          select row).ToListAsync();
+                            foreach (var row in await existingPPayDetailRows)
+                            {
+                                _context.pPayDetails.Remove(row);
+                            }
+                        }
+
+                        // Commit
+                        _context.pExlcs.Add(eventRow);
+                        await _context.SaveChangesAsync();
+                        transaction.Complete();
+
+                        response.Code = Constants.RESPONSE_OK;
+
+                        PEXLCDataContainer responseData = new();
+                        responseData.PEXLC = eventRow;
+
+                        response.Data = responseData;
+                        response.Message = "Export L/C Saved";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+
         }
 
         [HttpPost("delete")]
