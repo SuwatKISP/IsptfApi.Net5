@@ -606,7 +606,7 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXBCResultResponse>> Release([FromBody] PEXBCBCOverDueReleaseReq exbcoverduerelease)
+        public async Task<ActionResult<string>> EXBCBCOverDueReleaseReq([FromBody] EXBCBCOverDueReleaseReq exbcoverduerelease)
         {
             EXBCResultResponse response = new EXBCResultResponse();
             var USER_ID = User.Identity.Name;
@@ -625,10 +625,10 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@EXPORT_BC_NO", exbcoverduerelease.EXPORT_BC_NO);
             param.Add("@BENE_ID", exbcoverduerelease.BENE_ID);
             param.Add("@EVENT_NO", exbcoverduerelease.EVENT_NO);
-            param.Add("@USER_ID", USER_ID);
-            param.Add("@CenterID", USER_CENTER_ID);
-            param.Add("@VOUCHID", exbcoverduerelease.VOUCH_ID);
-            param.Add("@EVENTDATE", exbcoverduerelease.EVENT_DATE);
+            param.Add("@USER_ID", exbcoverduerelease.USER_ID);
+            param.Add("@CenterID", exbcoverduerelease.CenterID);
+            param.Add("@VOUCHID", exbcoverduerelease.VOUCHID);
+            param.Add("@EVENTDATE", exbcoverduerelease.EVENTDATE);
             param.Add("@TOTAL_NEGO_BAL_THB", exbcoverduerelease.TOTAL_NEGO_BAL_THB);
             param.Add("@OBASEDAY", exbcoverduerelease.OBASEDAY);
             param.Add("@INTCODE", exbcoverduerelease.INTCODE);
@@ -660,7 +660,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Export B/C NO Release Complete";
+                    response.Message = "Export B/C Number Release Complete";
                     return Ok(response);
                 }
                 else
