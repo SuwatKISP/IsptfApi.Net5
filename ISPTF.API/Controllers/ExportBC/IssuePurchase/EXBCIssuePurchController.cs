@@ -101,7 +101,10 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCEditPageResponse response = new EXBCEditPageResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(FormType) || Page == null || PageSize == null)
+            if (string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(FormType) || 
+                Page == null || 
+                PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, FormType, Page, PageSize is required";
@@ -218,7 +221,10 @@ namespace ISPTF.API.Controllers.ExportBC
         {
             EXBCIssuePurchaseEditSelectResponse response = new EXBCIssuePurchaseEditSelectResponse();
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_BC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(EVENT_NO))
+            if (string.IsNullOrEmpty(EXPORT_BC_NO) || 
+                string.IsNullOrEmpty(RECORD_TYPE) || 
+                string.IsNullOrEmpty(REC_STATUS) || 
+                string.IsNullOrEmpty(EVENT_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
@@ -234,12 +240,14 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@RECORD_TYPE", RECORD_TYPE);
                 param.Add("@REC_STATUS", REC_STATUS);
                 param.Add("@EVENT_NO", EVENT_NO);
+
                 param.Add("@PExBcRsp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);
                 param.Add("@PEXBCPEXPaymentRsp", dbType: DbType.String,
                            direction: System.Data.ParameterDirection.Output,
                            size: 5215585);
+
                 var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
                            storedProcedure: "usp_pEXBC_IssuePurchase_Select",
                            param);
@@ -276,6 +284,10 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<PEXBCPPaymentResponse>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
             PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
+
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
             // Validate
             if (pexbcppaymentreq.PEXBC == null)
@@ -485,7 +497,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@FB_RATE", pexbcppaymentreq.PEXBC.FB_RATE);
                 param.Add("@FB_AMT_THB", pexbcppaymentreq.PEXBC.FB_AMT_THB);
                 param.Add("@COLLECT_REFUND", pexbcppaymentreq.PEXBC.COLLECT_REFUND);
-                param.Add("@USER_ID", pexbcppaymentreq.PEXBC.USER_ID);
+                param.Add("@USER_ID", USER_ID);
                 param.Add("@IN_USE", pexbcppaymentreq.PEXBC.IN_USE);
                 param.Add("@AUTH_CODE", pexbcppaymentreq.PEXBC.AUTH_CODE);
                 param.Add("@GENACC_FLAG", pexbcppaymentreq.PEXBC.GENACC_FLAG);
@@ -525,7 +537,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@TOTALSUSPBHT", pexbcppaymentreq.PEXBC.TOTALSUSPBHT);
                 param.Add("@SUSPAMT", pexbcppaymentreq.PEXBC.SUSPAMT);
                 param.Add("@SUSPBHT", pexbcppaymentreq.PEXBC.SUSPBHT);
-                param.Add("@CenterID", pexbcppaymentreq.PEXBC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@BCPastDue", pexbcppaymentreq.PEXBC.BCPastDue);
                 param.Add("@DateStartAccru", pexbcppaymentreq.PEXBC.DateStartAccru);
                 param.Add("@DateToStop", pexbcppaymentreq.PEXBC.DateToStop);
@@ -618,6 +630,11 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<PEXBCPPaymentResponse>> Update([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
             PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
+
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
             // Validate
             if (pexbcppaymentreq.PEXBC == null)
             {
@@ -811,7 +828,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@FB_RATE", pexbcppaymentreq.PEXBC.FB_RATE);
                 param.Add("@FB_AMT_THB", pexbcppaymentreq.PEXBC.FB_AMT_THB);
                 param.Add("@COLLECT_REFUND", pexbcppaymentreq.PEXBC.COLLECT_REFUND);
-                param.Add("@USER_ID", pexbcppaymentreq.PEXBC.USER_ID);
+                param.Add("@USER_ID", USER_ID);
                 param.Add("@IN_USE", pexbcppaymentreq.PEXBC.IN_USE);
                 param.Add("@AUTH_CODE", pexbcppaymentreq.PEXBC.AUTH_CODE);
                 param.Add("@GENACC_FLAG", pexbcppaymentreq.PEXBC.GENACC_FLAG);
@@ -851,7 +868,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@TOTALSUSPBHT", pexbcppaymentreq.PEXBC.TOTALSUSPBHT);
                 param.Add("@SUSPAMT", pexbcppaymentreq.PEXBC.SUSPAMT);
                 param.Add("@SUSPBHT", pexbcppaymentreq.PEXBC.SUSPBHT);
-                param.Add("@CenterID", pexbcppaymentreq.PEXBC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@BCPastDue", pexbcppaymentreq.PEXBC.BCPastDue);
                 param.Add("@DateStartAccru", pexbcppaymentreq.PEXBC.DateStartAccru);
                 param.Add("@DateToStop", pexbcppaymentreq.PEXBC.DateToStop);
@@ -874,37 +891,54 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@Campaign_EffDate", pexbcppaymentreq.PEXBC.Campaign_EffDate);
                 param.Add("@PurposeCode", pexbcppaymentreq.PEXBC.PurposeCode);
                 //PPayment
-                param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
-                param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
-                param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
-                param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
-                param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
-                param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
-                param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
-                param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
-                param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
-                param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
-                param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
-                param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
-                param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
-                param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+                if (pexbcppaymentreq.PPayment != null)
+                {
+                    param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
+                    param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
+                    param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
+                    param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
+                    param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
+                    param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
+                    param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
+                    param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
+                    param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
+                    param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
+                    param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
+                    param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
+                    param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
+                    param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+                }
                 param.Add("@PExBcRsp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);
+
                 param.Add("@PEXBCPEXPaymentRsp", dbType: DbType.String,
                            direction: System.Data.ParameterDirection.Output,
                            size: 5215585);
+
                 //param.Add("@Resp", dbType: DbType.Int32,
                 param.Add("@Resp", dbType: DbType.String,
                    direction: System.Data.ParameterDirection.Output,
                    size: 5215585);
+                param.Add("@ResSeqNo", dbType: DbType.Int32,
+                             direction: System.Data.ParameterDirection.Output,
+                             size: 12800);
+
+                param.Add("@ResReceiptNo", dbType: DbType.String,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
 
                 var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
                     storedProcedure: "usp_pEXBC_IssuePurchase_Update",
                     param);
+
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
+
                 var resp = param.Get<int>("@PExBcRsp");
+
+                var resSeqNo = param.Get<int>("@ResSeqNo");
+                var resReceiptNo = param.Get<string>("@ResReceiptNo");
 
                 if (PExBcRsp == 1 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
                 {
@@ -1002,13 +1036,13 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCResultResponse response = new EXBCResultResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(pExBcIssuePurchRelease.CENTER_ID)
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO)
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION)
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.METHOD)
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.PAYMENT_INSTRU)
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE)
-                || string.IsNullOrEmpty(pExBcIssuePurchRelease.REFER_BC_NO)
+            if (string.IsNullOrEmpty(pExBcIssuePurchRelease.CENTER_ID) || 
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO) || 
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION) || 
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.METHOD) || 
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.PAYMENT_INSTRU) || 
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE) || 
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.REFER_BC_NO)
                )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;

@@ -705,10 +705,10 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCResultResponse response = new EXBCResultResponse();
             string USER_ID = User.Identity.Name;
 
-            if (string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.EXPORT_BC_NO)
-                || string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.EVENT_NO.ToString())
-                || string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.CenterID)
-                || string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.USER_ID)
+            if (string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.EXPORT_BC_NO) || 
+                string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.EVENT_NO.ToString()) || 
+                string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.CenterID) || 
+                string.IsNullOrEmpty(PEXBCPurchasePaymentRelease.USER_ID)
                )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -717,11 +717,84 @@ namespace ISPTF.API.Controllers.ExportBC
             }
 
             DynamicParameters param = new();
-            param.Add("@CenterID", PEXBCPurchasePaymentRelease.CenterID);
             param.Add("@EXPORT_BC_NO", PEXBCPurchasePaymentRelease.EXPORT_BC_NO);
             param.Add("@EVENT_NO", PEXBCPurchasePaymentRelease.EVENT_NO);
-            //param.Add("@USER_ID", PEXBCPurchasePaymentRelease.USER_ID);
-            param.Add("@USER_ID", USER_ID);
+            param.Add("@CenterID", PEXBCPurchasePaymentRelease.CenterID);
+            param.Add("@USER_ID", PEXBCPurchasePaymentRelease.USER_ID);
+            param.Add("@EVENT_DATE", PEXBCPurchasePaymentRelease.EVENT_DATE);
+            param.Add("@BENE_ID", PEXBCPurchasePaymentRelease.BENE_ID);
+            param.Add("@ParTnor_Type1", PEXBCPurchasePaymentRelease.ParTnor_Type1);
+            param.Add("@ParTnor_Type2", PEXBCPurchasePaymentRelease.ParTnor_Type2);
+            param.Add("@ParTnor_Type3", PEXBCPurchasePaymentRelease.ParTnor_Type3);
+            param.Add("@ParTnor_Type4", PEXBCPurchasePaymentRelease.ParTnor_Type4);
+            param.Add("@ParTnor_Type5", PEXBCPurchasePaymentRelease.ParTnor_Type5);
+            param.Add("@ParTnor_Type6", PEXBCPurchasePaymentRelease.ParTnor_Type6);
+            param.Add("@PARTIAL_AMT1", PEXBCPurchasePaymentRelease.PARTIAL_AMT1);
+            param.Add("@PARTIAL_AMT2", PEXBCPurchasePaymentRelease.PARTIAL_AMT2);
+            param.Add("@PARTIAL_AMT3", PEXBCPurchasePaymentRelease.PARTIAL_AMT3);
+            param.Add("@PARTIAL_AMT4", PEXBCPurchasePaymentRelease.PARTIAL_AMT4);
+            param.Add("@PARTIAL_AMT5", PEXBCPurchasePaymentRelease.PARTIAL_AMT5);
+            param.Add("@PARTIAL_AMT6", PEXBCPurchasePaymentRelease.PARTIAL_AMT6);
+            param.Add("@PARTIAL_AMT1_THB", PEXBCPurchasePaymentRelease.PARTIAL_AMT1_THB);
+            param.Add("@PARTIAL_AMT2_THB", PEXBCPurchasePaymentRelease.PARTIAL_AMT2_THB);
+            param.Add("@PARTIAL_AMT3_THB", PEXBCPurchasePaymentRelease.PARTIAL_AMT3_THB);
+            param.Add("@PARTIAL_AMT4_THB", PEXBCPurchasePaymentRelease.PARTIAL_AMT4_THB);
+            param.Add("@PARTIAL_AMT5_THB", PEXBCPurchasePaymentRelease.PARTIAL_AMT5_THB);
+            param.Add("@PARTIAL_AMT6_THB", PEXBCPurchasePaymentRelease.PARTIAL_AMT6_THB);
+            param.Add("@PARTIAL_FULL_RATE", PEXBCPurchasePaymentRelease.PARTIAL_FULL_RATE);
+            param.Add("@TENOR_OF_COLL", PEXBCPurchasePaymentRelease.TENOR_OF_COLL);
+            param.Add("@INVOICE", PEXBCPurchasePaymentRelease.INVOICE);
+            param.Add("@VOUCH_ID", PEXBCPurchasePaymentRelease.VOUCH_ID);
+            param.Add("@RELETE_PACK", PEXBCPurchasePaymentRelease.RELETE_PACK);
+            param.Add("@PurposeCode", PEXBCPurchasePaymentRelease.PurposeCode);
+            param.Add("@TOT_NEGO_AMT", PEXBCPurchasePaymentRelease.TOT_NEGO_AMT);
+            param.Add("@TOTAL_NEGO_BALANCE", PEXBCPurchasePaymentRelease.TOTAL_NEGO_BALANCE);
+            param.Add("@TOTAL_NEGO_BAL_THB", PEXBCPurchasePaymentRelease.TOTAL_NEGO_BAL_THB);
+            param.Add("@NEGO_COMM", PEXBCPurchasePaymentRelease.NEGO_COMM);
+            param.Add("@TELEX_SWIFT", PEXBCPurchasePaymentRelease.TELEX_SWIFT);
+            param.Add("@COURIER_POSTAGE", PEXBCPurchasePaymentRelease.COURIER_POSTAGE);
+            param.Add("@STAMP_FEE", PEXBCPurchasePaymentRelease.STAMP_FEE);
+            param.Add("@BE_STAMP", PEXBCPurchasePaymentRelease.BE_STAMP);
+            param.Add("@COMM_OTHER", PEXBCPurchasePaymentRelease.COMM_OTHER);
+            param.Add("@HANDING_FEE", PEXBCPurchasePaymentRelease.HANDING_FEE);
+            param.Add("@DRAFTCOMM", PEXBCPurchasePaymentRelease.DRAFTCOMM);
+            param.Add("@TOTAL_CHARGE", PEXBCPurchasePaymentRelease.TOTAL_CHARGE);
+            param.Add("@REFUND_TAX_YN", PEXBCPurchasePaymentRelease.REFUND_TAX_YN);
+            param.Add("@REFUND_TAX_AMT", PEXBCPurchasePaymentRelease.REFUND_TAX_AMT);
+            param.Add("@TOTAL_AMOUNT", PEXBCPurchasePaymentRelease.TOTAL_AMOUNT);
+            param.Add("@PAYMENT_INSTRU", PEXBCPurchasePaymentRelease.PAYMENT_INSTRU);
+            param.Add("@METHOD", PEXBCPurchasePaymentRelease.METHOD);
+            param.Add("@DISCOUNT_CCY", PEXBCPurchasePaymentRelease.DISCOUNT_CCY);
+            param.Add("@DISCRATE", PEXBCPurchasePaymentRelease.DISCRATE);
+            param.Add("@DISCOUNT_AMT", PEXBCPurchasePaymentRelease.DISCOUNT_AMT);
+            param.Add("@ValueDate", PEXBCPurchasePaymentRelease.ValueDate);
+            param.Add("@DRAFT_CCY", PEXBCPurchasePaymentRelease.DRAFT_CCY);
+            param.Add("@CURRENT_INT_RATE", PEXBCPurchasePaymentRelease.CURRENT_INT_RATE);
+            param.Add("@BASE_DAY", PEXBCPurchasePaymentRelease.BASE_DAY);
+            param.Add("@SIGHT_START_DATE", PEXBCPurchasePaymentRelease.SIGHT_START_DATE);
+            param.Add("@TERM_DUE_DATE", PEXBCPurchasePaymentRelease.TERM_DUE_DATE);
+            param.Add("@SIGHT_PAID_AMT", PEXBCPurchasePaymentRelease.SIGHT_START_DATE);
+            param.Add("@TERM_PAID_AMT", PEXBCPurchasePaymentRelease.TERM_PAID_AMT);
+            param.Add("@SETTLEMENT_CREDIT", PEXBCPurchasePaymentRelease.SETTLEMENT_CREDIT);
+            param.Add("@SIGHT_PAID_THB", PEXBCPurchasePaymentRelease.SIGHT_PAID_THB);
+            param.Add("@TERM_PAID_THB", PEXBCPurchasePaymentRelease.TERM_PAID_THB);
+            param.Add("@NEGO_AMT", PEXBCPurchasePaymentRelease.NEGO_AMT);
+            param.Add("@LESS_AGENT", PEXBCPurchasePaymentRelease.LESS_AGENT);
+            param.Add("@TOT_NEGO_AMOUNT", PEXBCPurchasePaymentRelease.TOT_NEGO_AMOUNT);
+            param.Add("@NET_PROCEED_CLAIM", PEXBCPurchasePaymentRelease.NET_PROCEED_CLAIM);
+            param.Add("@BANK_CHARGE_AMT", PEXBCPurchasePaymentRelease.BANK_CHARGE_AMT);
+            param.Add("@PaymentType", PEXBCPurchasePaymentRelease.PaymentType);
+            param.Add("@int_day", PEXBCPurchasePaymentRelease.int_day);
+            param.Add("@PAYMENT_DATE", PEXBCPurchasePaymentRelease.PAYMENT_DATE);
+            param.Add("@int_paid_amt", PEXBCPurchasePaymentRelease.int_paid_amt);
+            param.Add("@int_paid_thb", PEXBCPurchasePaymentRelease.int_paid_thb);
+            param.Add("@int_exch_rate", PEXBCPurchasePaymentRelease.int_exch_rate);
+
+
+            param.Add("@RespPEXBC", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 12800);
+
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
@@ -731,10 +804,11 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 await _db.SaveData(
                   storedProcedure: "usp_pEXBC_PurchasePayment_Release", param);
-                //var resp = param.Get<int>("@Resp");
+
+                var resppexbc = param.Get<int>("@RespPEXBC");
                 var resp = param.Get<string>("@Resp");
 
-                if (resp == "1")
+                if (resppexbc > 0)
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";
