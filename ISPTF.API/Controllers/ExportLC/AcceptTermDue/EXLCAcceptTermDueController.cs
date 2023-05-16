@@ -13,6 +13,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using ISPTF.Models.LoginRegis;
 using System.Transactions;
+using System.Reflection;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -34,7 +35,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCAcceptTermDueListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCAcceptTermDueListResponse>> List(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCAcceptTermDueListResponse response = new EXLCAcceptTermDueListResponse();
 
@@ -136,7 +137,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXLCPPaymentResponse>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXLCPPaymentResponse>> Select(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
             // Validate
@@ -251,12 +252,16 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = targetEventNo;
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
-                        eventRow.VOUCH_ID = "ISSUE-PURC";
                         eventRow.USER_ID = USER_ID;
                         eventRow.UPDATE_DATE = DateTime.Now; // With Time
+
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.VOUCH_ID = "COVERING";
 
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
@@ -284,11 +289,46 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 _context.pPayDetails.Remove(row);
                             }
+
                         }
 
                         // Commit
-                        _context.pExlcs.Add(eventRow);
+                        if (pExlcEvent == null)
+                        {
+                            // Insert
+                            _context.pExlcs.Add(eventRow);
+                        }
+                        else
+                        {
+                            // Update
+                            Type eventRowType = typeof(pExlc);
+                            Type pExlcEventType = typeof(pExlc);
+
+                            PropertyInfo[] properties = eventRowType.GetProperties();
+
+                            foreach (PropertyInfo property in properties)
+                            {
+                                if (property.CanRead)
+                                {
+                                    PropertyInfo pExlcEventProperty = pExlcEventType.GetProperty(property.Name);
+                                    if (pExlcEventProperty != null && pExlcEventProperty.CanWrite)
+                                    {
+                                        object value = property.GetValue(eventRow);
+                                        pExlcEventProperty.SetValue(pExlcEvent, value);
+                                    }
+                                }
+                            }
+
+                        }
+
                         await _context.SaveChangesAsync();
+                        
+
+                        // GL MOCK WAIT DLL
+                        var glVouchId = "VOUCH ID FROM GL DLL";
+                        eventRow.VOUCH_ID = glVouchId;
+                        await _context.SaveChangesAsync();
+
                         transaction.Complete();
 
                         response.Code = Constants.RESPONSE_OK;
@@ -304,7 +344,8 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        if (e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        if (e.InnerException != null 
+                            && e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
                         {
                             // Key already exists
                             response.Code = Constants.RESPONSE_ERROR;

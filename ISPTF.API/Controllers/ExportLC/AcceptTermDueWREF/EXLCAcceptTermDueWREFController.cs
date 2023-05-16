@@ -25,6 +25,9 @@ namespace ISPTF.API.Controllers.ExportLC
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+
+        private const string BUSINESS_TYPE = "4W";
+        private const string EVENT_TYPE = "Accept Due WREF";
         public EXLCAcceptTermDueWREFController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;

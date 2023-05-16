@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -238,7 +239,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                           select row).FirstOrDefault();
 
 
-                        // 3 - Insert EVENT
+                        // 3 - Insert/Update EVENT
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
@@ -253,12 +254,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
-                        eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
-                        eventRow.VOUCH_ID = "COVERING";
                         eventRow.USER_ID = USER_ID;
                         eventRow.UPDATE_DATE = DateTime.Now; // With Time
                         eventRow.IN_USE = 1;
+
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.VOUCH_ID = "COVERING";
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
@@ -288,7 +290,34 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // Commit
-                        _context.pExlcs.Add(eventRow);
+                        if (pExlcEvent == null) {
+                            // Insert
+                            _context.pExlcs.Add(eventRow);
+                        }
+                        else
+                        {
+                            // Update
+                            Type eventRowType = typeof(pExlc);
+                            Type pExlcEventType = typeof(pExlc);
+
+                            PropertyInfo[] properties = eventRowType.GetProperties();
+
+                            foreach (PropertyInfo property in properties)
+                            {
+                                if (property.CanRead)
+                                {
+                                    PropertyInfo pExlcEventProperty = pExlcEventType.GetProperty(property.Name);
+                                    if (pExlcEventProperty != null && pExlcEventProperty.CanWrite)
+                                    {
+                                        object value = property.GetValue(eventRow);
+                                        pExlcEventProperty.SetValue(pExlcEvent, value);
+                                    }
+                                }
+                            }
+
+                        }
+
+
                         await _context.SaveChangesAsync();
                         transaction.Complete();
 
@@ -303,7 +332,8 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        if (e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        if (e.InnerException != null 
+                            && e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
                         {
                             // Key already exists
                             response.Code = Constants.RESPONSE_ERROR;
