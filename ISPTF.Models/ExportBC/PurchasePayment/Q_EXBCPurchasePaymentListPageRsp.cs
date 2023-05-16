@@ -25,7 +25,7 @@ namespace ISPTF.Models.ExportBC
         public string FlagBack { get; set; }
         public string EVENT_NO { get; set; }
         public string VOUCH_ID { get; set; }
-
+        public DateTime? EVENT_DATE { get; set; }
 
     }
 }
