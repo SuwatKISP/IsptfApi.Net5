@@ -14,7 +14,7 @@ namespace ISPTF.API.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return Ok("API is running");
+            return Ok("Soda!");
         }
     }
 }
