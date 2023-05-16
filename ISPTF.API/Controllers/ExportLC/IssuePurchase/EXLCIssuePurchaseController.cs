@@ -348,7 +348,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             pExlc.EVENT_TYPE = "Issue Purchase";
 
                             _context.pExlcs.Add(pExlc);
-                            await _context.SaveChangesAsync();
+                            _context.SaveChanges();
 
                             pExlcMaster = (from row in _context.pExlcs
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
@@ -386,6 +386,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = "1";
+                        eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = "Issue Purchase";
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
@@ -427,10 +428,11 @@ namespace ISPTF.API.Controllers.ExportLC
                         transaction.Complete();
 
                         response.Code = Constants.RESPONSE_OK;
+
                         PEXLCPPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
-                        responseData.PPAYDETAIL = data.PPAYDETAIL;
+                        responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";
