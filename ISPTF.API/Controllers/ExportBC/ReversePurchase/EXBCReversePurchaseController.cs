@@ -12,6 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using ISPTF.Models.Controllers.ExportBC;
+using Newtonsoft.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -459,7 +460,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                var results = await _db.LoadData<pExbc, dynamic>(
+                var results = await _db.LoadData<PEXBCRsp, dynamic>(
                             storedProcedure: "usp_pEXBC_ReversePurchase_Save",
                             param);
                 var resp = param.Get<string>("@Resp");
@@ -468,24 +469,53 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 if (resp == "1")
                 {
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Success";
-                    response.Data = new PEXBCDataContainer(results.First());
-                    return Ok(response);
+                    bool resGL;
+                    string eventDate;
+                    string resVoucherID;
+                    PEXBCRspGL resultJson = new();
+
+                    eventDate = pexbcsave.EVENT_DATE.ToString("dd/MM/yyyy");
+                    resVoucherID = "";
+                    resGL = true;
+                    //resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcsave.EXPORT_BC_NO, eventDate, pexbcsave.EVENT_TYPE, resSeqNo, pexbcsave.EVENT_TYPE);
+                    //if (resVoucherID != "ERROR")
+                    //{
+                    //    resGL = true;
+                    //}
+                    //else
+                    //{
+                    //    resGL = false;
+                    //}
+
+                    if (resGL == true)
+                    {
+                        resultJson.VoucherID = resVoucherID;
+                        resultJson.PEXBC = JsonConvert.DeserializeObject<PEXBCRsp>(respexbc);
+                        return Ok(resultJson);
+                        //  return Ok(pexbcpexpaymentrsp);
+                    }
+                    else
+                    {
+                        ReturnResponse bresponse = new();
+                        bresponse.StatusCode = "400";
+                        bresponse.Message = "EXPORT_BC_NO Update G/L or Payment Error";
+                        return BadRequest(bresponse);
+                    }
+                    //   return Ok(results);
                 }
                 else
                 {
-                    response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "EXPORT_BC_NO Save Error";
-                    response.Data = new PEXBCDataContainer();
-                    return BadRequest(response);
+
+                    ReturnResponse bresponse = new();
+                    bresponse.StatusCode = "400";
+                    bresponse.Message = resp.ToString();
+                    //response.Message = "EXPORT B/C NO does not exit";
+                    return BadRequest(bresponse);
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = e.ToString();
-                response.Data = new PEXBCDataContainer();
+                return BadRequest(ex.Message);
             }
             return BadRequest(response);
         }
