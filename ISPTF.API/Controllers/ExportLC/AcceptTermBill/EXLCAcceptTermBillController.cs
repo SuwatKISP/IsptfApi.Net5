@@ -350,8 +350,8 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        if (e.InnerException != null
-                            && e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        if (e.InnerException != null && 
+                            e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
                         {
                             // Key already exists
                             response.Code = Constants.RESPONSE_ERROR;
