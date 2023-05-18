@@ -166,7 +166,7 @@ namespace ISPTF.API.Controllers.ExportBC
             if (string.IsNullOrEmpty(EXPORT_BC_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_BC_NO, RECORD_TYPE, REC_STATUS is required";
+                response.Message = "EXPORT_BC_NO, EVENT_NO, LFROM is required";
                 response.Data = new List<PEXBC>();
                 return BadRequest(response);
             }

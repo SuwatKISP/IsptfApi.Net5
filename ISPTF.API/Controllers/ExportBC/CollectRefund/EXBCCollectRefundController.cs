@@ -158,7 +158,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCPPaymentResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<List<PEXBCPPaymentRsp>>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
             var USER_ID = User.Identity.Name;
@@ -193,20 +193,33 @@ namespace ISPTF.API.Controllers.ExportBC
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcppaymentrsp = param.Get<dynamic>("@PEXBCPPaymentRsp");
 
-                if (PExBcRsp > 0 && !string.IsNullOrEmpty(pexbcppaymentrsp))
+                // if (PExBcRsp > 0 && !string.IsNullOrEmpty(pexbcppaymentrsp))
+                // {
+                //     PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcppaymentrsp);
+                //     response.Code = Constants.RESPONSE_OK;
+                //     response.Message = "Success";
+                //     response.Data = jsonResponse;
+                //     return Ok(response);
+                // }
+                // else
+                // {
+                //     response.Code = Constants.RESPONSE_ERROR;
+                //     response.Message = "EXPORT B/C NO does not exit";
+                //     response.Data = new PEXBCPPaymentRsp();
+                //     return BadRequest(response);
+                // }
+
+                if (PExBcRsp > 0)
                 {
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcppaymentrsp);
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Success";
-                    response.Data = jsonResponse;
-                    return Ok(response);
+                    return Ok(pexbcppaymentrsp);
                 }
                 else
                 {
-                    response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "EXPORT B/C NO does not exit";
-                    response.Data = new PEXBCPPaymentRsp();
-                    return BadRequest(response);
+
+                    ReturnResponse bresponse = new();
+                    bresponse.StatusCode = "400";
+                    bresponse.Message = "EXPORT B/C NO does not exit";
+                    return BadRequest(bresponse);
                 }
             }
             catch (Exception e)
