@@ -28,7 +28,7 @@ namespace ISPTF.API.Controllers.ExportLC
         private const string BUSINESS_TYPE = "9";
         private const string EVENT_TYPE = "Payment Collect";
 
-        static string GenerateRandomReceipNo(int length)
+        private static string GenerateRandomReceiptNo(int length)
         {
             Random random = new Random();
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -303,7 +303,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 }
                             }
 
-                            var receiptNo = "[MOCK]" + GenerateRandomReceipNo(5);
+                            var receiptNo = "[MOCK]" + GenerateRandomReceiptNo(5);
                             if (eventRow.RECEIVED_NO != "" || recNew == true)
                             {
                                 if (data.PEXPAYMENT.Debit_credit_flag == "C")
@@ -445,7 +445,6 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 return BadRequest(response);
             }
-
         }
 
         [HttpPost("delete")]

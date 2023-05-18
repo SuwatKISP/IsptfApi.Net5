@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -22,6 +23,24 @@ namespace ISPTF.API.Controllers.ExportLC
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+
+        private const string BUSINESS_TYPE = "PF";
+        private const string EVENT_TYPE = "PAYMENT-WREF-FUND";
+
+        private static string GenerateRandomReceiptNo(int length)
+        {
+            Random random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            StringBuilder stringBuilder = new StringBuilder(length);
+
+            for (int i = 0; i < length; i++)
+            {
+                int index = random.Next(chars.Length);
+                stringBuilder.Append(chars[index]);
+            }
+
+            return stringBuilder.ToString();
+        }
         public EXLCCollectionPaymentFundController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -195,6 +214,244 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCPEXPaymentRsp();
             }
             return BadRequest(response);
+        }
+
+        [HttpPost("save")]
+        public async Task<ActionResult<PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse>> Save([FromBody] PEXLCPPaymentPEXPaymentPPayDetailsSaveRequest data)
+        {
+            PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse response = new();
+            // Class validate
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+                        // 2 - Update Master
+
+                        pExlcMaster.REC_STATUS = "P";
+                        _context.SaveChanges();
+
+                        var targetEventNo = pExlcMaster.EVENT_NO + 1;
+
+                        // 2 - Insert EVENT
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlc eventRow = data.PEXLC;
+
+
+                        // 3 - Select Existing Event
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                        var recNew = false;
+                        if (pExlcEvent == null)
+                        {
+                            recNew = true;
+                        }
+                        eventRow.CenterID = USER_CENTER_ID;
+                        eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
+                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = targetEventNo;
+                        eventRow.EVENT_MODE = "E";
+                        eventRow.REC_STATUS = "P";
+                        eventRow.EVENT_TYPE = EVENT_TYPE;
+                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.USER_ID = USER_ID;
+                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+
+
+                        if (eventRow.PAYMENT_INSTRU == "PAID" ||
+                            eventRow.PAYMENT_INSTRU == "BAHTNET" ||
+                            eventRow.PAYMENT_INSTRU == "FCD" ||
+                            eventRow.PAYMENT_INSTRU == "MT202")
+                        {
+                            eventRow.METHOD = data.PEXLC.METHOD;
+
+                            // RECEIVED_NO DCR
+                            if (data.PEXPAYMENT.Debit_credit_flag == "C")
+                            {
+                                if (!eventRow.RECEIVED_NO.Contains("DCR"))
+                                {
+                                    eventRow.RECEIVED_NO = "";
+                                }
+                            }
+                            else
+                            {
+                                if (!eventRow.RECEIVED_NO.Contains("DDR"))
+                                {
+                                    eventRow.RECEIVED_NO = "";
+                                }
+                            }
+
+                            var receiptNo = "[MOCK]" + GenerateRandomReceiptNo(5);
+                            if (eventRow.RECEIVED_NO != "" || recNew == true)
+                            {
+                                if (data.PEXPAYMENT.Debit_credit_flag == "C")
+                                {
+                                    if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
+                                    {
+                                        // receiptNo = GetReceiptFCD("FPAIDC")
+                                    }
+                                    else
+                                    {
+                                        // receiptNo = genRefno("PAYC")
+                                    }
+                                }
+                                else
+                                {
+                                    if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
+                                    {
+                                        // receiptNo = GetReceiptFCD("FPAIDD")
+                                    }
+                                    else
+                                    {
+                                        // receiptNo = genRefno("PAYD")
+                                    }
+                                }
+                            }
+
+                            // Check Duplicate Receipt
+
+                            var duplicateReceipt = (from row in _context.pPayments
+                                                    where row.RpReceiptNo == receiptNo &&
+                                                          row.RpDocNo == data.PEXLC.EXPORT_LC_NO
+                                                    select row).FirstOrDefault();
+
+                            if (duplicateReceipt != null)
+                            {
+                                response.Code = Constants.RESPONSE_ERROR;
+                                response.Message = "Duplicate Receipt, Please save again";
+                                return BadRequest(response);
+                            }
+
+
+                            // Call Save Payment
+                            eventRow.RECEIVED_NO = "RECEIVE_NO FROM DLL";
+
+                            // Call Save PaymentDetail
+                        }
+                        else if (eventRow.PAYMENT_INSTRU == "UNPAID")
+                        {
+                            // UNPAID
+                            eventRow.METHOD = "";
+
+                            var existingPaymentRows = (from row in _context.pPayments
+                                                       where row.RpReceiptNo == eventRow.RECEIVED_NO
+                                                       select row).ToListAsync();
+                            foreach (var row in await existingPaymentRows)
+                            {
+                                _context.pPayments.Remove(row);
+                            }
+
+                            var existingPPayDetailRows = (from row in _context.pPayDetails
+                                                          where row.DpReceiptNo == eventRow.RECEIVED_NO
+                                                          select row).ToListAsync();
+                            foreach (var row in await existingPPayDetailRows)
+                            {
+                                _context.pPayDetails.Remove(row);
+                            }
+
+                        }
+
+                        // Commit
+                        if (pExlcEvent == null)
+                        {
+                            // Insert
+                            _context.pExlcs.Add(eventRow);
+                        }
+                        else
+                        {
+                            // Update
+                            _context.pExlcs.Update(eventRow);
+                        }
+
+
+                        pExPayment exPaymentRow = data.PEXPAYMENT;
+
+
+                        // 3 - Select Existing Event
+                        var pExlcExPayment = (from row in _context.pExPayments
+                                              where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                                    (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                    row.EVENT_TYPE == EVENT_TYPE &&
+                                                    row.EVENT_NO == targetEventNo
+                                              select row).AsNoTracking().FirstOrDefault();
+
+                        await _context.SaveChangesAsync();
+
+
+                        // GL MOCK WAIT DLL
+                        var glVouchId = "VOUCH ID FROM GL DLL";
+                        eventRow.VOUCH_ID = glVouchId;
+                        await _context.SaveChangesAsync();
+
+                        transaction.Complete();
+
+                        response.Code = Constants.RESPONSE_OK;
+
+                        PEXLCPPaymentPEXPaymentPPayDetailDataContainer responseData = new();
+                        responseData.PEXLC = eventRow;
+                        responseData.PPAYMENT = data.PPAYMENT;
+                        responseData.PEXPAYMENT = data.PEXPAYMENT;
+                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+
+                        response.Data = responseData;
+                        response.Message = "Export L/C Saved";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.InnerException != null &&
+                            e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        {
+                            // Key already exists
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists / Wrong Event State";
+                            return BadRequest(response);
+                        }
+                        else
+                        {
+                            // Rollback
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = e.ToString();
+                            return BadRequest(response);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
 
         [HttpPost("delete")]
