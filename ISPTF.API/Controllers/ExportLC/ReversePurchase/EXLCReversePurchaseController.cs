@@ -32,7 +32,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCAcceptTermDueListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCAcceptTermDueListResponse>> List(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCAcceptTermDueListResponse response = new EXLCAcceptTermDueListResponse();
 
@@ -106,7 +106,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXLCPPaymentResponse>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXLCPPaymentResponse>> Select(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
             // Validate

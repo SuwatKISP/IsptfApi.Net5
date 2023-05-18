@@ -139,12 +139,14 @@ namespace ISPTF.API.Controllers.ExportLC
 
         [HttpGet("select")]
         //        public async Task<IEnumerable<PEXBCPEXPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
-        public async Task<ActionResult<EXLCPurchasePaymentSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<EXLCPurchasePaymentSelectResponse>> Select(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
             EXLCPurchasePaymentSelectResponse response = new EXLCPurchasePaymentSelectResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
+                EVENT_NO == null || 
+                string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
@@ -231,9 +233,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // 2 - Update Master
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'P' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
-                        pExlcMaster.REC_STATUS = "P";
-                        _context.SaveChanges();
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
 

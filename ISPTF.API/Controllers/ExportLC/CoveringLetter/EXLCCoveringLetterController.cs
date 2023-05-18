@@ -223,9 +223,11 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // 2 - Update Master
-                        pExlcMaster.REC_STATUS = "P";
                         pExlcMaster.DMS = data.PEXLC.DMS;
                         _context.SaveChanges();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'P' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
 

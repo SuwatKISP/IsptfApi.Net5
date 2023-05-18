@@ -265,12 +265,15 @@ namespace ISPTF.API.Controllers.ExportLC
 
         // editselect new with jaon
         [HttpGet("select")]
-        public async Task<ActionResult<PEXLCPPaymentResponse>> GetAllSelect(string? EXPORT_LC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
+        public async Task<ActionResult<PEXLCPPaymentResponse>> Select(string? EXPORT_LC_NO, string? RECORD_TYPE, string? REC_STATUS, string? EVENT_NO)
         {
             PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(EVENT_NO))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
+                string.IsNullOrEmpty(RECORD_TYPE) || 
+                string.IsNullOrEmpty(REC_STATUS) || 
+                string.IsNullOrEmpty(EVENT_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
