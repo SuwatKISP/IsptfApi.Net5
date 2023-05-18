@@ -32,7 +32,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCEditFlagListResponse>> GetAllList(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCEditFlagListResponse>> List(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCEditFlagListResponse response = new EXLCEditFlagListResponse();
             // Validate
@@ -110,7 +110,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<EXLCEditFlagSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, int? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<EXLCEditFlagSelectResponse>> Select(string? EXPORT_LC_NO, int? EVENT_NO, string? LFROM)
         {
             EXLCEditFlagSelectResponse response = new EXLCEditFlagSelectResponse();
 
@@ -206,7 +206,6 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 2 - Update Master
                         pExlcMaster.REC_STATUS = "P";
-                        pExlcMaster.DMS = data.PEXLC.DMS;
                         _context.SaveChanges();
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
