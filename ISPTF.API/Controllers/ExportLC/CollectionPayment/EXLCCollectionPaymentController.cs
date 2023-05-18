@@ -278,8 +278,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = DateTime.Today; // Without Time
 
-                        
-                        if (eventRow.PAYMENT_INSTRU == "PAID" || 
+
+                        if (eventRow.PAYMENT_INSTRU == "PAID" ||
                             eventRow.PAYMENT_INSTRU == "BAHTNET" ||
                             eventRow.PAYMENT_INSTRU == "FCD" ||
                             eventRow.PAYMENT_INSTRU == "MT202")
@@ -401,6 +401,18 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         }
 
+
+                        pExPayment exPaymentRow = data.PEXPAYMENT;
+
+
+                        // 3 - Select Existing Event
+                        var pExlcExPayment = (from row in _context.pExPayments
+                                              where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                                    (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                    row.EVENT_TYPE == EVENT_TYPE &&
+                                                    row.EVENT_NO == targetEventNo
+                                              select row).FirstOrDefault();
+
                         await _context.SaveChangesAsync();
 
 
@@ -425,7 +437,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        if (e.InnerException != null && 
+                        if (e.InnerException != null &&
                             e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
                         {
                             // Key already exists
