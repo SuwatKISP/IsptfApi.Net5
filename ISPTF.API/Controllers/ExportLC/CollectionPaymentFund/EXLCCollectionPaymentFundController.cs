@@ -27,20 +27,7 @@ namespace ISPTF.API.Controllers.ExportLC
         private const string BUSINESS_TYPE = "PF";
         private const string EVENT_TYPE = "PAYMENT-WREF-FUND";
 
-        private static string GenerateRandomReceiptNo(int length)
-        {
-            Random random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            StringBuilder stringBuilder = new StringBuilder(length);
-
-            for (int i = 0; i < length; i++)
-            {
-                int index = random.Next(chars.Length);
-                stringBuilder.Append(chars[index]);
-            }
-
-            return stringBuilder.ToString();
-        }
+        
         public EXLCCollectionPaymentFundController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -310,7 +297,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 }
                             }
 
-                            var receiptNo = "[MOCK]" + GenerateRandomReceiptNo(5);
+                            var receiptNo = "[MOCK]" + ExportLCHelper.GenerateRandomReceiptNo(5);
                             if (eventRow.RECEIVED_NO != "" || recNew == true)
                             {
                                 if (data.PEXPAYMENT.Debit_credit_flag == "C")
