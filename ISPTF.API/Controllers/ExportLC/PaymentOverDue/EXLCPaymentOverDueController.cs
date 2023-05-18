@@ -14,26 +14,37 @@ using System.Linq;
 using System.Threading.Tasks;
 using ISPTF.Models.ExportLC.PaymentOverDue;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using System.Transactions;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXLCPaymentOverDueController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public EXLCPaymentOverDueController(ISqlDataAccess db)
+        private readonly ISPTFContext _context;
+
+        private const string BUSINESS_TYPE = "20";
+        private const string EVENT_TYPE = "Payment OverDue";
+        public EXLCPaymentOverDueController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
+            _context = context;
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCPaymentOverDueListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCPaymentOverDueListResponse>> List(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCPaymentOverDueListResponse response = new EXLCPaymentOverDueListResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -54,7 +65,7 @@ namespace ISPTF.API.Controllers.ExportLC
             {
                 DynamicParameters param = new();
 
-                param.Add("@ListType", @ListType);
+                param.Add("@ListType", ListType);
                 param.Add("@CenterID", CenterID);
                 param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
                 param.Add("@BENName", BENName);
@@ -103,12 +114,14 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<EXLCPaymentOverDueSelectResponse>> GetAllSelect(string? EXPORT_LC_NO, int? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<EXLCPaymentOverDueSelectResponse>> Select(string? EXPORT_LC_NO, int? EVENT_NO, string? LFROM)
         {
             EXLCPaymentOverDueSelectResponse response = new EXLCPaymentOverDueSelectResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
+                EVENT_NO == null || 
+                string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
@@ -167,5 +180,282 @@ namespace ISPTF.API.Controllers.ExportLC
             return BadRequest(response);
         }
 
+        [HttpPost("save")]
+        public async Task<ActionResult<PEXLCPPaymentPPayDetailsSaveResponse>> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
+        {
+            PEXLCPPaymentPPayDetailsSaveResponse response = new();
+            // Class validate
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+                        // 2 - Update Master
+
+                        pExlcMaster.REC_STATUS = "P";
+                        _context.SaveChanges();
+
+                        var targetEventNo = pExlcMaster.EVENT_NO + 1;
+
+                        // 2 - Insert EVENT
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlc eventRow = data.PEXLC;
+
+
+                        // 3 - Select Existing Event
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                       
+                        eventRow.CenterID = USER_CENTER_ID;
+                        eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
+                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = targetEventNo;
+                        eventRow.EVENT_MODE = "E";
+                        eventRow.REC_STATUS = "P";
+                        eventRow.EVENT_TYPE = EVENT_TYPE;
+                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.USER_ID = USER_ID;
+                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+
+                        eventRow.AUTOOVERDUE = "N";
+                        eventRow.LCOVERDUE = "Y";
+                        eventRow.LCPastDue = "O";
+                        eventRow.IN_USE = 1;
+
+
+                        if (eventRow.PAYMENT_INSTRU == "PAID")
+                        {
+                            eventRow.METHOD = data.PEXLC.METHOD;
+
+                            // RECEIVED_NO DCR
+
+                            if (!eventRow.RECEIVED_NO.Contains("DCR"))
+                            {
+                                eventRow.RECEIVED_NO = "";
+                            }
+                            else if (!eventRow.RECEIVED_NO.Contains("DDR"))
+                            {
+                                eventRow.RECEIVED_NO = "";
+                            }
+
+                            // Call Save Payment
+                            eventRow.RECEIVED_NO = "RECEIVE_NO FROM DLL";
+
+                            // Call Save PaymentDetail
+                        }
+                        else if (eventRow.PAYMENT_INSTRU == "UNPAID")
+                        {
+                            // UNPAID
+                            eventRow.METHOD = "";
+
+                            var existingPaymentRows = (from row in _context.pPayments
+                                                       where row.RpReceiptNo == eventRow.RECEIVED_NO
+                                                       select row).ToListAsync();
+                            foreach (var row in await existingPaymentRows)
+                            {
+                                _context.pPayments.Remove(row);
+                            }
+
+                            var existingPPayDetailRows = (from row in _context.pPayDetails
+                                                          where row.DpReceiptNo == eventRow.RECEIVED_NO
+                                                          select row).ToListAsync();
+                            foreach (var row in await existingPPayDetailRows)
+                            {
+                                _context.pPayDetails.Remove(row);
+                            }
+
+                        }
+
+                        // Commit
+                        if (pExlcEvent == null)
+                        {
+                            // Insert
+                            _context.pExlcs.Add(eventRow);
+                        }
+                        else
+                        {
+                            // Update
+                            _context.pExlcs.Update(eventRow);
+                        }
+
+
+                        await _context.SaveChangesAsync();
+                        transaction.Complete();
+
+                        response.Code = Constants.RESPONSE_OK;
+
+                        PEXLCPPaymentPPayDetailDataContainer responseData = new();
+                        responseData.PEXLC = eventRow;
+                        responseData.PPAYMENT = data.PPAYMENT;
+                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+
+                        response.Data = responseData;
+                        response.Message = "Export L/C Saved";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.InnerException != null &&
+                            e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        {
+                            // Key already exists
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists / Wrong Event State";
+                            return BadRequest(response);
+                        }
+                        else
+                        {
+                            // Rollback
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = e.ToString();
+                            return BadRequest(response);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+            DynamicParameters param = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
+                string.IsNullOrEmpty(data.EVENT_DATE)
+                )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_LC_NO, EVENT_DATE is required";
+                return BadRequest(response);
+            }
+
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        // 0 - Select EXLC MASTER
+                        var pExlc = (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefault();
+
+                        if (pExlc == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C does not exist";
+                            return BadRequest(response);
+                        }
+
+
+
+                        // 1 - Delete Daily GL
+                        var dailyGL = (from row in _context.pDailyGLs
+                                       where row.VouchID == data.VOUCH_ID &&
+                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                       select row).ToListAsync();
+
+                        foreach (var row in await dailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+
+                        // 2 - Update pExlc EVENT
+                        var pExlcs = (from row in _context.pExlcs
+                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_TYPE == EVENT_TYPE &&
+                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                            row.RECORD_TYPE == "EVENT"
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExlcs)
+                        {
+                            row.REC_STATUS = "T";
+                        }
+
+
+                        // 3 - Delete PExPayment
+                        var targetEventNo = pExlc.EVENT_NO + 1;
+                        var pExPayments = (from row in _context.pExPayments
+                                           where row.DOCNUMBER == data.EXPORT_LC_NO &&
+                                                 row.EVENT_TYPE == EVENT_TYPE &&
+                                                 row.EVENT_NO == targetEventNo
+                                           select row).ToListAsync();
+
+                        foreach (var row in await pExPayments)
+                        {
+                            _context.pExPayments.Remove(row);
+                        }
+                        // 4 - Update pExlc Master
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {targetEventNo} WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE = 'MASTER'");
+
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export L/C Deleted";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
     }
+
+
 }

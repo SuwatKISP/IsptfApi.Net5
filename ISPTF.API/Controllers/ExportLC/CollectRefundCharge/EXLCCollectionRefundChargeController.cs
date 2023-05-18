@@ -33,12 +33,15 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCCollectionPaymentListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCCollectionPaymentListResponse>> List(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCCollectionPaymentListResponse response = new EXLCCollectionPaymentListResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -134,11 +137,13 @@ namespace ISPTF.API.Controllers.ExportLC
 
         [HttpGet("select")]
         //public async Task<IEnumerable<PEXLCPPaymentRsp>> GetAllSelect(string? EXPORT_BC_NO , string? EVENT_NO, string? LFROM)
-        public async Task<ActionResult<PEXLCPPaymentResponse>> GetAllSelect(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXLCPPaymentResponse>> Select(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
             PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(EVENT_NO) || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
+                string.IsNullOrEmpty(EVENT_NO) || 
+                string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
@@ -415,7 +420,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 3 - Update pExlc EVENT
                         var pExlcs = (from row in _context.pExlcs
                                       where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == "Collect/Refund" &&
+                                            row.EVENT_TYPE == EVENT_TYPE &&
                                             (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
                                             row.RECORD_TYPE == "EVENT"
                                       select row).ToListAsync();

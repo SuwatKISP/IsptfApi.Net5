@@ -34,7 +34,9 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCIssueCollectNewPageResponse response = new EXLCIssueCollectNewPageResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, Page, PageSize is required";
@@ -100,7 +102,9 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCIssueCollectEditPageResponse response = new EXLCIssueCollectEditPageResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, Page, PageSize is required";
@@ -164,7 +168,10 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCIssueCollectReleasePageResponse response = new EXLCIssueCollectReleasePageResponse();
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(USER_ID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(USER_ID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "CenterID, USER_ID, Page, PageSize is required";
@@ -721,7 +728,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // 1 - Cancel PPayment
-                        var issueCollectExlc = (from row in _context.pExlcs
+                        var pExlcEvents = (from row in _context.pExlcs
                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                                       row.RECORD_TYPE == "EVENT" &&
                                                       row.EVENT_TYPE == "Issue Collect" &&
@@ -729,7 +736,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                       (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
                                                 select row).ToListAsync();
 
-                        foreach (var row in await issueCollectExlc)
+                        foreach (var row in await pExlcEvents)
                         {
                             var pPayment = (from row2 in _context.pPayments
                                             where row2.RpReceiptNo == row.RECEIVED_NO

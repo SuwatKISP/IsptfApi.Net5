@@ -468,9 +468,28 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
+                        // 1 - Cancel PPayment
+                        var pExlcEvents = (from row in _context.pExlcs
+                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                      row.RECORD_TYPE == "EVENT" &&
+                                                      row.EVENT_TYPE == EVENT_TYPE &&
+                                                      row.REC_STATUS == "P" &&
+                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
+                                                select row).ToListAsync();
+
+                        foreach (var row in await pExlcEvents)
+                        {
+                            var pPayment = (from row2 in _context.pPayments
+                                            where row2.RpReceiptNo == row.RECEIVED_NO
+                                            select row2).ToListAsync();
+                            foreach (var rowPayment in await pPayment)
+                            {
+                                rowPayment.RpStatus = "C";
+                            }
+                        }
 
 
-                        // 1 - Delete Daily GL
+                        // 2 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
                                        where row.VouchID == data.VOUCH_ID &&
                                              row.VouchDate == DateTime.Parse(data.EVENT_DATE)
@@ -482,7 +501,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
 
-                        // 2 - Update pExlc EVENT
+                        // 3 - Update pExlc EVENT
                         var pExlcs = (from row in _context.pExlcs
                                       where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                             row.EVENT_TYPE == EVENT_TYPE &&
@@ -495,9 +514,20 @@ namespace ISPTF.API.Controllers.ExportLC
                             row.REC_STATUS = "T";
                         }
 
-
-                        // 3 - Delete PExPayment
+                        // 4 - Delete PExInterest
                         var targetEventNo = pExlc.EVENT_NO + 1;
+                        var pExInterests = (from row in _context.pEXInterests
+                                           where row.DocNo == data.EXPORT_LC_NO &&
+                                                 row.Event == EVENT_TYPE &&
+                                                 row.EventNo == targetEventNo
+                                           select row).ToListAsync();
+
+                        foreach (var row in await pExInterests)
+                        {
+                            _context.pEXInterests.Remove(row);
+                        }
+
+                        // 5 - Delete PExPayment
                         var pExPayments = (from row in _context.pExPayments
                                            where row.DOCNUMBER == data.EXPORT_LC_NO &&
                                                  row.EVENT_TYPE == EVENT_TYPE &&
@@ -508,19 +538,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             _context.pExPayments.Remove(row);
                         }
-                        // 4 - Update pExlc Master
-
-                        /* 
-                        var pExlcMasters = (from row in _context.pExlcs
-                                         where  row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                row.RECORD_TYPE == "MASTER"
-                                         select row).ToListAsync();
-
-                        foreach (var row in await pExlcMasters)
-                        {
-                            row.REC_STATUS = "R";
-                            //row.EVENT_NO = targetEventNo;
-                        }*/
+                        // 6 - Update pExlc Master
 
                         // Commit
                         await _context.SaveChangesAsync();
