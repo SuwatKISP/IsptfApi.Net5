@@ -346,7 +346,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 2 - Delete pExlc EVENT
                         var pExlcs = (from row in _context.pExlcs
                                       where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == "OverDue" &&
+                                            row.EVENT_TYPE == EVENT_TYPE &&
                                             row.REC_STATUS == "P" &&
                                             row.RECORD_TYPE == "EVENT"
                                       select row).ToListAsync();
