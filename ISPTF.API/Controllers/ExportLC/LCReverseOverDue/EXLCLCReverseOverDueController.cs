@@ -23,6 +23,10 @@ namespace ISPTF.API.Controllers.ExportLC
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+
+        private const string BUSINESS_TYPE = "21";
+        private const string EVENT_TYPE = "REACTIVE";
+
         public EXLCLCReverseOverDueController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -157,6 +161,132 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new PEXLCRecordRsp();
             }
             return BadRequest(response);
+        }
+
+
+        [HttpPost("save")]
+        public async Task<ActionResult<PEXLCSaveResponse>> Save([FromBody] PEXLCSaveRequest data)
+        {
+            PEXLCSaveResponse response = new();
+            // Class validate
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+                        // 2 - Update Master
+                        pExlcMaster.REC_STATUS = "P";
+                        _context.SaveChanges();
+
+                        var targetEventNo = pExlcMaster.EVENT_NO + 1;
+
+                        // 3 - Select Existing EVENT
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).AsNoTracking().FirstOrDefault();
+
+
+                        // 3 - Insert/Update EVENT
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlc eventRow = data.PEXLC;
+
+                        eventRow.CenterID = USER_CENTER_ID;
+                        eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
+                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = targetEventNo;
+                        eventRow.REC_STATUS = "P";
+                        eventRow.EVENT_MODE = "E";
+                        eventRow.EVENT_TYPE = EVENT_TYPE;
+                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.USER_ID = USER_ID;
+                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+
+
+                        // Event Specific
+                        eventRow.AUTOOVERDUE = "N";
+                        eventRow.LCOVERDUE = "N";
+                        eventRow.FlagBack = "Y";
+                        eventRow.IN_USE = 1;
+                        eventRow.LCPastDue = null;
+
+
+                        // Commit
+                        if (pExlcEvent == null)
+                        {
+                            // Insert
+                            _context.pExlcs.Add(eventRow);
+                        }
+                        else
+                        {
+                            // Update
+                            _context.pExlcs.Update(eventRow);
+                        }
+
+
+                        await _context.SaveChangesAsync();
+                        transaction.Complete();
+
+                        response.Code = Constants.RESPONSE_OK;
+
+                        PEXLCDataContainer responseData = new();
+                        responseData.PEXLC = eventRow;
+
+                        response.Data = responseData;
+                        response.Message = "Export L/C Saved";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.InnerException != null
+                            && e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                        {
+                            // Key already exists
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists / Wrong Event State";
+                            return BadRequest(response);
+                        }
+                        else
+                        {
+                            // Rollback
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = e.ToString();
+                            return BadRequest(response);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
         }
 
         [HttpPost("delete")]
