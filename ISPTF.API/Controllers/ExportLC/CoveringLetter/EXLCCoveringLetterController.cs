@@ -312,7 +312,6 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Message = e.ToString();
                 return BadRequest(response);
             }
-
         }
 
         [HttpPost("delete")]
