@@ -249,12 +249,13 @@ namespace ISPTF.API.Controllers.ExportLC
                                                 (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
                                                 row.EVENT_TYPE == EVENT_TYPE &&
                                                 row.EVENT_NO == targetEventNo
-                                          select row).FirstOrDefault();
+                                          select row).AsNoTracking().FirstOrDefault();
 
 
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = targetEventNo;
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
@@ -305,24 +306,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         else
                         {
                             // Update
-                            Type eventRowType = typeof(pExlc);
-                            Type pExlcEventType = typeof(pExlc);
-
-                            PropertyInfo[] properties = eventRowType.GetProperties();
-
-                            foreach (PropertyInfo property in properties)
-                            {
-                                if (property.CanRead)
-                                {
-                                    PropertyInfo pExlcEventProperty = pExlcEventType.GetProperty(property.Name);
-                                    if (pExlcEventProperty != null && pExlcEventProperty.CanWrite)
-                                    {
-                                        object value = property.GetValue(eventRow);
-                                        pExlcEventProperty.SetValue(pExlcEvent, value);
-                                    }
-                                }
-                            }
-
+                            _context.pExlcs.Update(eventRow);
                         }
 
                         await _context.SaveChangesAsync();
@@ -346,7 +330,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // Key already exists
                             response.Code = Constants.RESPONSE_ERROR;
-                            response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists";
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists / Wrong Event State";
                             return BadRequest(response);
                         }
                         else

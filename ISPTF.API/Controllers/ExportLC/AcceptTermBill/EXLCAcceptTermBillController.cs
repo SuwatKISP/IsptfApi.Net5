@@ -258,7 +258,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                 (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
                                                 row.EVENT_TYPE == EVENT_TYPE &&
                                                 row.EVENT_NO == targetEventNo
-                                          select row).FirstOrDefault();
+                                          select row).AsNoTracking().FirstOrDefault();
 
 
                         eventRow.CenterID = USER_CENTER_ID;
@@ -314,23 +314,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         else
                         {
                             // Update
-                            Type eventRowType = typeof(pExlc);
-                            Type pExlcEventType = typeof(pExlc);
-
-                            PropertyInfo[] properties = eventRowType.GetProperties();
-
-                            foreach (PropertyInfo property in properties)
-                            {
-                                if (property.CanRead)
-                                {
-                                    PropertyInfo pExlcEventProperty = pExlcEventType.GetProperty(property.Name);
-                                    if (pExlcEventProperty != null && pExlcEventProperty.CanWrite)
-                                    {
-                                        object value = property.GetValue(eventRow);
-                                        pExlcEventProperty.SetValue(pExlcEvent, value);
-                                    }
-                                }
-                            }
+                            _context.pExlcs.Update(eventRow);
 
                         }
 
@@ -351,7 +335,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     catch (Exception e)
                     {
                         if (e.InnerException != null && 
-                            e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint"))
+                            e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint / Wrong Event State"))
                         {
                             // Key already exists
                             response.Code = Constants.RESPONSE_ERROR;
