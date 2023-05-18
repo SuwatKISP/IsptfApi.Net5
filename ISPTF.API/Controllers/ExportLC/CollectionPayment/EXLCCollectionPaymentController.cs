@@ -372,10 +372,19 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                         pExPayment exPaymentRow = data.PEXPAYMENT;
+                        exPaymentRow.DOCNUMBER = data.PEXLC.EXPORT_LC_NO;
+                        exPaymentRow.EVENT_NO = targetEventNo;
+                        exPaymentRow.EVENT_TYPE = EVENT_TYPE;
+                        exPaymentRow.REC_STATUS = "P";
+                        exPaymentRow.CenterID = USER_CENTER_ID;
 
+                        if (exPaymentRow.PAYMENT_INSTRU == "UNPAID")
+                        {
+                            exPaymentRow.Method = "";
+                        }
 
                         // 3 - Select Existing Event
-                        var pExlcExPayment = (from row in _context.pExPayments
+                        var pExPayment = (from row in _context.pExPayments
                                               where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
                                                     (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
                                                     row.EVENT_TYPE == EVENT_TYPE &&
@@ -384,6 +393,19 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         await _context.SaveChangesAsync();
 
+                        // Commit
+                        if (pExPayment == null)
+                        {
+                            // Insert
+                            _context.pExPayments.Add(exPaymentRow);
+                        }
+                        else
+                        {
+                            // Update
+                            _context.pExPayments.Update(exPaymentRow);
+                        }
+
+                        await _context.SaveChangesAsync();
 
                         // GL MOCK WAIT DLL
                         var glVouchId = "VOUCH ID FROM GL DLL";
@@ -502,18 +524,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                         // 3 - Update pExlc EVENT
-                        var pExlcs = (from row in _context.pExlcs
-                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == EVENT_TYPE &&
-                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
-                                            row.RECORD_TYPE == "EVENT"
-                                      select row).ToListAsync();
-
-                        foreach (var row in await pExlcs)
-                        {
-                            row.REC_STATUS = "T";
-                        }
-
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'T' WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE = '{EVENT_TYPE}' AND REC_STATUS IN ('P','W')");
+                        
                         // 4 - Delete PExInterest
                         var targetEventNo = pExlc.EVENT_NO + 1;
                         var pExInterests = (from row in _context.pEXInterests
@@ -532,7 +544,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                            where row.DOCNUMBER == data.EXPORT_LC_NO &&
                                                  row.EVENT_TYPE == EVENT_TYPE &&
                                                  row.EVENT_NO == targetEventNo
-                                           select row).ToListAsync();
+                                           select row).AsNoTracking().ToListAsync();
 
                         foreach (var row in await pExPayments)
                         {

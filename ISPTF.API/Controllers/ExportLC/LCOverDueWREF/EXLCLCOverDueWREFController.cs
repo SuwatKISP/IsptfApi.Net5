@@ -360,24 +360,15 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                         // 2 - Update pExlc EVENT
-                        var pExlcs = (from row in _context.pExlcs
-                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == "OverDue" &&
-                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
-                                            row.RECORD_TYPE == "EVENT"
-                                      select row).ToListAsync();
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'T' WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE = '{EVENT_TYPE}' AND REC_STATUS IN ('P','W')");
 
-                        foreach (var row in await pExlcs)
-                        {
-                            row.REC_STATUS = "T";
-                        }
 
 
                         // 3 - Delete PExPayment
                         var targetEventNo = pExlc.EVENT_NO + 1;
                         var pExPayments = (from row in _context.pExPayments
                                            where row.DOCNUMBER == data.EXPORT_LC_NO &&
-                                                 row.EVENT_TYPE == "OverDue" &&
+                                                 row.EVENT_TYPE == EVENT_TYPE &&
                                                  row.EVENT_NO == targetEventNo
                                            select row).ToListAsync();
 

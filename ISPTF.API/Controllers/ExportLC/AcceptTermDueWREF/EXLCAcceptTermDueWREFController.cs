@@ -433,18 +433,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                         // 3 - Update pExlc EVENT
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'T' WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE = '{EVENT_TYPE}' AND REC_STATUS IN ('P','W')");
 
-                        var pExlcs = (from row in _context.pExlcs
-                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                            row.EVENT_TYPE == "Accept Due WREF" &&
-                                            (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
-                                            row.RECORD_TYPE == "EVENT"
-                                      select row).ToListAsync();
-
-                        foreach (var row in await pExlcs)
-                        {
-                            row.REC_STATUS = "T";
-                        }
 
                         // 5 - Update pExlc Master
                         var targetEventNo = pExlc.EVENT_NO + 1;
