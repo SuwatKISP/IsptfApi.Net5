@@ -231,7 +231,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
 
-                        // 2 - Insert EVENT
+                        // 3 - Insert EVENT
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
@@ -239,7 +239,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlc eventRow = data.PEXLC;
 
 
-                        // 3 - Select Existing Event
+                        // 4 - Select Existing Event
                         var pExlcEvent = (from row in _context.pExlcs
                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
                                                 row.RECORD_TYPE == "EVENT" &&

@@ -22,6 +22,10 @@ namespace ISPTF.API.Controllers.ExportLC
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+
+        private const string BUSINESS_TYPE = "1";
+        private const string EVENT_TYPE = "Issue Collect";
+
         public EXLCIssueCollectController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -731,7 +735,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         var pExlcEvents = (from row in _context.pExlcs
                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                                       row.RECORD_TYPE == "EVENT" &&
-                                                      row.EVENT_TYPE == "Issue Collect" &&
+                                                      row.EVENT_TYPE == EVENT_TYPE &&
                                                       row.REC_STATUS == "P" &&
                                                       (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
                                                 select row).ToListAsync();
