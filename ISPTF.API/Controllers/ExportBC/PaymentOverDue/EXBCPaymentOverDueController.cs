@@ -680,55 +680,22 @@ namespace ISPTF.API.Controllers.ExportBC
             var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
             // Validate
-            if (string.IsNullOrEmpty(exbcpaymentoverduerelease.EXPORT_BC_NO)
-                || string.IsNullOrEmpty(exbcpaymentoverduerelease.METHOD)
-                || string.IsNullOrEmpty(exbcpaymentoverduerelease.PAYMENT_INSTRU)
-               )
-            {
-                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_BC_NO, METHOD, PAYMENT_INSTRU is required";
-                return BadRequest(response);
-            }
+            // if (string.IsNullOrEmpty(exbcpaymentoverduerelease.EXPORT_BC_NO)
+            //     || string.IsNullOrEmpty(exbcpaymentoverduerelease.METHOD)
+            //     || string.IsNullOrEmpty(exbcpaymentoverduerelease.PAYMENT_INSTRU)
+            //    )
+            // {
+            //     response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //     response.Message = "EXPORT_BC_NO, METHOD, PAYMENT_INSTRU is required";
+            //     return BadRequest(response);
+            // }
 
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", exbcpaymentoverduerelease.EXPORT_BC_NO);
-            param.Add("@BENE_ID", exbcpaymentoverduerelease.BENE_ID);
-            param.Add("@VOUCH_ID", exbcpaymentoverduerelease.VOUCH_ID);
-            param.Add("@EVENT_DATE", exbcpaymentoverduerelease.EVENT_DATE);
-            param.Add("@CenterID", USER_CENTER_ID);
-            param.Add("@TxBaseDay", exbcpaymentoverduerelease.TxBaseDay);
+            param.Add("@EVENT_DATE", 
+            exbcpaymentoverduerelease.EVENT_DATE);
             param.Add("@USER_ID", USER_ID);
-            param.Add("@ValueDate", exbcpaymentoverduerelease.ValueDate);
-            param.Add("@NEGO_COMM", exbcpaymentoverduerelease.NEGO_COMM);
-            param.Add("@TELEX_SWIFT", exbcpaymentoverduerelease.TELEX_SWIFT);
-            param.Add("@COURIER_POSTAGE", exbcpaymentoverduerelease.COURIER_POSTAGE);
-            param.Add("@STAMP_FEE", exbcpaymentoverduerelease.STAMP_FEE);
-            param.Add("@BE_STAMP", exbcpaymentoverduerelease.BE_STAMP);
-            param.Add("@COMM_OTHER", exbcpaymentoverduerelease.COMM_OTHER);
-            param.Add("@HANDING_FEE", exbcpaymentoverduerelease.HANDING_FEE);
-            param.Add("@DRAFTCOMM", exbcpaymentoverduerelease.DRAFTCOMM);
-            param.Add("@TOTAL_CHARGE", exbcpaymentoverduerelease.TOTAL_CHARGE);
-            param.Add("@REFUND_TAX_YN", exbcpaymentoverduerelease.REFUND_TAX_YN);
-            param.Add("@REFUND_TAX_AMT", exbcpaymentoverduerelease.REFUND_TAX_AMT);
-            param.Add("@PAYMENTTYPE", exbcpaymentoverduerelease.PAYMENTTYPE);
-            param.Add("@NARRATIVE", exbcpaymentoverduerelease.NARRATIVE);
-            param.Add("@ALLOCATION", exbcpaymentoverduerelease.ALLOCATION);
-            param.Add("@AUTOOVERDUE", exbcpaymentoverduerelease.AUTOOVERDUE);
-            param.Add("@LCOVERDUE", exbcpaymentoverduerelease.LCOVERDUE);
-            param.Add("@PAYMENT_INSTRU", exbcpaymentoverduerelease.PAYMENT_INSTRU);
-            param.Add("@METHOD", exbcpaymentoverduerelease.METHOD);
-            param.Add("@INTCODE", exbcpaymentoverduerelease.INTCODE);
-            param.Add("@OINTRATE", exbcpaymentoverduerelease.OINTRATE);
-            param.Add("@OINTSPDRATE", exbcpaymentoverduerelease.OINTSPDRATE);
-            param.Add("@OINTCURRATE", exbcpaymentoverduerelease.OINTCURRATE);
-            param.Add("@OINTDAY", exbcpaymentoverduerelease.OINTDAY);
-            param.Add("@INTBALANCE", exbcpaymentoverduerelease.INTBALANCE);
-            param.Add("@LASTINTAMT", exbcpaymentoverduerelease.LASTINTAMT);
-            param.Add("@PRNBALANCE", exbcpaymentoverduerelease.PRNBALANCE);
-            param.Add("@TOTAL_NEGO_BALANCE", exbcpaymentoverduerelease.TOTAL_NEGO_BALANCE);
-            param.Add("@VALUE_DATE", exbcpaymentoverduerelease.VALUE_DATE);
-            param.Add("@PASTDUEDATE", exbcpaymentoverduerelease.PASTDUEDATE);
-            param.Add("@int_paid_thb", exbcpaymentoverduerelease.int_paid_thb);
+            param.Add("@CenterID", USER_CENTER_ID);
 
             param.Add("PExBcRsp", dbType: DbType.Int32,
                direction: System.Data.ParameterDirection.Output,

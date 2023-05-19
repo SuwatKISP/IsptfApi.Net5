@@ -233,9 +233,9 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXBCPPaymentResponse>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
+        public async Task<ActionResult<PEXBCPPaymentListResponse>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
-            PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
+            PEXBCPPaymentListResponse response = new PEXBCPPaymentListResponse();
             var USER_ID = User.Identity.Name;
 
             DynamicParameters param = new DynamicParameters();
@@ -395,12 +395,10 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcppaymentreq.PEXBC.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcppaymentreq.PEXBC.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcppaymentreq.PEXBC.DOCUMENT_COPY);
-
-            param.Add("@SIGHT_BASIS", null);
-            param.Add("@ART44A", null);
-            param.Add("@ENDORSED", null);
-            param.Add("@MT750", null);
-
+            param.Add("@SIGHT_BASIS", pexbcppaymentreq.PEXBC.SIGHT_BASIS);
+            param.Add("@ART44A", pexbcppaymentreq.PEXBC.ART44A);
+            param.Add("@ENDORSED", pexbcppaymentreq.PEXBC.ENDORSED);
+            param.Add("@MT750", pexbcppaymentreq.PEXBC.MT750);
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcppaymentreq.PEXBC.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcppaymentreq.PEXBC.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcppaymentreq.PEXBC.ADJUST_COVERING_AMT);
@@ -544,7 +542,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     // RETURN VOUCH_ID
 
-                    PEXBCPPaymentRsp jsonResponse = JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                    List<PEXBCPPaymentRsp> jsonResponse = JsonSerializer.Deserialize<List<PEXBCPPaymentRsp>>(pexbcpexpaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -554,7 +552,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Save Error";
-                    response.Data = new PEXBCPPaymentRsp();
+                    response.Data = new List<PEXBCPPaymentRsp>();
                     return BadRequest(response);
                 }
             }
@@ -562,7 +560,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCPPaymentRsp();
+                response.Data = new List<PEXBCPPaymentRsp>();
             }
             return BadRequest(response);
         }

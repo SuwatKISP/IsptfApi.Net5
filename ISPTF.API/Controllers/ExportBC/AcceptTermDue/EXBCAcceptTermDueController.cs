@@ -157,9 +157,9 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXBCListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXBCPPaymentListResponse>> GetAllSelect(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
         {
-            PEXBCListResponse response = new PEXBCListResponse();
+            PEXBCPPaymentListResponse response = new PEXBCPPaymentListResponse();
             var USER_ID = User.Identity.Name;
 
             // Validate
@@ -167,7 +167,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO, EVENT_NO, LFROM is required";
-                response.Data = new List<PEXBC>();
+                response.Data = new List<PEXBCPPaymentRsp>();
                 return BadRequest(response);
             }
 
@@ -183,7 +183,7 @@ namespace ISPTF.API.Controllers.ExportBC
                             param);
                 response.Code = Constants.RESPONSE_OK;
                 response.Message = "Success";
-                response.Data = (List<PEXBC>)results;
+                response.Data = (List<PEXBCPPaymentRsp>)results;
 
 
                 response.Page = 1;
@@ -196,7 +196,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new List<PEXBC>();
+                response.Data = new List<PEXBCPPaymentRsp>();
             }
             return BadRequest(response);
         }
