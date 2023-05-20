@@ -548,7 +548,6 @@ namespace ISPTF.API.Controllers.ExportLC
                                 row.SendFlag = "R";
                             }
 
-
                             // 4 - Update PPayment
                             var pPayments = (from row in _context.pPayments
                                              where row.RpReceiptNo == data.PEXLC.RECEIVED_NO
