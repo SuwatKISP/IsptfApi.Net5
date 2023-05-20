@@ -38,8 +38,8 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCIssueCollectNewPageResponse response = new EXLCIssueCollectNewPageResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || 
-                string.IsNullOrEmpty(Page) || 
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(Page) ||
                 string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -106,8 +106,8 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCIssueCollectEditPageResponse response = new EXLCIssueCollectEditPageResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || 
-                string.IsNullOrEmpty(Page) || 
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(Page) ||
                 string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -172,9 +172,9 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCIssueCollectReleasePageResponse response = new EXLCIssueCollectReleasePageResponse();
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || 
-                string.IsNullOrEmpty(USER_ID) || 
-                string.IsNullOrEmpty(Page) || 
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(USER_ID) ||
+                string.IsNullOrEmpty(Page) ||
                 string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -696,6 +696,99 @@ namespace ISPTF.API.Controllers.ExportLC
 
         }
 
+        [HttpPost("release")]
+        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        {
+            EXLCResultResponse response = new EXLCResultResponse();
+            // 0 - Select EXLC Master
+            var pExlcMaster = (from row in _context.pExlcs
+                               where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                     row.RECORD_TYPE == "MASTER"
+                               select row).FirstOrDefault();
+
+            if (pExlcMaster == null)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "PEXLC " + EVENT_TYPE + " Event Already exists";
+                return BadRequest(response);
+            }
+
+            DateTime VOUCH_DATE = ExportLCHelper.GetSysDate(_context);
+
+            // 1 - Check if GL is Balance
+            if (await ExportLCHelper.GLBalance(_context, VOUCH_DATE, data.PEXLC.VOUCH_ID) == true)
+            {
+                try
+                {
+                    using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                    {
+                        try
+                        {
+                            // 2 - Update GL Flag
+                            var gls = (from row in _context.pDailyGLs
+                                       where row.VouchID == data.PEXLC.VOUCH_ID &&
+                                                row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
+                                       select row).ToListAsync();
+
+                            foreach (var row in await gls)
+                            {
+                                row.SendFlag = "R";
+                            }
+
+                            // 3 - Update Master
+                            var USER_ID = User.Identity.Name;
+                            var claimsPrincipal = HttpContext.User;
+                            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', AUTH_CODE = '{USER_ID}', AUTH_DATE = GETDATE() WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+
+
+                            // 4 - Update Event
+                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', AUTH_CODE = '{USER_ID}', AUTH_DATE = GETDATE() WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT'");
+
+
+                            // 5 - Update PPayment
+                            var pPayments = (from row in _context.pPayments
+                                             where row.RpReceiptNo == data.PEXLC.RECEIVED_NO
+                                             select row).ToListAsync();
+
+                            foreach (var row in await pPayments)
+                            {
+                                row.RpRecStatus = "R";
+                            }
+
+                            // Commit
+                            await _context.SaveChangesAsync();
+                            transaction.Complete();
+
+                            response.Code = Constants.RESPONSE_OK;
+                            response.Message = "Export L/C Release Complete";
+                            return Ok(response);
+                        }
+                        catch (Exception e)
+                        {
+                            // Rollback
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = e.ToString();
+                            return BadRequest(response);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = e.ToString();
+                    return BadRequest(response);
+                }
+            }
+            else
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = "GL Transaction not balance please check.";
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("delete")]
         public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
         {
@@ -733,12 +826,12 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 1 - Cancel PPayment
                         var pExlcEvents = (from row in _context.pExlcs
-                                                where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                      row.RECORD_TYPE == "EVENT" &&
-                                                      row.EVENT_TYPE == EVENT_TYPE &&
-                                                      row.REC_STATUS == "P" &&
-                                                      (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
-                                                select row).ToListAsync();
+                                           where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "EVENT" &&
+                                                 row.EVENT_TYPE == EVENT_TYPE &&
+                                                 row.REC_STATUS == "P" &&
+                                                 (row.RECEIVED_NO != null && row.RECEIVED_NO != "")
+                                           select row).ToListAsync();
 
                         foreach (var row in await pExlcEvents)
                         {
