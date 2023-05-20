@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -176,21 +177,43 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@EVENT_NO", EVENT_NO);
             param.Add("@LFROM", LFROM);
 
+            param.Add("@PExBcRsp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+            param.Add("@PEXBCPPaymentRsp", dbType: DbType.String,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 5215585);
             try
             {
-                var results = await _db.LoadData<PEXBC, dynamic>(
+                var results = await _db.LoadData<PEXBCPPaymentRsp, dynamic>(
                             storedProcedure: "usp_pEXBC_AcceptTermDue_Select",
                             param);
-                response.Code = Constants.RESPONSE_OK;
-                response.Message = "Success";
-                response.Data = (List<PEXBCPPaymentRsp>)results;
 
+                var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
+                var pexbcppaymentrsp = param.Get<dynamic>("@PEXBCPPaymentRsp");
 
-                response.Page = 1;
-                response.Total = response.Data.Count;
-                response.TotalPage = 1;
+                if (PExBcRsp > 0 && !string.IsNullOrEmpty(pexbcppaymentrsp))
+                {
+                    PEXBCPPaymentRsp jsonResponse = System.Text.Json.JsonSerializer.Deserialize<PEXBCPPaymentRsp>(pexbcppaymentrsp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = new List<PEXBCPPaymentRsp>(){jsonResponse};
+                    // response.Data = jsonResponse;
+                    // response.Data = (List<PEXBCPPaymentRsp>)pexbcppaymentrsp;
+                    response.Page = 1;
+                    response.Total = response.Data.Count;
+                    response.TotalPage = 1;
 
-                return Ok(response);
+                    return Ok(response);
+                }
+                else
+                {
+
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT B/C NO does not exit";
+                    response.Data = new List<PEXBCPPaymentRsp>();
+                    return BadRequest(response);
+                }
             }
             catch (Exception e)
             {
@@ -371,7 +394,7 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@SWIFT_DISC", pexbc.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbc.DOCUMENT_COPY);
 
-          
+
             param.Add("@SIGHT_BASIS", null);
             param.Add("@ART44A", null);
             param.Add("@ENDORSED", null);
@@ -472,7 +495,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
                 var pEXBCContainer = new PEXBCDataContainer(results.FirstOrDefault());
-                
+
                 if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
