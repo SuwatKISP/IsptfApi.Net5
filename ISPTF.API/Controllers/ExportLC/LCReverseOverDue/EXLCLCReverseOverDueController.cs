@@ -34,11 +34,14 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCLCReverseOverDueListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCLCReverseOverDueListResponse>> List(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCLCReverseOverDueListResponse response = new EXLCLCReverseOverDueListResponse();
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -56,7 +59,7 @@ namespace ISPTF.API.Controllers.ExportLC
             try
             {
                 DynamicParameters param = new();
-                param.Add("@ListType", @ListType);
+                param.Add("@ListType", ListType);
                 param.Add("@CenterID", CenterID);
                 param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
                 param.Add("@BENName", BENName);
@@ -278,6 +281,72 @@ namespace ISPTF.API.Controllers.ExportLC
                             response.Message = e.ToString();
                             return BadRequest(response);
                         }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("release")]
+        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        {
+            EXLCResultResponse response = new();
+            // Class validate
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+                        var targetEventNo = pExlcMaster.EVENT_NO + 1;
+
+                        // 2 - Select Existing EVENT
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.BUSINESS_TYPE == BUSINESS_TYPE
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                        // 3 - Check Event Exists
+                        if (pExlcEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event does not exists";
+                            return BadRequest(response);
+                        }
+
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Export L/C Released";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
                     }
                 }
             }
