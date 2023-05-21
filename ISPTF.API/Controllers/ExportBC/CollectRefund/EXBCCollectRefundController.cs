@@ -521,28 +521,13 @@ namespace ISPTF.API.Controllers.ExportBC
                     storedProcedure: "usp_pEXBC_CollectRefund_Save",
                     param);
 
-
-                var resp = param.Get<int>("@PExBcRsp");
-                var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
-                var resSeqNo = param.Get<int>("@ResSeqNo");
-                var resReceiptNo = param.Get<string>("@ResReceiptNo");
-                if (resp == 1)
+                var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
+                var pexbcppaymentrsp = param.Get<dynamic>("@PEXBCPPaymentRsp");
+                return Ok(results);
+                if (PExBcRsp == 1)
                 {
-
-                    bool resGL;
-                    bool resPayD;
-                    string eventDate;
-                    string resVoucherID;
-                    PEXBCPPaymentRspGL resultJson = new();
-
-                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
-                    resVoucherID = "";
-                    resGL = true;
-                    resPayD = true;
-
                     // RETURN VOUCH_ID
-
-                    List<PEXBCPPaymentRsp> jsonResponse = JsonSerializer.Deserialize<List<PEXBCPPaymentRsp>>(pexbcpexpaymentrsp);
+                    List<PEXBCPPaymentRsp> jsonResponse = JsonSerializer.Deserialize<List<PEXBCPPaymentRsp>>(pexbcppaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
