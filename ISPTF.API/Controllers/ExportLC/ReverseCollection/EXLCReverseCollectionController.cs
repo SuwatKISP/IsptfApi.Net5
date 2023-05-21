@@ -269,7 +269,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // GL MOCK WAIT DLL
 
                         var glEvent = EVENT_TYPE.ToUpper();
-                        if (eventRow.WithOutFlag == "1")
+                        if (eventRow.WithOutFlag == "Y")
                         {
                             if (eventRow.WithOutType == "U")
                             {

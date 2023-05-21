@@ -343,7 +343,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 4 - GL MOCK WAIT DLL
 
                         var glEvent = "CPAYMENT PURCHASE";
-                        if (eventRow.WithOutFlag == "1")
+                        if (eventRow.WithOutFlag == "Y")
                         {
                             if (eventRow.WithOutType == "U")
                             {

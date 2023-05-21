@@ -509,7 +509,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // PAID OR UNPAID
                         if (data.PEXLC.PAYMENT_INSTRU == "PAID" || data.PEXLC.PAYMENT_INSTRU == "UNPAID")
                         {
-                            if (data.PEXLC.WithOutFlag == "1")
+                            if (data.PEXLC.WithOutFlag == "Y")
                             {
 
                                 if (data.PEXLC.WithOutType == "F") // FUNDED
