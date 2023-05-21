@@ -283,7 +283,7 @@ namespace ISPTF.API.Controllers.ExportLC
             if (string.IsNullOrEmpty(EXPORT_LC_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(EVENT_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "CenterID, Page, PageSize is required";
+                response.Message = "EXPORT_LC_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
                 response.Data = new PEXLCPPaymentRsp();
                 return BadRequest(response);
             }
