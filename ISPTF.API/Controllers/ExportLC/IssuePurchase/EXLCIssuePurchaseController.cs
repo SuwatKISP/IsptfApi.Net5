@@ -490,7 +490,7 @@ namespace ISPTF.API.Controllers.ExportLC
             if (pExlcMaster == null)
             {
                 response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "PEXLC " + EVENT_TYPE + " Master not exists";
+                response.Message = "PEXLC " + EVENT_TYPE + " Master does not exists";
                 return BadRequest(response);
             }
 

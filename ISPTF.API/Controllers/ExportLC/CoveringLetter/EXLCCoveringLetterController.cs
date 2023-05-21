@@ -356,7 +356,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                 row.EVENT_NO == data.PEXLC.EVENT_NO
                                           select row).AsNoTracking().FirstOrDefault();
 
-                        // 3 - Check Event Master Exists
+                        // 3 - Check Event Exists
                         if (pExlcEvent == null)
                         {
                             response.Code = Constants.RESPONSE_ERROR;

@@ -35,12 +35,15 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCAcceptTermDueListResponse>> GetAllList(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCAcceptTermDueListResponse>> List(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCAcceptTermDueListResponse response = new EXLCAcceptTermDueListResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            if (string.IsNullOrEmpty(ListType) || 
+                string.IsNullOrEmpty(CenterID) || 
+                string.IsNullOrEmpty(Page) || 
+                string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType, CenterID, Page, PageSize is required";
@@ -60,7 +63,7 @@ namespace ISPTF.API.Controllers.ExportLC
             {
                 DynamicParameters param = new();
 
-                param.Add("@ListType", @ListType);
+                param.Add("@ListType", ListType);
                 param.Add("@CenterID", CenterID);
                 param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
                 param.Add("@BENName", BENName);
@@ -141,7 +144,11 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || EVENT_NO == null || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || string.IsNullOrEmpty(LFROM))
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
+                EVENT_NO == null || 
+                string.IsNullOrEmpty(RECORD_TYPE) || 
+                string.IsNullOrEmpty(REC_STATUS) || 
+                string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, RECORD_TYPE, REC_STATUS, LFROM is required";
