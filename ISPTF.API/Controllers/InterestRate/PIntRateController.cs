@@ -23,6 +23,18 @@ namespace ISPTF.API.Controllers.InterestRate
             _db = db;
         }
 
+        [HttpGet("GetRateInterest")]
+        public async Task<IEnumerable<GetInterestRateRsp>> GetIntRate(string RateCode )
+        {
+            DynamicParameters param = new();
+            param.Add("@IRate_Code", RateCode);
+
+            var results = await _db.LoadData<GetInterestRateRsp, dynamic>(
+                        storedProcedure: "usp_GetRateInterest",
+                        param);
+            return results;
+        }
+
         [HttpGet("select")]
         public async Task<IEnumerable<PIntRateRsp>> GetAll(string RateCode ,DateTime RateDate, string RateTime)
         {
