@@ -51,10 +51,7 @@ namespace ISPTF.API.Controllers.ExportLC
             {
                 return false;
             }
-
-            
         }
-
         public static DateTime GetSysDate(ISPTFContext context)
         {
             string connectionString = context.Database.GetConnectionString();
@@ -67,6 +64,11 @@ namespace ISPTF.API.Controllers.ExportLC
                     return currentDate;
                 }
             }
+        }
+        public static double GetExchangeRate(string CCY, int? cType = null)
+        {
+
+            return 0;
         }
     }
 }
