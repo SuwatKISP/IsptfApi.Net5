@@ -36,7 +36,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCPaymentPastDueWREFListResponse>> List(string? @ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCPaymentPastDueWREFListResponse>> List(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
         {
             EXLCPaymentPastDueWREFListResponse response = new EXLCPaymentPastDueWREFListResponse();
             // Validate
@@ -61,7 +61,7 @@ namespace ISPTF.API.Controllers.ExportLC
             try
             {
                 DynamicParameters param = new();
-                param.Add("@ListType", @ListType);
+                param.Add("@ListType", ListType);
                 param.Add("@CenterID", CenterID);
                 param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
                 param.Add("@BENName", BENName);

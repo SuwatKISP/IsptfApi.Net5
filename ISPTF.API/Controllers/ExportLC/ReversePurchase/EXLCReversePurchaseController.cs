@@ -312,6 +312,84 @@ namespace ISPTF.API.Controllers.ExportLC
             }
         }
 
+        [HttpPost("release")]
+        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        {
+            EXLCResultResponse response = new();
+            // Class validate
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+
+                        // 2 - Update Master
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlcMaster.AUTH_CODE = USER_ID;
+                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
+                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
+
+
+                        await _context.SaveChangesAsync();
+
+                        // 3 - Update Master/Event PK to Release
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+
+
+                        // 4 - Update GL Flag
+                        var gls = (from row in _context.pDailyGLs
+                                   where row.VouchID == data.PEXLC.VOUCH_ID &&
+                                            row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
+                                   select row).ToListAsync();
+
+                        foreach (var row in await gls)
+                        {
+                            row.SendFlag = "R";
+                        }
+
+                        transaction.Complete();
+
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Export L/C Released";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("delete")]
         public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
         {
