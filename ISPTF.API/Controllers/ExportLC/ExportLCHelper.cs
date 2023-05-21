@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Data.SqlClient;
+using System.Transactions;
 
 namespace ISPTF.API.Controllers.ExportLC
 {
@@ -65,10 +66,96 @@ namespace ISPTF.API.Controllers.ExportLC
                 }
             }
         }
-        public static double GetExchangeRate(string CCY, int? cType = null)
+        public static double GetExchangeRate(ISPTFContext context, string CCY, int? cType = null)
         {
 
             return 0;
+        }
+
+        public async static Task<bool> UpdateCustomerLiability(ISPTFContext _context, pExlc data)
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    // 0 - Select EXLC Master
+                    var pExlcMaster = (from row in _context.pExlcs
+                                       where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                             row.RECORD_TYPE == "MASTER"
+                                       select row).FirstOrDefault();
+
+                    // 1 - Check if Master Exists
+                    if (pExlcMaster == null)
+                    {
+                        return false;
+                    }
+
+                    var approveFacility = pExlcMaster.FACNO;
+                    if (string.IsNullOrEmpty(approveFacility))
+                    {
+                        approveFacility = "TFL9999";
+                    }
+
+                    // 2 - Update PCustLiability ODU
+                    var cCCY = "ODU";
+                    var exchangeRate = 1;
+                    var CCYAmt = data.PRNBALANCE;
+                    var BHTAmt = CCYAmt * exchangeRate;
+
+                    var pCustLiabODU = await (from row in _context.pCustLiabs
+                                              where row.Cust_Code == data.BENE_ID &&
+                                                    row.Facility_No == approveFacility &&
+                                                    row.Currency == cCCY
+                                              select row).FirstOrDefaultAsync();
+
+                    if (pCustLiabODU != null)
+                    {
+                        if (pCustLiabODU.XLCP_Amt == null)
+                        {
+                            pCustLiabODU.XLCP_Amt = 0;
+                        }
+                        pCustLiabODU.XLCP_Amt = pCustLiabODU.XLCP_Amt - CCYAmt;
+                        pCustLiabODU.UpdateDate = DateTime.Now; // With Time
+                    }
+
+
+                    // 3 - Update PCustLiability THB
+                    cCCY = "THB";
+                    var pCustLiabTHB = await (from row in _context.pCustLiabs
+                                              where row.Cust_Code == data.BENE_ID &&
+                                                    row.Facility_No == approveFacility &&
+                                                    row.Currency == cCCY
+                                              select row).FirstOrDefaultAsync();
+                    if (pCustLiabTHB == null)
+                    {
+                        pCustLiab row = new();
+                        row.Cust_Code = data.BENE_ID;
+                        row.Facility_No = approveFacility;
+                        row.Currency = cCCY;
+                        row.UpdateDate = DateTime.Now;
+                        row.XLCP_Amt = CCYAmt;
+                        _context.pCustLiabs.Add(row);
+                    }
+                    else if (pCustLiabTHB != null)
+                    {
+                        if (pCustLiabTHB.XLCP_Amt == null)
+                        {
+                            pCustLiabTHB.XLCP_Amt = 0;
+                        }
+                        pCustLiabTHB.XLCP_Amt = pCustLiabTHB.XLCP_Amt + CCYAmt;
+                        pCustLiabTHB.UpdateDate = DateTime.Now; // With Time
+                    }
+
+                    await _context.SaveChangesAsync();
+                    transaction.Complete();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return false;
+                }
+            }
         }
     }
 }

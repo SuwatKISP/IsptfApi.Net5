@@ -337,6 +337,10 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
+                        var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+
+                        transaction.Complete();
+
                         response.Code = Constants.RESPONSE_ERROR;
                         response.Message = "Export L/C Released";
                         return Ok(response);
