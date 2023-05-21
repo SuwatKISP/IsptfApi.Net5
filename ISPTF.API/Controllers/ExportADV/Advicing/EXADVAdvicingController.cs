@@ -63,7 +63,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     // await _context.SaveChangesAsync();
                     transaction.Complete();
                     response.Code = Constants.RESPONSE_OK;
-                    response.Data = exad;
+                    response.Data.PEXAD = exad;
                     return Ok(response);
                 }
                 catch (Exception e)
