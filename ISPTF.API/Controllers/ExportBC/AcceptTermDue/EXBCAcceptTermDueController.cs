@@ -897,7 +897,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export B/C do not exist";
+                    response.Message = "Export B/C Release Error Resp=0 check store procedure";
                     return BadRequest(response);
                 }
             }
