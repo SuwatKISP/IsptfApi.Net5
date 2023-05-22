@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -233,9 +234,9 @@ namespace ISPTF.API.Controllers.ExportBC
 
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXBCPPaymentListResponse>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
+        public async Task<ActionResult<PEXBCPPaymentResponse>> Insert([FromBody] PEXBCPPaymentRsp pexbcppaymentreq)
         {
-            PEXBCPPaymentListResponse response = new PEXBCPPaymentListResponse();
+            PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
             var USER_ID = User.Identity.Name;
 
             DynamicParameters param = new DynamicParameters();
@@ -523,21 +524,27 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcppaymentrsp = param.Get<dynamic>("@PEXBCPPaymentRsp");
-                return Ok(results);
+
+                var resp = param.Get<int>("@PExBcRsp");
+                //  var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
+                var resSeqNo = param.Get<int>("@ResSeqNo");
+                var resReceiptNo = param.Get<string>("@ResReceiptNo");
+
                 if (PExBcRsp == 1)
                 {
                     // RETURN VOUCH_ID
-                    List<PEXBCPPaymentRsp> jsonResponse = JsonSerializer.Deserialize<List<PEXBCPPaymentRsp>>(pexbcppaymentrsp);
+                    PEXBCPPaymentRsp jsonResponse = JsonConvert.DeserializeObject<PEXBCPPaymentRsp>(pexbcppaymentrsp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+
                     return Ok(response);
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Save Error";
-                    response.Data = new List<PEXBCPPaymentRsp>();
+                    response.Data = new PEXBCPPaymentRsp();
                     return BadRequest(response);
                 }
             }
@@ -545,7 +552,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new List<PEXBCPPaymentRsp>();
+                response.Data = new PEXBCPPaymentRsp();
             }
             return BadRequest(response);
         }
