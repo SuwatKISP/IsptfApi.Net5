@@ -1038,8 +1038,7 @@ namespace ISPTF.API.Controllers.ExportBC
             // Validate
             if (string.IsNullOrEmpty(pExBcIssuePurchRelease.CENTER_ID) || 
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO) || 
-                string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION) || 
-                string.IsNullOrEmpty(pExBcIssuePurchRelease.METHOD) || 
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION) ||
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.PAYMENT_INSTRU) || 
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE) || 
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.REFER_BC_NO)
@@ -1049,6 +1048,14 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Message = "CENTER_ID, EXPORT_BC_NO, RELEASE_ACTION, METHOD, PAYMENT_INSTRU, EVENT_DATE, CLAIM_TYPE, REFER_BC_NO is required";
                 return BadRequest(response);
             }
+
+            if(pExBcIssuePurchRelease.PAYMENT_INSTRU == "PAID" && string.IsNullOrEmpty(pExBcIssuePurchRelease.METHOD))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "METHOD is required";
+                return BadRequest(response);
+            }
+
             DynamicParameters param = new();
             param.Add("@CenterID", pExBcIssuePurchRelease.CENTER_ID);
             param.Add("@EXPORT_BC_NO", pExBcIssuePurchRelease.EXPORT_BC_NO);
