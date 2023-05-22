@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXBCAdviceDiscrepancyController : ControllerBase
@@ -386,13 +387,10 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DISCREPANCY_TYPE", pexbcreq.DISCREPANCY_TYPE);
             param.Add("@SWIFT_DISC", pexbcreq.SWIFT_DISC);
             param.Add("@DOCUMENT_COPY", pexbcreq.DOCUMENT_COPY);
-
-           
             param.Add("@SIGHT_BASIS", null);
             param.Add("@ART44A", null);
             param.Add("@ENDORSED", null);
             param.Add("@MT750", null);
-
             param.Add("@ADJ_TOT_NEGO_AMOUNT", pexbcreq.ADJ_TOT_NEGO_AMOUNT);
             param.Add("@ADJ_LESS_CHARGE_AMT", pexbcreq.ADJ_LESS_CHARGE_AMT);
             param.Add("@ADJUST_COVERING_AMT", pexbcreq.ADJUST_COVERING_AMT);
@@ -486,13 +484,17 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
-                    response.Data = new PEXBCDataContainer(results.First());
-                    return Ok(response);
+                    PEXBCDataContainer pEXBCDataContainer = new();
+                    pEXBCDataContainer.PEXBC = results.OrderByDescending(row => row.UPDATE_DATE).First();
+                    response.Data = pEXBCDataContainer;
+                    string json = JsonConvert.SerializeObject(response);
+
+                    return Content(json, "application/json");
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "EXPORT_BC_NO Save Error";
+                    response.Message = "EXPORT_BC_NO Save Error Check Store Procedure Resp = 0";
                     response.Data = new PEXBCDataContainer();
                     return BadRequest(response);
                 }
