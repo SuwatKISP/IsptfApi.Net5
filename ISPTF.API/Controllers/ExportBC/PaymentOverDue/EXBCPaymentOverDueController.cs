@@ -33,9 +33,9 @@ namespace ISPTF.API.Controllers.ExportBC
             string USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(ListType) || 
-                string.IsNullOrEmpty(CenterID) || 
-                Page == null || 
+            if (string.IsNullOrEmpty(ListType) ||
+                string.IsNullOrEmpty(CenterID) ||
+                Page == null ||
                 PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -108,8 +108,8 @@ namespace ISPTF.API.Controllers.ExportBC
             string USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(CenterID) || 
-                Page == null || 
+            if (string.IsNullOrEmpty(CenterID) ||
+                Page == null ||
                 PageSize == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -167,6 +167,17 @@ namespace ISPTF.API.Controllers.ExportBC
             return BadRequest(response);
         }
 
+        [HttpGet("GetOverDue")]
+        public async Task<IEnumerable<Q_EXBCGetOverDueRsp>> GetOverDue(string? EXPORT_BC_NO)
+        {
+            DynamicParameters param = new();
+            param.Add("EXPORT_BC_NO", EXPORT_BC_NO);
+            var results = await _db.LoadData<Q_EXBCGetOverDueRsp, dynamic>(
+                        storedProcedure: "usp_pEXBC_GetOverDue",
+                        param);
+            return results;
+        }
+
 
         [HttpGet("select")]
         public async Task<ActionResult<PEXBCPEXPaymentResponse>> Select(string? EXPORT_BC_NO, string? EVENT_NO, string? LFROM)
@@ -175,8 +186,8 @@ namespace ISPTF.API.Controllers.ExportBC
             string USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_BC_NO) || 
-                string.IsNullOrEmpty(EVENT_NO) || 
+            if (string.IsNullOrEmpty(EXPORT_BC_NO) ||
+                string.IsNullOrEmpty(EVENT_NO) ||
                 string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -243,7 +254,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
-      
+
 
             DynamicParameters param = new DynamicParameters();
             //pExBc
@@ -692,7 +703,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
             DynamicParameters param = new();
             param.Add("@EXPORT_BC_NO", exbcpaymentoverduerelease.EXPORT_BC_NO);
-            param.Add("@EVENT_DATE", 
+            param.Add("@EVENT_DATE",
             exbcpaymentoverduerelease.EVENT_DATE);
             param.Add("@USER_ID", USER_ID);
             param.Add("@CenterID", USER_CENTER_ID);

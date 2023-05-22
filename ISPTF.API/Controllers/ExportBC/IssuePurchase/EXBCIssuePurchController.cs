@@ -994,7 +994,7 @@ namespace ISPTF.API.Controllers.ExportBC
                   storedProcedure: "usp_pEXBC_IssuePurchase_Delete", param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
-                if (resp == "1")
+                if (Int16.Parse(resp) > 0)
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C Deleted";
