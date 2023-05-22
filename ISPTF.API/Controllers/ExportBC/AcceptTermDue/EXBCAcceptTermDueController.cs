@@ -225,15 +225,15 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXBCResponse>> Insert([FromBody] PEXBC pexbc)
+        public async Task<ActionResult<PEXBCPPaymentResponse>> Insert([FromBody] PEXBC pexbc)
         {
-            PEXBCResponse response = new PEXBCResponse();
+            PEXBCPPaymentResponse response = new PEXBCPPaymentResponse();
             // Validate
             if (pexbc == null)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "PEXBC is required.";
-                response.Data = new PEXBCDataContainer();
+                response.Data = new PEXBCPPaymentRsp();
                 return BadRequest(response);
             }
 
@@ -479,13 +479,22 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@PurposeCode", pexbc.PurposeCode);
             //param.Add("@Resp", dbType: DbType.Int32,
 
-
-
-
-
             param.Add("@Resp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
+
+            param.Add("@PEXBCPEXPaymentRsp", dbType: DbType.String,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 5215585);
+
+            param.Add("@ResSeqNo", dbType: DbType.Int32,
+                         direction: System.Data.ParameterDirection.Output,
+                         size: 12800);
+
+            param.Add("@ResReceiptNo", dbType: DbType.String,
+           direction: System.Data.ParameterDirection.Output,
+           size: 5215585);
+
 
             try
             {
@@ -494,13 +503,15 @@ namespace ISPTF.API.Controllers.ExportBC
                     param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
-                var pEXBCContainer = new PEXBCDataContainer(results.FirstOrDefault());
+                var pEXBCPEXPaymentRsp = param.Get<string>("@PEXBCPEXPaymentRsp");
+
+                var jsonData = JsonConvert.DeserializeObject<PEXBCPPaymentRsp>(pEXBCPEXPaymentRsp);
 
                 if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
-                    response.Data = pEXBCContainer;
+                    response.Data = jsonData;
 
                     // Manual Serialize need for nested class
                     string json = JsonConvert.SerializeObject(response);
@@ -511,7 +522,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC Save Error";
-                    response.Data = new PEXBCDataContainer();
+                    response.Data = new PEXBCPPaymentRsp();
                     return BadRequest(response);
                 }
             }
@@ -519,7 +530,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCDataContainer();
+                response.Data = new PEXBCPPaymentRsp();
             }
             return BadRequest(response);
         }
