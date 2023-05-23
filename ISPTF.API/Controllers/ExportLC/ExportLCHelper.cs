@@ -147,7 +147,217 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
 
                     await _context.SaveChangesAsync();
+
+
+                    if (approveFacility.Contains("MX"))
+                    {
+                        await UpdateGroupWork(data.BENE_ID, approveFacility, true, _context);
+                    }
+                    else
+                    {
+                        await UpdateGroupWork(data.BENE_ID, approveFacility, false, _context);
+                    }
+
+
                     transaction.Complete();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return false;
+                }
+            }
+        }
+
+        public async static Task<bool> UpdateGroupWork(string customerCode, string facilityNo, bool isGroup, ISPTFContext _context)
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    double liabilityAmount = 0;
+                    double shareUse = 0;
+                    string shareType = "";
+                    string shareFlag = "";
+                    double partialAvailableAmount = 0;
+                    double groupAmount = 0;
+                    string parentCode = "";
+                    string parentFacility = "";
+                    string childCode = "";
+                    string CCY = "";
+                    string amount = "";
+
+                    // 1 - Select Parent Code, Facility
+                    if (isGroup == true)
+                    {
+                        var custLimit = await (from row in _context.pCustLimits
+                                               where row.Cust_Code == customerCode &&
+                                                     row.Facility_No == facilityNo
+                                               select row).FirstOrDefaultAsync();
+                        if (custLimit != null)
+                        {
+                            parentCode = custLimit.Cust_Code;
+                            parentFacility = custLimit.Facility_No;
+                        }
+                    }
+                    else if (isGroup == false)
+                    {
+                        parentCode = customerCode;
+                        parentFacility = facilityNo;
+                    }
+
+                    // 2 - Select Share Type / Flag
+                    var custLimitChild = await (from row in _context.pCustLimits
+                                                where row.Cust_Code == parentCode &&
+                                                      row.Facility_No == parentFacility
+                                                select row).FirstOrDefaultAsync();
+
+                    if (custLimitChild != null)
+                    {
+                        shareType = custLimitChild.Share_Type;
+                        shareFlag = custLimitChild.Share_Flag;
+                    }
+                    else
+                    {
+                        shareFlag = "N";
+                    }
+
+                    if (shareFlag == "N")
+                    {
+                        return true;
+                    }
+
+                    // Call RevalueLiab(ParentCode)
+
+                    // 3 - Update Credit_Amount,Origin_Amount (child)
+                    var custShareChilds = await (from row in _context.pCustShares
+                                                 where row.Cust_Code == parentCode &&
+                                                       row.Facility_No == parentFacility
+                                                 select row).ToListAsync();
+
+                    foreach (var row in custShareChilds)
+                    {
+                        var custLimitChilds = await (from row2 in _context.pCustLimits
+                                                     where row2.Cust_Code == row.Share_Cust &&
+                                                           row2.Refer_Cust == row.Cust_Code &&
+                                                           row2.Facility_No == row.Facility_No
+                                                     select row2).ToListAsync();
+                        foreach (var row2 in custLimitChilds)
+                        {
+                            row2.Ear_Amount = 0;
+                            row2.Credit_Amount = row.Share_Credit;
+                            row2.Origin_Amount = row.Share_Credit;
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    // 4 - UPDATE Share_Amount =0 ,Share_Used =0 (parent)
+                    var custLimitParents = await (from row in _context.pCustLimits
+                                                  where row.Refer_Cust == parentCode &&
+                                                        row.Refer_Facility == parentFacility &&
+                                                        !string.IsNullOrEmpty(row.Refer_Cust) &&
+                                                        !string.IsNullOrEmpty(row.Refer_Facility)
+                                                  select row).Distinct().ToListAsync();
+                    foreach (var row3 in custLimitParents)
+                    {
+                        var subCustLimits = await (from row in _context.pCustLimits
+                                                   where row.Cust_Code == row3.Refer_Cust &&
+                                                         row.Facility_No == row3.Refer_Facility
+                                                   select row).ToListAsync();
+
+                        foreach (var row in subCustLimits)
+                        {
+                            row.Share_Amount = 0;
+                        }
+
+                        var subCustShares = await (from row in _context.pCustShares
+                                                   where row.Cust_Code == row3.Refer_Cust &&
+                                                         row.Facility_No == row3.Refer_Facility
+                                                   select row).ToListAsync();
+
+                        foreach (var row in subCustShares)
+                        {
+                            row.Share_Used = 0;
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    // 5 - Revaluate Liability
+                    var custLimits = await (from row in _context.pCustLimits
+                                            where row.Facility_No.Substring(0, 2) == "MX" &&
+                                                  (row.Status == "A" || row.Status == "U") &&
+                                                    row.Refer_Cust == parentCode &&
+                                                    row.Refer_Facility == parentFacility
+                                            select row).ToListAsync();
+
+                    // Call RevalueLiab(rs!cust_code)
+                    foreach (var row in custLimits)
+                    {
+                        var result = (from c in _context.pCustLSums
+                                      where c.Cust_Code == row.Cust_Code && c.Facility_No == row.Facility_No
+                                      select new
+                                      {
+                                          LiabAmt = (
+                                              (c.IMLC_Amt ?? 0) + (c.DBE_Amt ?? 0) + (c.DLC_Amt ?? 0) + (c.IBLS_Amt ?? 0) +
+                                              (c.IBLT_Amt ?? 0) + (c.IMTR_Amt ?? 0) + ((c.SGBC_Amt ?? 0) - (c.SGBC_Issued ?? 0)) +
+                                              (c.EXPC_Amt ?? 0) + (c.XLCP_Amt ?? 0) + (c.XBCP_Amt ?? 0) + (c.IMLC_Book ?? 0) +
+                                              (c.IMTR_Book ?? 0) + (c.DLC_Book ?? 0) + (c.SGBC_Book ?? 0) + (c.EXPC_Book ?? 0) +
+                                              (c.XLCP_Book ?? 0) + (c.SBLC_Book ?? 0) + (c.LG_Book ?? 0) + (c.SBLC_Amt ?? 0) +
+                                              (c.LG_Amt ?? 0) + (c.XBCP_Book ?? 0) + (c.IMBL_Over ?? 0) + (c.NCTR_Book ?? 0)
+                                          )
+                                      }).FirstOrDefault()?.LiabAmt ?? 0;
+
+                        liabilityAmount = result;
+
+                        row.Susp_Amount = liabilityAmount;
+
+                        // 6 - Update selected Facility No. mother
+                        var custLimitMothers = await (from rowMother in _context.pCustLimits
+                                                      where rowMother.Refer_Cust == parentCode &&
+                                                            rowMother.Refer_Facility == parentFacility
+                                                      select rowMother).ToListAsync();
+                        foreach(var row2 in custLimitMothers)
+                        {
+                            if(row2.Share_Amount == null)
+                            {
+                                row2.Share_Amount = 0;
+                            }
+                            row2.Share_Amount = (double)row2.Share_Amount + liabilityAmount;
+                            shareUse = (double)row2.Share_Amount;
+
+                            if(row2.Share_Type == null)
+                            {
+                                row2.Share_Type = "";
+                            }
+                            shareType = row2.Share_Type;
+
+                            if(row2.Facility_Type == "T" && row2.Revol_Flag == "N")
+                            {
+                                row2.Credit_Amount = row2.Credit_Amount - liabilityAmount;
+                            }
+                        }
+
+                        // 7 - CustShares
+                        var custShares = await (from row3 in _context.pCustShares
+                                                where row3.Cust_Code == row.Refer_Cust &&
+                                                      row3.Share_Cust == row.Cust_Code &&
+                                                      row3.Facility_No == row.Facility_No
+                                                select row3).ToListAsync();
+
+                        foreach(var row3 in custShares)
+                        {
+                            if(row3.Share_Used == null)
+                            {
+                                row3.Share_Used = 0;
+                            }
+                            row3.Share_Used = row3.Share_Used + liabilityAmount;
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
                     return true;
                 }
                 catch (Exception e)
