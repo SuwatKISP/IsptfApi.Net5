@@ -520,7 +520,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         if(data.PEXLC.WithOutFlag == "N")
                         {
-                            //Call UpdateCustLiab
+                            var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
                         }
                         else if(data.PEXLC.WithOutFlag == "Y")
                         {

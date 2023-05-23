@@ -308,6 +308,9 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                         await _context.SaveChangesAsync();
+
+                        var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+
                         transaction.Complete();
 
                         response.Code = Constants.RESPONSE_OK;
