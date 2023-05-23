@@ -186,7 +186,8 @@ namespace ISPTF.API.Controllers.ExportLC
                     string parentFacility = "";
                     string childCode = "";
                     string CCY = "";
-                    string amount = "";
+                    double amount = 0;
+                    double cAmountTHB = 0;
 
                     // 1 - Select Parent Code, Facility
                     if (isGroup == true)
@@ -355,9 +356,167 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
                             row3.Share_Used = row3.Share_Used + liabilityAmount;
                         }
+
+                        
+
                     }
 
                     await _context.SaveChangesAsync();
+
+                    // 8 - For none fix
+                    var custLimitNones = await (from row in _context.pCustLimits
+                                            where row.Share_Flag == "Y" &&
+                                                  row.Share_Type == "N" &&
+                                                  row.Status != "D" &&
+                                                  row.Cust_Code == parentCode &&
+                                                  row.Facility_No == parentFacility
+                                            select row).ToListAsync();
+
+                    // No Use as of
+                    //'        ParentCode = rsTmp!Cust_Code
+                    //'        ParentFac = rsTmp!facility_no
+
+
+                    // 9 - Update Share Group Child (Liability Child)
+
+                    var viewCustLiabilities = await (from row in _context.ViewCustLiabs
+                                               where row.Facility_No.StartsWith("MX") &&
+                                                     row.Refer_Cust == parentCode &&
+                                                     row.Refer_Facility == parentFacility
+                                               select row).ToListAsync();
+
+                    foreach(var row in viewCustLiabilities)
+                    {
+                        childCode = row.Cust_Code;
+                        facilityNo = row.Facility_No;
+                        CCY = row.Currency;
+                        amount = row.Liability;
+
+                        if (CCY == "ODU" || 
+                            CCY == "PDU" || 
+                            CCY == "THB")
+                        {
+                            cAmountTHB = Math.Truncate(amount * 100) / 100;
+                        }
+                        else
+                        {
+                            /** GetRateExChange(CCY)*/
+                            cAmountTHB = Math.Truncate(amount * 100) / 100;
+                        }
+                    }
+
+                    
+                    var custLimitChilds2 = await (from row in _context.pCustLimits
+                                                where row.Refer_Cust == parentCode &&
+                                                      row.Status != "I" &&
+                                                      row.Cust_Code != childCode &&
+                                                      row.Facility_No == parentFacility
+                                                select row).ToListAsync();
+
+                    foreach(var row in custLimitChilds2)
+                    {
+                        if(row.Ear_Amount == null)
+                        {
+                            row.Ear_Amount = 0;
+                        }
+                        row.Ear_Amount = row.Ear_Amount + cAmountTHB;
+                        if(row.Ear_Amount < 0)
+                        {
+                            row.Ear_Amount = 0;
+                        }
+                        row.Share_Amount = 0;
+                    }
+
+
+                    // 10 - Update Share Group Parent
+
+                    var viewCustLiabilityParents = await (from row in _context.ViewCustLiabs
+                                                     where row.Cust_Code == parentCode &&
+                                                           row.Facility_No == parentFacility
+                                                     select row).ToListAsync();
+                    foreach (var row in viewCustLiabilityParents)
+                    {
+                        childCode = row.Cust_Code;
+                        facilityNo = row.Facility_No;
+                        CCY = row.Currency;
+                        amount = row.Liability;
+
+                        if (CCY == "ODU" ||
+                            CCY == "PDU" ||
+                            CCY == "THB")
+                        {
+                            cAmountTHB = Math.Truncate(amount * 100) / 100;
+                        }
+                        else
+                        {
+                            /** GetRateExChange(CCY)*/
+                            cAmountTHB = Math.Truncate(amount * 100) / 100;
+                        }
+                    }
+
+                    var custLimitParents2 = await (from row in _context.pCustLimits
+                                                 where row.Refer_Cust == parentCode &&
+                                                       row.Status != "I" &&
+                                                       row.Cust_Code != childCode &&
+                                                       row.Facility_No == parentFacility
+                                                 select row).ToListAsync();
+
+                    foreach (var row in custLimitParents2)
+                    {
+                        if (row.Ear_Amount == null)
+                        {
+                            row.Ear_Amount = 0;
+                        }
+                        row.Ear_Amount = row.Ear_Amount + cAmountTHB;
+                        if (row.Ear_Amount < 0)
+                        {
+                            row.Ear_Amount = 0;
+                        }
+                        row.Share_Amount = 0;
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    // 11 - Update Group Amount
+
+                    var groupCustLimits = await (from row in _context.pCustLimits
+                                                     where !row.Facility_No.StartsWith("MX") &&
+                                                           row.Share_Flag == "Y" &&
+                                                           row.Share_Type == "F" &&
+                                                           row.Cust_Code != childCode &&
+                                                           row.Facility_No == parentFacility
+                                                      select row).ToListAsync();
+
+                    foreach(var row in groupCustLimits)
+                    {
+                        var result = (from c in _context.ViewCreditLimits
+                                      where c.Cust_Code == parentCode && 
+                                            c.Facility_No == parentFacility
+                                      select new
+                                      {
+                                          Credit_Share = c.Credit_Share ?? 0,
+                                          Available_Amt = c.Available_Amt ?? 0
+                                      }).FirstOrDefault();
+
+                        partialAvailableAmount = result.Available_Amt;
+                    }
+
+                    var groupCustLimitPartials = await (from row in _context.pCustLimits
+                                                        where row.Status != "I" &&
+                                                              row.Refer_Cust != parentCode &&
+                                                              row.Refer_Facility == parentFacility
+                                                        select row).ToListAsync();
+
+                    foreach(var row in groupCustLimitPartials)
+                    {
+                        groupAmount = (double)(row.Credit_Amount - row.Susp_Amount - partialAvailableAmount);
+                        if (groupAmount < 0)
+                        {
+                            groupAmount = 0;
+                        }
+                        row.Ear_Amount = groupAmount;
+                    }
+
                     return true;
                 }
                 catch (Exception e)
