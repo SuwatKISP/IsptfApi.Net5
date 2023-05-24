@@ -599,6 +599,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     param);
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
+                var resReceiptNo = param.Get<string>("@ResReceiptNo");
                 var resp = param.Get<int>("@PExBcRsp");
 
                 if (PExBcRsp == 1 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
@@ -607,6 +608,10 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+
+                    // DLL
+                    //response.Data.PEXBC.VOUCH_ID = "VHC";
+
                     return Ok(response);
                 }
                 else
