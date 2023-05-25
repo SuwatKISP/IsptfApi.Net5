@@ -11,6 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
+
+
 namespace ISPTF.API.Controllers.InterestRate
 {
     [Route("api/[controller]")]
@@ -61,6 +64,7 @@ namespace ISPTF.API.Controllers.InterestRate
             {
                 param.Add("@IRate_Code", RateCode);
             }
+
             if (recstatus == null)
             {
                 param.Add("@RecStatus", "");

@@ -1,4 +1,10 @@
-﻿namespace ISPTF.Models.ExportLC
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ISPTF.Models.LoginRegis;
+namespace ISPTF.Models.ExportLC
 {
     public class Q_EXLCIssueNewPageRsp
     {
@@ -13,5 +19,6 @@
         public string Event_Type { get; set; }
         public string Record_Type { get; set; }
         public string Rec_Status { get; set; }
+        public DateTime EVENT_DATE { get; set; }
     }
 }

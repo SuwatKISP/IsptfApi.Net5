@@ -69,11 +69,13 @@ namespace ISPTF.Models.TradeLiabilityCust
         public double? TotShare { get; set; }
         public double? TxTotGrp { get; set; }
         public double? TxtAvaAmt { get; set; }
+        public double? TxShCredit { get; set; }
         public string? Comment { get; set; }
         public string? Event { get; set; }
         public string? ACCESS_ID { get; set; }
         public string? Trade_ref_Number { get; set; }
         public string? Edition_Number { get; set; }
         public string? NoteAppv { get; set; }
+        public string? RecStatus { get; set; }
     }
 }

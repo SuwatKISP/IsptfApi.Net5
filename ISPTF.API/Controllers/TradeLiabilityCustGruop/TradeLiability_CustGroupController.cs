@@ -74,6 +74,74 @@ namespace ISPTF.API.Controllers.TradeLiabilityCustGroup
             return results;
         }
 
+        [HttpGet("InsGrdFacilitySelect")]
+        public async Task<ActionResult<InsGrdFacilitySelectJSON_Rsp>> GetInsGrdFacility(string Login, string? ChildCustCode, string? ReferDocNo, string? ParentFacility_No, string? ReferLC,double TxBhtAmt)
+        {
+            DynamicParameters param = new();
+            param.Add("@Login", Login);
+            param.Add("@Cust_Code", ChildCustCode);
+            param.Add("@Refer_DocNo", ReferDocNo);
+            param.Add("@Facility_No", ParentFacility_No);
+            param.Add("@ReferLC", ReferLC);
+            param.Add("@TxBhtAmt", TxBhtAmt);
+
+            if (ReferLC == null)
+            {
+                param.Add("@ReferLC", "");
+            }
+
+            param.Add("@ReferNoRsp", dbType: DbType.String,
+           direction: System.Data.ParameterDirection.Output,
+           size: 5215585);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+            try
+            {
+                var results = await _db.LoadData<InsGrdFacilitySelectJSON_Rsp, dynamic>(
+                            storedProcedure: "[usp_TradeLiability_CustGroup_InsGrdFac_Select]",
+                            param);
+
+                var resp = param.Get<dynamic>("@Resp");
+
+                var refernorsp = param.Get<dynamic>("@ReferNoRsp");
+
+                if (resp == 1)
+                {
+                    return Ok(refernorsp);
+                }
+                else if (resp == 2)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Selected Facility Does not Support This Product";
+                    return BadRequest(response);
+                }
+                else if (resp == 3)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Not Enough Available in Credit Selected Facility";
+                    return BadRequest(response);
+                }
+
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error for Select Facility No";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
         [HttpGet("InsGrdShare")]
         public async Task<IEnumerable<InsGrdShare_Rsp>> GetInsGrdShare(string? CustCode)
         {
@@ -122,6 +190,53 @@ namespace ISPTF.API.Controllers.TradeLiabilityCustGroup
             return results;
             //var chkoverdue = param.Get<dynamic>("@CHK_OverDue");
             //return Ok(chkoverdue);
+        }
+
+        [HttpGet("GetTotSum")]
+        //public async Task<IEnumerable<ChkOverDue_Rsp>> GetTotSum(string? Cust_Code, string? Reg_Docno, double? TxBhtAmt)
+        public async Task<ActionResult<GetTotalSumJson_Rsp>> GetTotSum(string? Cust_Code, string? Reg_Docno, double? TxBhtAmt)
+        {
+            DynamicParameters param = new();
+
+            param.Add("@Cust_Code", Cust_Code);
+            param.Add("@Reg_Docno", Reg_Docno);
+            param.Add("@TxBhtAmt", TxBhtAmt);
+
+            param.Add("@ReferNoRsp", dbType: DbType.String,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+            try
+            {
+                var results = await _db.LoadData<GetTotalSumJson_Rsp, dynamic>(
+                            storedProcedure: "usp_TradeLiability_CustGroup_GetTotSum",
+                            param);
+
+                var resp = param.Get<dynamic>("@Resp");
+
+                var refernorsp = param.Get<dynamic>("@ReferNoRsp");
+
+                if (resp == 1)
+                {
+                    return Ok(refernorsp);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error for Get Total Sum";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
 

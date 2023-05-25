@@ -1,4 +1,10 @@
-﻿namespace ISPTF.Models.ExportLC
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ISPTF.Models.LoginRegis;
+namespace ISPTF.Models.ExportLC
 {
     public class Q_EXLCIssueEditPageRsp
     {
@@ -15,5 +21,6 @@
         public int COLLECT_AGENT { get; set; }
         public int EVENT_NO { get; set; }
         public string VOUCH_ID { get; set; }
+        public DateTime EVENT_DATE { get; set; }
     }
 }

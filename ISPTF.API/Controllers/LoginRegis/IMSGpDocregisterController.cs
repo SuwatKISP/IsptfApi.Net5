@@ -67,6 +67,36 @@ namespace ISPTF.API.Controllers.LoginRegis
             return results;
         }
 
+        [HttpGet("referLC")]
+        public async Task<IEnumerable<Q_GetDocRegisterReferLCNoIMSGRsp>> GetReferLC(string? LCNumber, string? CustCode, string? CustName, string? Page, string? PageSize)
+        {
+            DynamicParameters param = new();
+
+            param.Add("@LCNumber", LCNumber);
+            param.Add("@CustCode", CustCode);
+            param.Add("@CustName", CustName);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (LCNumber == null)
+            {
+                param.Add("@LCNumber", "");
+            }
+            if (CustCode == null)
+            {
+                param.Add("@CustCode", "");
+            }
+            if (CustName == null)
+            {
+                param.Add("@CustName", "");
+            }
+
+            var results = await _db.LoadData<Q_GetDocRegisterReferLCNoIMSGRsp, dynamic>(
+                        storedProcedure: "usp_q_GetDocRegisterReferLCPageIMSG",
+                        param);
+            return results;
+        }
+
 
         [HttpPost("register/insert")]
         public async Task<ActionResult<List<PDocRegisterInsUpdReq>>> Insert([FromBody] PDocRegisterInsUpdReq pdocregisterreq)

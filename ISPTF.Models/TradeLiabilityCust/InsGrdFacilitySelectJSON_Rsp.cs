@@ -10,7 +10,6 @@ namespace ISPTF.Models.TradeLiabilityCust
 {
     public class InsGrdFacilitySelectJSON_Rsp
     {
-        //   public InsGrdFacilitySelect_Rsp Facility { get; set; }
         public string? Cust_Code { get; set; }
         public string? Facility_No { get; set; }
         public string? limit_code { get; set; }
@@ -28,6 +27,7 @@ namespace ISPTF.Models.TradeLiabilityCust
         public double? TxAvailable { get; set; }
         public double? TxOver { get; set; }
         public double? TxShCredit { get; set; }
+        public double? TxGroup { get; set; }
         public DateTime? startdate { get; set; }
         public DateTime? expirydate { get; set; }
         public string? facility_type { get; set; }
@@ -39,6 +39,10 @@ namespace ISPTF.Models.TradeLiabilityCust
         public string? Campaign_Code { get; set; }
         public DateTime? Campaign_EffDate { get; set; }
         public string? Warning { get; set; }
+        public string? TxGpFlag { get; set; }
+        public string? TxCustNo { get; set; }
+        public string? TxNewFacNo { get; set; }
+     //   public GetTotalSumJson_Rsp GetTotSum { get; set; }
 
     }
 }

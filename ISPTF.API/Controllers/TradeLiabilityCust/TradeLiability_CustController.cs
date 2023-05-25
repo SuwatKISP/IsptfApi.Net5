@@ -26,12 +26,11 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             _db = db;
         }
         [HttpGet("ReferenceNoList")]
-        public async Task<IEnumerable<ReferenceNoListRsp>> ReferenceList(string? CenterID, string? CustCode, string? FacilityNo, string? ReferDocNo, int? Page, int? PageSize)
+        public async Task<IEnumerable<ReferenceNoListRsp>> ReferenceList(string? CenterID, string? CustCode, string? ReferDocNo, int? Page, int? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@CenterID", CenterID);
             param.Add("@CustCode", CustCode);
-            param.Add("@Facility_No", FacilityNo);
             param.Add("@Refer_DocNo", ReferDocNo);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
@@ -39,10 +38,6 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             if (CustCode == null)
             {
                 param.Add("@CustCode", "");
-            }
-            if (FacilityNo == null)
-            {
-                param.Add("@Facility_No", "");
             }
             if (ReferDocNo == null)
             {
@@ -60,7 +55,7 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
         {
             try
             {
-               ISPModule.modLiability.RevalueLiab(CustCode, "");
+             //  ISPModule.modLiability.RevalueLiab(CustCode, "");
                DynamicParameters param = new();
                 param.Add("@Cust_Code", CustCode);
                 param.Add("@Reg_Docno", ReferDocNo);
@@ -265,6 +260,52 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             return Ok(CustReleaseSelectRsp);
         }
 
+        [HttpGet("GetTotSum")]
+        //public async Task<IEnumerable<ChkOverDue_Rsp>> GetTotSum(string? Cust_Code, string? Reg_Docno, double? TxBhtAmt)
+        public async Task<ActionResult<GetTotalSumJson_Rsp>> GetTotSum(string? Cust_Code, string? Reg_Docno, double? TxBhtAmt)
+        {
+            DynamicParameters param = new();
+
+            param.Add("@Cust_Code", Cust_Code);
+            param.Add("@Reg_Docno", Reg_Docno);
+            param.Add("@TxBhtAmt", TxBhtAmt);
+
+            param.Add("@ReferNoRsp", dbType: DbType.String,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+            try
+            {
+                var results = await _db.LoadData<GetTotalSumJson_Rsp, dynamic>(
+                            storedProcedure: "usp_TradeLiability_Cust_GetTotSum",
+                            param);
+
+                var resp = param.Get<dynamic>("@Resp");
+
+                var refernorsp = param.Get<dynamic>("@ReferNoRsp");
+
+                if (resp == 1)
+                {
+                    return Ok(refernorsp);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error for Get Total Sum";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
 
 
         //[HttpGet("ReleaseList")]
@@ -375,7 +416,7 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
                 var resp = param.Get<int>("@Resp");
                 if (resp == 1)
                 {
-                    ISPModule.modLiability.RevalueLiab(pCustAppvReq.Cust_Code, "");
+                  //  ISPModule.modLiability.RevalueLiab(pCustAppvReq.Cust_Code, "");
                     //return Ok(PCustLimitRsp);
                     ReturnResponse response = new();
                     response.StatusCode = "200";

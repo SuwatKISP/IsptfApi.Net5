@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace ISPTF.Models.TradeCreditLimit
 
 {
-    public class SumAmountCustRsp
+    public class LiabilityAmtCustRsp
     {
-        public double? SumAmountCust { get; set; }
+        public double? LiabilityAmt { get; set; }
 
     }
 }

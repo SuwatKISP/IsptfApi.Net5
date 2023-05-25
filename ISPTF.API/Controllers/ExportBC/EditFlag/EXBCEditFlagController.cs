@@ -494,7 +494,11 @@ namespace ISPTF.API.Controllers.ExportBC
         public async Task<ActionResult<EXBCResultResponse>> Delete([FromBody] EXBCEditFlagDeleteRequest data)
         {
             EXBCResultResponse response = new EXBCResultResponse();
-
+            DynamicParameters param = new();
+            param.Add("@EXPORT_BC_NO", data.EXPORT_BC_NO);
+            param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
             // Validate
             if (string.IsNullOrEmpty(data.EXPORT_BC_NO)
                 )
@@ -520,29 +524,47 @@ namespace ISPTF.API.Controllers.ExportBC
                     //response.Message = resp.ToString();
                     return BadRequest(response);
                 }
-                var eventNo = pExbc.EVENT_NO;
-                eventNo++;
+                //var eventNo = pExbc.EVENT_NO;
+                //eventNo++;
 
-                // Delete Edit/Flag
-                var overDueRows = (from row in _context.pExbcs
-                                   where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
-                                         row.EVENT_NO == eventNo &&
-                                         row.EVENT_TYPE == "Edit/Flag" &&
-                                         row.BUSINESS_TYPE == "11" &&
-                                         row.REC_STATUS == "P"
-                                   select row).ToListAsync();
+                //// Delete Edit/Flag
+                //var overDueRows = (from row in _context.pExbcs
+                //                   where row.EXPORT_BC_NO == data.EXPORT_BC_NO &&
+                //                         row.EVENT_NO == eventNo &&
+                //                         row.EVENT_TYPE == "Edit/Flag" &&
+                //                         row.BUSINESS_TYPE == "11" &&
+                //                         row.REC_STATUS == "P"
+                //                   select row).ToListAsync();
 
-                foreach (var row in await overDueRows)
+                //foreach (var row in await overDueRows)
+                //{
+                //    _context.pExbcs.Remove(row);
+                //}
+
+                //await _context.SaveChangesAsync();
+
+
+                //response.Code = Constants.RESPONSE_OK;
+                //response.Message = "Export B/C Edit/Flag Deleted";
+                //return Ok(response);
+
+                var results = await _db.LoadData<pExbc, dynamic>(
+                            storedProcedure: "usp_pEXBC_EditFlag_Delete",
+                            param);
+                var resp = param.Get<string>("@Resp");
+
+                if (resp == "1")
                 {
-                    _context.pExbcs.Remove(row);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export B/C Edit/Flag Deleted";
+                    return Ok(response);
                 }
-
-                await _context.SaveChangesAsync();
-
-
-                response.Code = Constants.RESPONSE_OK;
-                response.Message = "Export B/C Edit/Flag Deleted";
-                return Ok(response);
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT_BC_NO Edit/Flag Error";
+                    return BadRequest(response);
+                }
 
             }
             catch (Exception e)

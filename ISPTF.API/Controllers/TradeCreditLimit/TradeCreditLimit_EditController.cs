@@ -406,7 +406,7 @@ namespace ISPTF.API.Controllers.TradeCreditLimit
             DynamicParameters param = new();
 
             param.Add("@Cust_Code", CustCode);
-            param.Add("SumType", SumType);
+            param.Add("@SumType", SumType);
 
             var results = await _db.LoadData<SumAmountCustRsp, dynamic>(
                         storedProcedure: "usp_GetSumAmtCust",
@@ -414,7 +414,19 @@ namespace ISPTF.API.Controllers.TradeCreditLimit
             return results;
         }
 
+        [HttpGet("GetLiabilityAmt")]
+        public async Task<IEnumerable<LiabilityAmtCustRsp>> GetLiabilityAmt(string? CustCode, string? facility_no)
+        {
+            DynamicParameters param = new();
 
+            param.Add("@Cust_Code", CustCode);
+            param.Add("@facility_no", facility_no);
+
+            var results = await _db.LoadData<LiabilityAmtCustRsp, dynamic>(
+                        storedProcedure: "usp_GetLiabilityAmt",
+                        param);
+            return results;
+        }
 
 
 
