@@ -19,7 +19,6 @@ namespace ISPTF.Models.TradeLiabilityCust
         public double? Reg_BhtAmt { get; set; }
         public string? Reg_RefNo { get; set; }
         public string? Reg_CustCode { get; set; }
-
-
+        public string? Cust_Name { get; set; }
     }
 }

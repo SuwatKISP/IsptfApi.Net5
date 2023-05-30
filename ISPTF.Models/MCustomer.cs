@@ -203,6 +203,6 @@ namespace ISPTF.Models
         public string? Cust_RCCode { get; set; }
         [StringLength(10)]
         public string? Cust_RMCode { get; set; }
-
+        public string? Cust_Address { get; set; }
     }
 }

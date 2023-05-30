@@ -26,11 +26,12 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             _db = db;
         }
         [HttpGet("ReferenceNoList")]
-        public async Task<IEnumerable<ReferenceNoListRsp>> ReferenceList(string? CenterID, string? CustCode, string? ReferDocNo, int? Page, int? PageSize)
+        public async Task<IEnumerable<ReferenceNoListRsp>> ReferenceList(string? CenterID, string? CustCode,string? CustName , string? ReferDocNo, int? Page, int? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@CenterID", CenterID);
             param.Add("@CustCode", CustCode);
+            param.Add("@CustName", CustName);
             param.Add("@Refer_DocNo", ReferDocNo);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
@@ -38,6 +39,10 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             if (CustCode == null)
             {
                 param.Add("@CustCode", "");
+            }
+            if (CustName == null)
+            {
+                param.Add("@CustName", "");
             }
             if (ReferDocNo == null)
             {

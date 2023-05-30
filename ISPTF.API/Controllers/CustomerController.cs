@@ -363,7 +363,7 @@ namespace ISPTF.API.Controllers
                 if (crsp > 0)
                 {
                     //Response.ContentType = "application/json";
-                    return Content(ccustrsp, "application/json");
+                    return Ok(ccustrsp);
                 }
                 else
                 {
@@ -551,7 +551,7 @@ namespace ISPTF.API.Controllers
                     if (crsp > 0)
                     {
                         Log.Information("CustomerNew Response : {@ccustrsp}", ccustrsp);
-                        return Content(ccustrsp, "application/json");
+                        return Ok(ccustrsp);
                     }
                     else
                     {
@@ -574,240 +574,239 @@ namespace ISPTF.API.Controllers
                 return BadRequest("Not NEW Customer Code or NEW Def Cust");
             }
         }
-        [HttpPost("new2")]
-        //public async Task<ActionResult<string>> New([FromBody] MCustomerCustRate customer)
-        public async Task<ActionResult<List<MCustomerNewRsp>>> New2([FromBody] MCustomerNewReq customerreq)
-        {
-            Log.Information("CustomerNew Request : {@customerreq}", customerreq);
-            if (customerreq.customer.Cust_Code == "NEW" 
-                && (customerreq.custRate[0].Def_Cust == "NEW" || customerreq.custRate[0].Def_Cust == "NONE"))
-            {
-                var dt = new DataTable();
+        //[HttpPost("new2")]
+        ////public async Task<ActionResult<string>> New([FromBody] MCustomerCustRate customer)
+        //public async Task<ActionResult<List<MCustomerNewRsp>>> New2([FromBody] MCustomerNewReq customerreq)
+        //{
+        //    Log.Information("CustomerNew Request : {@customerreq}", customerreq);
+        //    if (customerreq.customer.Cust_Code == "NEW" && (customerreq.custRate[0].Def_Cust == "NEW" || customerreq.custRate[0].Def_Cust == "NONE"))
+        //    {
+        //        var dt = new DataTable();
 
-                dt.Columns.Add("Def_Cust", typeof(string));
-                dt.Columns.Add("Def_Mod", typeof(string));
-                dt.Columns.Add("Def_Exp", typeof(string));
-                dt.Columns.Add("Def_Type", typeof(string));
-                dt.Columns.Add("Def_Rate", typeof(double));
-                dt.Columns.Add("Def_Base", typeof(int));
-                dt.Columns.Add("Def_Min", typeof(double));
-                dt.Columns.Add("Def_Max", typeof(double));
-                //dt.Columns.Add("CreateDate", typeof(DateTime)).DefaultValue = DateTime.Now;
-                //dt.Columns.Add("UpdateDate", typeof(DateTime)).DefaultValue = DateTime.Now; ;
-                dt.Columns.Add("UserCode", typeof(string));
-                dt.Columns.Add("RecStatus", typeof(string));
-                dt.Columns.Add("AuthDate", typeof(DateTime)).DefaultValue = DateTime.Now;
-                dt.Columns.Add("AuthCode", typeof(string));
+        //        dt.Columns.Add("Def_Cust", typeof(string));
+        //        dt.Columns.Add("Def_Mod", typeof(string));
+        //        dt.Columns.Add("Def_Exp", typeof(string));
+        //        dt.Columns.Add("Def_Type", typeof(string));
+        //        dt.Columns.Add("Def_Rate", typeof(double));
+        //        dt.Columns.Add("Def_Base", typeof(int));
+        //        dt.Columns.Add("Def_Min", typeof(double));
+        //        dt.Columns.Add("Def_Max", typeof(double));
+        //        //dt.Columns.Add("CreateDate", typeof(DateTime)).DefaultValue = DateTime.Now;
+        //        //dt.Columns.Add("UpdateDate", typeof(DateTime)).DefaultValue = DateTime.Now; ;
+        //        dt.Columns.Add("UserCode", typeof(string));
+        //        dt.Columns.Add("RecStatus", typeof(string));
+        //        dt.Columns.Add("AuthDate", typeof(DateTime)).DefaultValue = DateTime.Now;
+        //        dt.Columns.Add("AuthCode", typeof(string));
 
-                System.Diagnostics.Debug.Write(dt);
+        //        System.Diagnostics.Debug.Write(dt);
 
-                for (int i = 0; i < customerreq.custRate.Length; i++)
-                {
-                    dt.Rows.Add(
-                        "NEW"
-                        , customerreq.custRate[i].Def_Mod
-                        , customerreq.custRate[i].Def_Exp
-                        , customerreq.custRate[i].Def_Type
-                        , customerreq.custRate[i].Def_Rate
-                        , customerreq.custRate[i].Def_Base
-                        , customerreq.custRate[i].Def_Min
-                        , customerreq.custRate[i].Def_Max
-                        //, DateTime.Now
-                        //, DateTime.Now
-                        , customerreq.custRate[i].UserCode
-                        , customerreq.custRate[i].RecStatus
-                        , customerreq.custRate[i].AuthDate
-                        , customerreq.custRate[i].AuthCode
-                        );
-                }
-                DynamicParameters param = new();
+        //        for (int i = 0; i < customerreq.custRate.Length; i++)
+        //        {
+        //            dt.Rows.Add(
+        //                "NEW"
+        //                , customerreq.custRate[i].Def_Mod
+        //                , customerreq.custRate[i].Def_Exp
+        //                , customerreq.custRate[i].Def_Type
+        //                , customerreq.custRate[i].Def_Rate
+        //                , customerreq.custRate[i].Def_Base
+        //                , customerreq.custRate[i].Def_Min
+        //                , customerreq.custRate[i].Def_Max
+        //                //, DateTime.Now
+        //                //, DateTime.Now
+        //                , customerreq.custRate[i].UserCode
+        //                , customerreq.custRate[i].RecStatus
+        //                , customerreq.custRate[i].AuthDate
+        //                , customerreq.custRate[i].AuthCode
+        //                );
+        //        }
+        //        DynamicParameters param = new();
 
-                //param.Add("@Cust_Code", customerreq.customer.Cust_Code);
-                param.Add("@Cust_Code", "NEW");
-                param.Add("@RecStatus", customerreq.customer.RecStatus);
-                param.Add("@Cust_Status", customerreq.customer.Cust_Status);
-                param.Add("@Cust_CCID", customerreq.customer.Cust_CCID);
-                param.Add("@Cust_CIF", customerreq.customer.Cust_CIF);
-                param.Add("@Cust_T24", customerreq.customer.Cust_T24);
-                param.Add("@CNUM", customerreq.customer.CNUM);
-                param.Add("@CCS_REF", customerreq.customer.CCS_REF);
-                param.Add("@Cust_Title", customerreq.customer.Cust_Title);
-                param.Add("@Cust_Name", customerreq.customer.Cust_Name);
-                param.Add("@Cust_LastName", customerreq.customer.Cust_LastName);
-                param.Add("@Cust_TTitle", customerreq.customer.Cust_TTitle);
-                param.Add("@Cust_TName", customerreq.customer.Cust_TName);
-                param.Add("@Cust_TLastName", customerreq.customer.Cust_TLastName);
-                param.Add("@Cust_Type", customerreq.customer.Cust_Type);
-                param.Add("@Cust_Nation", customerreq.customer.Cust_Nation);
-                param.Add("@Cust_Group", customerreq.customer.Cust_Group);
-                param.Add("@Cust_Parent", customerreq.customer.Cust_Parent);
-                param.Add("@Cust_Bran", customerreq.customer.Cust_Bran);
-                param.Add("@Cust_Rating", customerreq.customer.Cust_Rating);
-                param.Add("@Cust_Lo", customerreq.customer.Cust_Lo);
-                param.Add("@Cust_Ao", customerreq.customer.Cust_Ao);
-                param.Add("@Cust_BOI", customerreq.customer.Cust_BOI);
-                param.Add("@Cust_CsType", customerreq.customer.Cust_CsType);
-                param.Add("@Cust_BuType", customerreq.customer.Cust_BuType);
-                param.Add("@Cust_Size", customerreq.customer.Cust_Size);
-                param.Add("@IRateTHB", customerreq.customer.IRateTHB);
-                param.Add("@IRateCcy", customerreq.customer.IRateCcy);
-                param.Add("@IRateFlag", customerreq.customer.IRateFlag);
-                //param.Add("@Cust_EntDate", DateTime.Now);
-                param.Add("@Cust_EntDate", customerreq.customer.Cust_EntDate);
-                param.Add("@Cust_RegistID", customerreq.customer.Cust_RegistID);
-                //param.Add("@Cust_RegistDate", DateTime.Now);
-                param.Add("@Cust_RegistDate", customerreq.customer.Cust_RegistDate);
-                param.Add("@Cust_TaxID", customerreq.customer.Cust_TaxID);
-                param.Add("@Cust_Contact", customerreq.customer.Cust_Contact);
-                param.Add("@Cust_Remark", customerreq.customer.Cust_Remark);
-                param.Add("@Cust_Add1_Line1", customerreq.customer.Cust_Add1_Line1);
-                param.Add("@Cust_Add1_Line2", customerreq.customer.Cust_Add1_Line2);
-                param.Add("@Cust_Add1_Line3", customerreq.customer.Cust_Add1_Line3);
-                param.Add("@Cust_Add1_Line4", customerreq.customer.Cust_Add1_Line4);
-                param.Add("@Cust_Add1_Prov", customerreq.customer.Cust_Add1_Prov);
-                param.Add("@Cust_Add1_Cnty", customerreq.customer.Cust_Add1_Cnty);
-                param.Add("@Cust_Add1_Telno", customerreq.customer.Cust_Add1_Telno);
-                param.Add("@Cust_Add1_Faxno", customerreq.customer.Cust_Add1_Faxno);
-                param.Add("@Cust_Add1_Email", customerreq.customer.Cust_Add1_Email);
-                param.Add("@Cust_Add2_Line1", customerreq.customer.Cust_Add2_Line1);
-                param.Add("@Cust_Add2_Line2", customerreq.customer.Cust_Add2_Line2);
-                param.Add("@Cust_Add2_Line3", customerreq.customer.Cust_Add2_Line3);
-                param.Add("@Cust_Add2_Line4", customerreq.customer.Cust_Add2_Line4);
-                param.Add("@Cust_Add2_prov", customerreq.customer.Cust_Add2_prov);
-                param.Add("@Cust_Add2_Cnty", customerreq.customer.Cust_Add2_Cnty);
-                param.Add("@Cust_Add2_Telno", customerreq.customer.Cust_Add2_Telno);
-                param.Add("@Cust_Add2_Faxno", customerreq.customer.Cust_Add2_Faxno);
-                param.Add("@Cust_AcNo1", customerreq.customer.Cust_AcNo1);
-                param.Add("@Cust_AcName1", customerreq.customer.Cust_AcName1);
-                param.Add("@Cust_AcType1", customerreq.customer.Cust_AcType1);
-                param.Add("@Cust_AcFlag1", customerreq.customer.Cust_AcFlag1);
-                param.Add("@Cust_AcCcy1", customerreq.customer.Cust_AcCcy1);
-                param.Add("@Cust_AcBran1", customerreq.customer.Cust_AcBran1);
-                param.Add("@cust_AcRelation1", customerreq.customer.cust_AcRelation1);
-                param.Add("@Cust_AcNo2", customerreq.customer.Cust_AcNo2);
-                param.Add("@Cust_AcName2", customerreq.customer.Cust_AcName2);
-                param.Add("@Cust_AcType2", customerreq.customer.Cust_AcType2);
-                param.Add("@Cust_AcFlag2", customerreq.customer.Cust_AcFlag2);
-                param.Add("@Cust_AcCcy2", customerreq.customer.Cust_AcCcy2);
-                param.Add("@Cust_AcBran2", customerreq.customer.Cust_AcBran2);
-                param.Add("@cust_Acrelation2", customerreq.customer.cust_AcRelation2);
-                param.Add("@Cust_AcNo3", customerreq.customer.Cust_AcNo3);
-                param.Add("@Cust_AcName3", customerreq.customer.Cust_AcName3);
-                param.Add("@Cust_AcType3", customerreq.customer.Cust_AcType3);
-                param.Add("@Cust_AcFlag3", customerreq.customer.Cust_AcFlag3);
-                param.Add("@Cust_AcCcy3", customerreq.customer.Cust_AcCcy3);
-                param.Add("@Cust_AcBran3", customerreq.customer.Cust_AcBran3);
-                param.Add("@cust_AcRelation3", customerreq.customer.cust_AcRelation3);
-                param.Add("@Cust_AcNo4", customerreq.customer.Cust_AcNo4);
-                param.Add("@Cust_AcName4", customerreq.customer.Cust_AcName4);
-                param.Add("@Cust_AcType4", customerreq.customer.Cust_AcType4);
-                param.Add("@Cust_AcFlag4", customerreq.customer.Cust_AcFlag4);
-                param.Add("@Cust_AcCcy4", customerreq.customer.Cust_AcCcy4);
-                param.Add("@Cust_AcBran4", customerreq.customer.Cust_AcBran4);
-                param.Add("@cust_AcRelation4", customerreq.customer.cust_AcRelation4);
-                param.Add("@Cust_CommLC", customerreq.customer.Cust_CommLC);
+        //        //param.Add("@Cust_Code", customerreq.customer.Cust_Code);
+        //        param.Add("@Cust_Code", "NEW");
+        //        param.Add("@RecStatus", customerreq.customer.RecStatus);
+        //        param.Add("@Cust_Status", customerreq.customer.Cust_Status);
+        //        param.Add("@Cust_CCID", customerreq.customer.Cust_CCID);
+        //        param.Add("@Cust_CIF", customerreq.customer.Cust_CIF);
+        //        param.Add("@Cust_T24", customerreq.customer.Cust_T24);
+        //        param.Add("@CNUM", customerreq.customer.CNUM);
+        //        param.Add("@CCS_REF", customerreq.customer.CCS_REF);
+        //        param.Add("@Cust_Title", customerreq.customer.Cust_Title);
+        //        param.Add("@Cust_Name", customerreq.customer.Cust_Name);
+        //        param.Add("@Cust_LastName", customerreq.customer.Cust_LastName);
+        //        param.Add("@Cust_TTitle", customerreq.customer.Cust_TTitle);
+        //        param.Add("@Cust_TName", customerreq.customer.Cust_TName);
+        //        param.Add("@Cust_TLastName", customerreq.customer.Cust_TLastName);
+        //        param.Add("@Cust_Type", customerreq.customer.Cust_Type);
+        //        param.Add("@Cust_Nation", customerreq.customer.Cust_Nation);
+        //        param.Add("@Cust_Group", customerreq.customer.Cust_Group);
+        //        param.Add("@Cust_Parent", customerreq.customer.Cust_Parent);
+        //        param.Add("@Cust_Bran", customerreq.customer.Cust_Bran);
+        //        param.Add("@Cust_Rating", customerreq.customer.Cust_Rating);
+        //        param.Add("@Cust_Lo", customerreq.customer.Cust_Lo);
+        //        param.Add("@Cust_Ao", customerreq.customer.Cust_Ao);
+        //        param.Add("@Cust_BOI", customerreq.customer.Cust_BOI);
+        //        param.Add("@Cust_CsType", customerreq.customer.Cust_CsType);
+        //        param.Add("@Cust_BuType", customerreq.customer.Cust_BuType);
+        //        param.Add("@Cust_Size", customerreq.customer.Cust_Size);
+        //        param.Add("@IRateTHB", customerreq.customer.IRateTHB);
+        //        param.Add("@IRateCcy", customerreq.customer.IRateCcy);
+        //        param.Add("@IRateFlag", customerreq.customer.IRateFlag);
+        //        //param.Add("@Cust_EntDate", DateTime.Now);
+        //        param.Add("@Cust_EntDate", customerreq.customer.Cust_EntDate);
+        //        param.Add("@Cust_RegistID", customerreq.customer.Cust_RegistID);
+        //        //param.Add("@Cust_RegistDate", DateTime.Now);
+        //        param.Add("@Cust_RegistDate", customerreq.customer.Cust_RegistDate);
+        //        param.Add("@Cust_TaxID", customerreq.customer.Cust_TaxID);
+        //        param.Add("@Cust_Contact", customerreq.customer.Cust_Contact);
+        //        param.Add("@Cust_Remark", customerreq.customer.Cust_Remark);
+        //        param.Add("@Cust_Add1_Line1", customerreq.customer.Cust_Add1_Line1);
+        //        param.Add("@Cust_Add1_Line2", customerreq.customer.Cust_Add1_Line2);
+        //        param.Add("@Cust_Add1_Line3", customerreq.customer.Cust_Add1_Line3);
+        //        param.Add("@Cust_Add1_Line4", customerreq.customer.Cust_Add1_Line4);
+        //        param.Add("@Cust_Add1_Prov", customerreq.customer.Cust_Add1_Prov);
+        //        param.Add("@Cust_Add1_Cnty", customerreq.customer.Cust_Add1_Cnty);
+        //        param.Add("@Cust_Add1_Telno", customerreq.customer.Cust_Add1_Telno);
+        //        param.Add("@Cust_Add1_Faxno", customerreq.customer.Cust_Add1_Faxno);
+        //        param.Add("@Cust_Add1_Email", customerreq.customer.Cust_Add1_Email);
+        //        param.Add("@Cust_Add2_Line1", customerreq.customer.Cust_Add2_Line1);
+        //        param.Add("@Cust_Add2_Line2", customerreq.customer.Cust_Add2_Line2);
+        //        param.Add("@Cust_Add2_Line3", customerreq.customer.Cust_Add2_Line3);
+        //        param.Add("@Cust_Add2_Line4", customerreq.customer.Cust_Add2_Line4);
+        //        param.Add("@Cust_Add2_prov", customerreq.customer.Cust_Add2_prov);
+        //        param.Add("@Cust_Add2_Cnty", customerreq.customer.Cust_Add2_Cnty);
+        //        param.Add("@Cust_Add2_Telno", customerreq.customer.Cust_Add2_Telno);
+        //        param.Add("@Cust_Add2_Faxno", customerreq.customer.Cust_Add2_Faxno);
+        //        param.Add("@Cust_AcNo1", customerreq.customer.Cust_AcNo1);
+        //        param.Add("@Cust_AcName1", customerreq.customer.Cust_AcName1);
+        //        param.Add("@Cust_AcType1", customerreq.customer.Cust_AcType1);
+        //        param.Add("@Cust_AcFlag1", customerreq.customer.Cust_AcFlag1);
+        //        param.Add("@Cust_AcCcy1", customerreq.customer.Cust_AcCcy1);
+        //        param.Add("@Cust_AcBran1", customerreq.customer.Cust_AcBran1);
+        //        param.Add("@cust_AcRelation1", customerreq.customer.cust_AcRelation1);
+        //        param.Add("@Cust_AcNo2", customerreq.customer.Cust_AcNo2);
+        //        param.Add("@Cust_AcName2", customerreq.customer.Cust_AcName2);
+        //        param.Add("@Cust_AcType2", customerreq.customer.Cust_AcType2);
+        //        param.Add("@Cust_AcFlag2", customerreq.customer.Cust_AcFlag2);
+        //        param.Add("@Cust_AcCcy2", customerreq.customer.Cust_AcCcy2);
+        //        param.Add("@Cust_AcBran2", customerreq.customer.Cust_AcBran2);
+        //        param.Add("@cust_Acrelation2", customerreq.customer.cust_AcRelation2);
+        //        param.Add("@Cust_AcNo3", customerreq.customer.Cust_AcNo3);
+        //        param.Add("@Cust_AcName3", customerreq.customer.Cust_AcName3);
+        //        param.Add("@Cust_AcType3", customerreq.customer.Cust_AcType3);
+        //        param.Add("@Cust_AcFlag3", customerreq.customer.Cust_AcFlag3);
+        //        param.Add("@Cust_AcCcy3", customerreq.customer.Cust_AcCcy3);
+        //        param.Add("@Cust_AcBran3", customerreq.customer.Cust_AcBran3);
+        //        param.Add("@cust_AcRelation3", customerreq.customer.cust_AcRelation3);
+        //        param.Add("@Cust_AcNo4", customerreq.customer.Cust_AcNo4);
+        //        param.Add("@Cust_AcName4", customerreq.customer.Cust_AcName4);
+        //        param.Add("@Cust_AcType4", customerreq.customer.Cust_AcType4);
+        //        param.Add("@Cust_AcFlag4", customerreq.customer.Cust_AcFlag4);
+        //        param.Add("@Cust_AcCcy4", customerreq.customer.Cust_AcCcy4);
+        //        param.Add("@Cust_AcBran4", customerreq.customer.Cust_AcBran4);
+        //        param.Add("@cust_AcRelation4", customerreq.customer.cust_AcRelation4);
+        //        param.Add("@Cust_CommLC", customerreq.customer.Cust_CommLC);
 
-                //param.Add("@CreateDate", DateTime.Now);
-                //param.Add("@UpdateDate", DateTime.Now);
-                param.Add("@UserCode", customerreq.customer.UserCode);
-                param.Add("@AuthDate", customerreq.customer.AuthDate);
-                param.Add("@AuthCode", customerreq.customer.AuthCode);
-                param.Add("@DMS", customerreq.customer.DMS);
-                param.Add("@Cust_CCEmail", customerreq.customer.Cust_CCEmail);
-                param.Add("@Online_Flag", customerreq.customer.Online_Flag);
-                param.Add("@CLMS_Flag", customerreq.customer.CLMS_Flag);
-                param.Add("@Cust_FilePassword", customerreq.customer.Cust_FilePassword);
-                param.Add("@Cust_SBU", customerreq.customer.Cust_SBU);
-                param.Add("@Cust_GFMSSBUCode", customerreq.customer.Cust_GFMSSBUCode);
-                param.Add("@Cust_RCCode", customerreq.customer.Cust_RCCode);
-                param.Add("@Cust_RMCode", customerreq.customer.Cust_RMCode);
-                //param.Add("@CustRate", dt.AsTableValuedParameter("type_custrate"));
+        //        //param.Add("@CreateDate", DateTime.Now);
+        //        //param.Add("@UpdateDate", DateTime.Now);
+        //        param.Add("@UserCode", customerreq.customer.UserCode);
+        //        param.Add("@AuthDate", customerreq.customer.AuthDate);
+        //        param.Add("@AuthCode", customerreq.customer.AuthCode);
+        //        param.Add("@DMS", customerreq.customer.DMS);
+        //        param.Add("@Cust_CCEmail", customerreq.customer.Cust_CCEmail);
+        //        param.Add("@Online_Flag", customerreq.customer.Online_Flag);
+        //        param.Add("@CLMS_Flag", customerreq.customer.CLMS_Flag);
+        //        param.Add("@Cust_FilePassword", customerreq.customer.Cust_FilePassword);
+        //        param.Add("@Cust_SBU", customerreq.customer.Cust_SBU);
+        //        param.Add("@Cust_GFMSSBUCode", customerreq.customer.Cust_GFMSSBUCode);
+        //        param.Add("@Cust_RCCode", customerreq.customer.Cust_RCCode);
+        //        param.Add("@Cust_RMCode", customerreq.customer.Cust_RMCode);
+        //        //param.Add("@CustRate", dt.AsTableValuedParameter("type_custrate"));
 
-                param.Add("@CRsp", dbType: DbType.Int32,
-                    direction: System.Data.ParameterDirection.Output,
-                    size: 12800);
+        //        param.Add("@CRsp", dbType: DbType.Int32,
+        //            direction: System.Data.ParameterDirection.Output,
+        //            size: 12800);
 
-                param.Add("@CCustRsp", dbType: DbType.String,
-                   direction: System.Data.ParameterDirection.Output,
-                   size: 5215585);
-                _db.StartTransaction();
-                try
-                {
-                    var results = await _db.LoadDataInTransaction<MCustomer, dynamic>(
-                        storedProcedure: "usp_mcustomernew2",
-                        param);
-                    var crsp = param.Get<dynamic>("@CRsp");
-                    var ccustrsp = param.Get<dynamic>("@CCustRsp");
-                    //Log.Information("CustomerNew Request : {@customerreq}",customerreq);
-                    if (crsp > 0)
-                    {
-                        Log.Information("CustomerNew Response : {@ccustrsp}", ccustrsp);
-                        //return Ok(ccustrsp);
-                        DynamicParameters param2 = new();
-                        param2.Add("@Cust_Code", ccustrsp.customer.cust_code);
-                        param2.Add("@CRsp", dbType: DbType.Int32,
-                            direction: System.Data.ParameterDirection.Output,
-                            size: 12800);
+        //        param.Add("@CCustRsp", dbType: DbType.String,
+        //           direction: System.Data.ParameterDirection.Output,
+        //           size: 5215585);
+        //        _db.StartTransaction();
+        //        try
+        //        {
+        //            var results = await _db.LoadDataInTransaction<MCustomer, dynamic>(
+        //                storedProcedure: "usp_mcustomernew2",
+        //                param);
+        //            var crsp = param.Get<dynamic>("@CRsp");
+        //            var ccustrsp = param.Get<dynamic>("@CCustRsp");
+        //            //Log.Information("CustomerNew Request : {@customerreq}",customerreq);
+        //            if (crsp > 0)
+        //            {
+        //                Log.Information("CustomerNew Response : {@ccustrsp}", ccustrsp);
+        //                //return Ok(ccustrsp);
+        //                DynamicParameters param2 = new();
+        //                param2.Add("@Cust_Code", ccustrsp.customer.cust_code);
+        //                param2.Add("@CRsp", dbType: DbType.Int32,
+        //                    direction: System.Data.ParameterDirection.Output,
+        //                    size: 12800);
 
-                        param.Add("@CCustRsp", dbType: DbType.String,
-                           direction: System.Data.ParameterDirection.Output,
-                           size: 5215585);
+        //                param.Add("@CCustRsp", dbType: DbType.String,
+        //                   direction: System.Data.ParameterDirection.Output,
+        //                   size: 5215585);
 
-                        try
-                        {
-                            var results2 = await _db.LoadDataInTransaction<MCustRate, dynamic>(
-                               storedProcedure: "usp_mcustratenew2",
-                               param);
-                            var crsp2 = param.Get<dynamic>("@CRsp");
-                            var ccustrsp2 = param.Get<dynamic>("@CCustRsp");
-                            //Log.Information("CustomerNew Request : {@customerreq}",customerreq);
-                            if (crsp > 0)
-                            {
-                                _db.CommitTransaction();
-                                Log.Information("CustRate Response : {@ccustrsp}", ccustrsp2);
-                                return Content(ccustrsp2, "application/json");
-                            }
-                            else
-                            {
-                                _db.RollbackTransaction();
-                                ReturnResponse response = new();
-                                response.StatusCode = "400";
-                                response.Message = "New Custrate code not generate";
-                                Log.Information("CustRate Response BadRequest : {@response}", response);
-                                return BadRequest(response);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _db.RollbackTransaction();
-                            Log.Information("CustRate Response BadRequest : {@exception}", ex.Message);
-                            return BadRequest(ex.Message);
-                        }
-                    }
-                    else
-                    {
-                        _db.RollbackTransaction();
-                        ReturnResponse response = new();
-                        response.StatusCode = "400";
-                        response.Message = "New Customer code not generate";
-                        Log.Information("CustomerNew Response BadRequest : {@response}", response);
-                        return BadRequest(response);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _db.RollbackTransaction();
-                    Log.Information("CustomerNew Response BadRequest : {@exception}", ex.Message);
-                    return BadRequest(ex.Message);
-                };
+        //                try
+        //                {
+        //                    var results2 = await _db.LoadDataInTransaction<MCustRate, dynamic>(
+        //                       storedProcedure: "usp_mcustratenew2",
+        //                       param);
+        //                    var crsp2 = param.Get<dynamic>("@CRsp");
+        //                    var ccustrsp2 = param.Get<dynamic>("@CCustRsp");
+        //                    //Log.Information("CustomerNew Request : {@customerreq}",customerreq);
+        //                    if (crsp > 0)
+        //                    {
+        //                        _db.CommitTransaction();
+        //                        Log.Information("CustRate Response : {@ccustrsp}", ccustrsp2);
+        //                        return Ok(ccustrsp2);
+        //                    }
+        //                    else
+        //                    {
+        //                        _db.RollbackTransaction();
+        //                        ReturnResponse response = new();
+        //                        response.StatusCode = "400";
+        //                        response.Message = "New Custrate code not generate";
+        //                        Log.Information("CustRate Response BadRequest : {@response}", response);
+        //                        return BadRequest(response);
+        //                    }
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    _db.RollbackTransaction();
+        //                    Log.Information("CustRate Response BadRequest : {@exception}", ex.Message);
+        //                    return BadRequest(ex.Message);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                _db.RollbackTransaction();
+        //                ReturnResponse response = new();
+        //                response.StatusCode = "400";
+        //                response.Message = "New Customer code not generate";
+        //                Log.Information("CustomerNew Response BadRequest : {@response}", response);
+        //                return BadRequest(response);
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _db.RollbackTransaction();
+        //            Log.Information("CustomerNew Response BadRequest : {@exception}", ex.Message);
+        //            return BadRequest(ex.Message);
+        //        };
 
-                //_db.CommitTransaction();
-            }
-            else
-            {
-                return BadRequest("Not NEW Customer Code or NEW Def Cust");
-            }
-        }
+        //        //_db.CommitTransaction();
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Not NEW Customer Code or NEW Def Cust");
+        //    }
+        //}
         //[HttpPost("insert")]
         //public async Task<ActionResult<List<MCustomerNewRsp>>> Insert([FromBody] MCustomerNewReq customerreq)
         //{
@@ -1177,7 +1176,7 @@ namespace ISPTF.API.Controllers
                 if (ccode > 0)
                 {
                     Log.Information("AccountUpdate Response : {@ccustrsp}", ccustrsp);
-                    return Content(ccustrsp, "application/json");
+                    return Ok(ccustrsp);
                 }
                 else
                 {
