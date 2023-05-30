@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models
 {
+    /*
     public class BOT_ISIC
     {
         public string CL_CODE { get; set; }
@@ -21,4 +22,5 @@ namespace ISPTF.Models
         public DateTime LASTUPDATE { get; set; }
         public string USERID { get; set; }
     }
+    */
 }

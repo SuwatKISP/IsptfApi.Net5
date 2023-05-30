@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models
 {
+    /*
     public class User
     {
         public string Username { get; set; }
@@ -15,4 +16,5 @@ namespace ISPTF.Models
         public string Surname { get; set; }
         public string Role { get; set; }
     }
+    */
 }
