@@ -50,6 +50,9 @@ namespace ISPTF.API
 
         // This method gets called by the runtime. Use this method to add services to the container.
         //[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
+
+
+
         public void ConfigureServices(IServiceCollection services)
         {
 
@@ -71,8 +74,11 @@ namespace ISPTF.API
             //     });
             //});
 
+
+            var connection = Configuration["ConnectionStrings:DefaultConnection"];
+
             services.AddDbContext<ISPTFContext>(
-                    options => options.UseSqlServer("Server=203.154.158.182;Database=ISPTF;User Id=sa;Password=ispadmin;"));
+                    options => options.UseSqlServer(connection));
 
 
             services.AddControllers()

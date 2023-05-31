@@ -373,10 +373,7 @@ namespace ISPTF.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=203.154.158.182;Database=ISPTF;User Id=sa;Password=ispadmin;");
-            }
+            
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
