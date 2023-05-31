@@ -495,7 +495,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                       select new
                                       {
                                           Credit_Share = c.Credit_Share ?? 0,
-                                          Available_Amt = c.Available_Amt ?? 0
+                                          Available_Amt = c.Available_Amt
                                       }).FirstOrDefault();
 
                         partialAvailableAmount = result.Available_Amt;

@@ -10,7 +10,7 @@ namespace ISPTF.Models
         public string Acc_Map { get; set; }
         public string AModule { get; set; }
         public string AEvent { get; set; }
-        public int ASeq { get; set; }
+        public string ASeq { get; set; }
         public string Accode { get; set; }
         public string ANature { get; set; }
         public string ACcy { get; set; }

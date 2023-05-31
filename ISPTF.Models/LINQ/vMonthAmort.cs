@@ -23,7 +23,7 @@ namespace ISPTF.Models
         public double DISCOUNT_CCY { get; set; }
         public double discrate { get; set; }
         public double DISCOUNT_AMT { get; set; }
-        public double? TotalAccruAmt { get; set; }
+        public double TotalAccruAmt { get; set; }
         public double TotalAccruBht { get; set; }
         public double SuspAmt { get; set; }
         public string TenorType { get; set; }

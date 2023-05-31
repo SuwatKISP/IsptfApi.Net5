@@ -21,6 +21,7 @@ namespace ISPTF.Models
         public virtual DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public virtual DbSet<BOT_Classification> BOT_Classifications { get; set; }
         public virtual DbSet<BOT_ISIC> BOT_ISICs { get; set; }
+        public virtual DbSet<CustRelateISP> CustRelateISPs { get; set; }
         public virtual DbSet<IBAFTX180105> IBAFTX180105s { get; set; }
         public virtual DbSet<IBBFTX180105> IBBFTX180105s { get; set; }
         public virtual DbSet<IBBFTX1801052> IBBFTX1801052s { get; set; }
@@ -31,12 +32,16 @@ namespace ISPTF.Models
         public virtual DbSet<IdentityUserLogin> IdentityUserLogins { get; set; }
         public virtual DbSet<IdentityUserProfile> IdentityUserProfiles { get; set; }
         public virtual DbSet<IdentityUserRole> IdentityUserRoles { get; set; }
+        public virtual DbSet<Load_LimitColl> Load_LimitColls { get; set; }
+        public virtual DbSet<SCL> SCLs { get; set; }
+        public virtual DbSet<SCV> SCVs { get; set; }
         public virtual DbSet<Sheet12_> Sheet12_s { get; set; }
         public virtual DbSet<Sheet1_> Sheet1_s { get; set; }
         public virtual DbSet<Sheet22_> Sheet22_s { get; set; }
         public virtual DbSet<TMP_OSCC> TMP_OSCCs { get; set; }
         public virtual DbSet<TMP_REPOSGRPCL> TMP_REPOSGRPCLs { get; set; }
         public virtual DbSet<TMP_SUMACC> TMP_SUMACCs { get; set; }
+        public virtual DbSet<TMP_ViewVolumeCom> TMP_ViewVolumeComs { get; set; }
         public virtual DbSet<TMP_VolCorrBank> TMP_VolCorrBanks { get; set; }
         public virtual DbSet<TMP_VolCorrIncome> TMP_VolCorrIncomes { get; set; }
         public virtual DbSet<TmpATSFile> TmpATSFiles { get; set; }
@@ -62,8 +67,7 @@ namespace ISPTF.Models
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserLogin> UserLogins { get; set; }
         public virtual DbSet<VAuthModule> VAuthModules { get; set; }
-        public virtual DbSet<VDayTranSum> VDayTranSums { get; set; }
-        public virtual DbSet<VDayTranSum2> VDayTranSum2s { get; set; }
+        public virtual DbSet<VIEWDCSinterface> VIEWDCSinterfaces { get; set; }
         public virtual DbSet<VIEWMASTERPENDING> VIEWMASTERPENDINGs { get; set; }
         public virtual DbSet<VIEWTMP14GrpOSCL> VIEWTMP14GrpOSCLs { get; set; }
         public virtual DbSet<VIEWTMP24GrpOSCL> VIEWTMP24GrpOSCLs { get; set; }
@@ -75,12 +79,10 @@ namespace ISPTF.Models
         public virtual DbSet<VIEW_OSbyCC> VIEW_OSbyCCs { get; set; }
         public virtual DbSet<VIEW_OSbyCCS1> VIEW_OSbyCCS1s { get; set; }
         public virtual DbSet<VIEW_REPOSGrpCL> VIEW_REPOSGrpCLs { get; set; }
-        public virtual DbSet<VIEW_ShowOSbyCC> VIEW_ShowOSbyCCs { get; set; }
         public virtual DbSet<ViewARemExchRate> ViewARemExchRates { get; set; }
         public virtual DbSet<ViewAllRemRate> ViewAllRemRates { get; set; }
         public virtual DbSet<ViewAllRemit> ViewAllRemits { get; set; }
         public virtual DbSet<ViewBankLimit> ViewBankLimits { get; set; }
-        public virtual DbSet<ViewBusVolume> ViewBusVolumes { get; set; }
         public virtual DbSet<ViewCC> ViewCCs { get; set; }
         public virtual DbSet<ViewCLBOut> ViewCLBOuts { get; set; }
         public virtual DbSet<ViewCreditLimit> ViewCreditLimits { get; set; }
@@ -97,8 +99,6 @@ namespace ISPTF.Models
         public virtual DbSet<ViewGENDLC> ViewGENDLCs { get; set; }
         public virtual DbSet<ViewGenACC> ViewGenACCs { get; set; }
         public virtual DbSet<ViewGroupGL> ViewGroupGLs { get; set; }
-        public virtual DbSet<ViewISPTFL> ViewISPTFLs { get; set; }
-        public virtual DbSet<ViewISPTFL2> ViewISPTFL2s { get; set; }
         public virtual DbSet<ViewLastExchRate> ViewLastExchRates { get; set; }
         public virtual DbSet<ViewMapAccount> ViewMapAccounts { get; set; }
         public virtual DbSet<ViewMapDailyGL> ViewMapDailyGLs { get; set; }
@@ -121,10 +121,11 @@ namespace ISPTF.Models
         public virtual DbSet<ViewTmpBack> ViewTmpBacks { get; set; }
         public virtual DbSet<ViewTransCLB> ViewTransCLBs { get; set; }
         public virtual DbSet<ViewVolumeCom> ViewVolumeComs { get; set; }
-        public virtual DbSet<ViewVolumeCom1> ViewVolumeCom1s { get; set; }
         public virtual DbSet<convEXBC> convEXBCs { get; set; }
         public virtual DbSet<convEXLC> convEXLCs { get; set; }
         public virtual DbSet<customer> customers { get; set; }
+        public virtual DbSet<fm314wc03> fm314wc03s { get; set; }
+        public virtual DbSet<fm315wl01> fm315wl01s { get; set; }
         public virtual DbSet<holiday> holidays { get; set; }
         public virtual DbSet<mAOCode> mAOCodes { get; set; }
         public virtual DbSet<mAPPError> mAPPErrors { get; set; }
@@ -152,9 +153,12 @@ namespace ISPTF.Models
         public virtual DbSet<mInRateCode> mInRateCodes { get; set; }
         public virtual DbSet<mLimitCode> mLimitCodes { get; set; }
         public virtual DbSet<mLoCode> mLoCodes { get; set; }
+        public virtual DbSet<mMap1PCIF> mMap1PCIFs { get; set; }
+        public virtual DbSet<mMap1PLimit> mMap1PLimits { get; set; }
+        public virtual DbSet<mMapAOBR> mMapAOBRs { get; set; }
         public virtual DbSet<mMapAccount> mMapAccounts { get; set; }
         public virtual DbSet<mMapBalanceCD> mMapBalanceCDs { get; set; }
-        public virtual DbSet<mMapFacno> mMapFacnos { get; set; }
+        public virtual DbSet<mMapFacNo> mMapFacNos { get; set; }
         public virtual DbSet<mMapProduct> mMapProducts { get; set; }
         public virtual DbSet<mMapProductGFM> mMapProductGFMs { get; set; }
         public virtual DbSet<mMapSWIFT> mMapSWIFTs { get; set; }
@@ -209,6 +213,7 @@ namespace ISPTF.Models
         public virtual DbSet<pDailySap> pDailySaps { get; set; }
         public virtual DbSet<pDailySapHead> pDailySapHeads { get; set; }
         public virtual DbSet<pDailySapMap> pDailySapMaps { get; set; }
+        public virtual DbSet<pDetailForex> pDetailForices { get; set; }
         public virtual DbSet<pDocRegInv> pDocRegInvs { get; set; }
         public virtual DbSet<pDocRegInv1> pDocRegInv1s { get; set; }
         public virtual DbSet<pDocRegInv2> pDocRegInv2s { get; set; }
@@ -231,6 +236,7 @@ namespace ISPTF.Models
         public virtual DbSet<pFcdAccTran> pFcdAccTrans { get; set; }
         public virtual DbSet<pFcdDayBalance> pFcdDayBalances { get; set; }
         public virtual DbSet<pFcdIntRate> pFcdIntRates { get; set; }
+        public virtual DbSet<pHeaderForex> pHeaderForices { get; set; }
         public virtual DbSet<pHoliday> pHolidays { get; set; }
         public virtual DbSet<pIMBC> pIMBCs { get; set; }
         public virtual DbSet<pIMBL> pIMBLs { get; set; }
@@ -351,23 +357,18 @@ namespace ISPTF.Models
         public virtual DbSet<vExpDMSFTXFTU> vExpDMSFTXFTUs { get; set; }
         public virtual DbSet<vForwardCont> vForwardConts { get; set; }
         public virtual DbSet<vIMFWCONT> vIMFWCONTs { get; set; }
-        public virtual DbSet<vLinkTFL> vLinkTFLs { get; set; }
         public virtual DbSet<vMasterMonInt> vMasterMonInts { get; set; }
         public virtual DbSet<vMasterOduLoan> vMasterOduLoans { get; set; }
         public virtual DbSet<vMonAccured> vMonAccureds { get; set; }
         public virtual DbSet<vMonthAmort> vMonthAmorts { get; set; }
         public virtual DbSet<vMonthAmortback> vMonthAmortbacks { get; set; }
         public virtual DbSet<vRefundTax> vRefundTaxes { get; set; }
-        public virtual DbSet<vTranPaymentLoan> vTranPaymentLoans { get; set; }
-        public virtual DbSet<vfindkeyno> vfindkeynos { get; set; }
         public virtual DbSet<viewBankLSum> viewBankLSums { get; set; }
         public virtual DbSet<viewBankLiab> viewBankLiabs { get; set; }
         public virtual DbSet<viewCustLSum> viewCustLSums { get; set; }
-        public virtual DbSet<viewCustLm> viewCustLms { get; set; }
         public virtual DbSet<viewMasterLoan> viewMasterLoans { get; set; }
         public virtual DbSet<viewMasterODU> viewMasterODUs { get; set; }
         public virtual DbSet<viewOutISP> viewOutISPs { get; set; }
-        public virtual DbSet<viewPayPrnciple> viewPayPrnciples { get; set; }
         public virtual DbSet<vtempCC> vtempCCs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -375,7 +376,7 @@ namespace ISPTF.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=203.154.158.182;Database=ISPTF;User Id=sa;Password=ispadmin;");
+                optionsBuilder.UseSqlServer("Server=203.154.158.182;Database=ISPTF_PROD;User Id=sa;Password=ispadmin;");
             }
         }
 
@@ -386,7 +387,7 @@ namespace ISPTF.Models
             modelBuilder.Entity<Account>(entity =>
             {
                 entity.HasKey(e => e.ApplicationUserId)
-                    .HasName("PK__Account__9CBCE319C279EF5A");
+                    .HasName("PK__Account__9CBCE319A4D12698");
 
                 entity.ToTable("Account");
 
@@ -414,8 +415,6 @@ namespace ISPTF.Models
             modelBuilder.Entity<ApplicationUser>(entity =>
             {
                 entity.ToTable("ApplicationUser");
-
-                entity.HasIndex(e => e.ApplicationUserId, "IX_ApplicationUser");
 
                 entity.Property(e => e.Email)
                     .IsRequired()
@@ -527,6 +526,94 @@ namespace ISPTF.Models
                 entity.Property(e => e.STATUS).HasMaxLength(1);
 
                 entity.Property(e => e.USERID).HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<CustRelateISP>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("CustRelateISP");
+
+                entity.Property(e => e.AddDate)
+                    .HasMaxLength(8)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AsAtDate)
+                    .HasMaxLength(8)
+                    .IsUnicode(false)
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.BaseName)
+                    .HasMaxLength(3)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.CIFNo)
+                    .IsRequired()
+                    .HasMaxLength(13)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.EndRec)
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Filler)
+                    .HasMaxLength(3)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.LastMaDate)
+                    .HasMaxLength(8)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.LastMaUser)
+                    .HasMaxLength(8)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RelatNo)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RelatSystem)
+                    .HasMaxLength(3)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RootName)
+                    .HasMaxLength(8)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RootRefNo)
+                    .HasMaxLength(5)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RunDate)
+                    .HasMaxLength(8)
+                    .IsUnicode(false)
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.RunTime)
+                    .HasMaxLength(6)
+                    .IsUnicode(false)
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.Spare)
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.TransStatus)
+                    .HasMaxLength(2)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.UDATA_DT)
+                    .HasMaxLength(8)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.UDATA_TM)
+                    .HasMaxLength(6)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<IBAFTX180105>(entity =>
@@ -1868,6 +1955,381 @@ namespace ISPTF.Models
                     .HasConstraintName("FK_IdentityUserRole_IdentityUser");
             });
 
+            modelBuilder.Entity<Load_LimitColl>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("Load_LimitColl");
+            });
+
+            modelBuilder.Entity<SCL>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("SCL");
+
+                entity.Property(e => e.BankNumber)
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CountryCode)
+                    .HasMaxLength(3)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CreateBy)
+                    .HasMaxLength(12)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CreateDate).HasColumnType("smalldatetime");
+
+                entity.Property(e => e.CurrencyCode)
+                    .HasMaxLength(3)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('''')");
+
+                entity.Property(e => e.CustName)
+                    .HasMaxLength(70)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CustNumber)
+                    .IsRequired()
+                    .HasMaxLength(15)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.DataAsOfDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.EffectiveDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ErrorCode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ErrorDescription)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ExpiredDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Filler)
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.Hold_Amount).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.InterfaceNumber)
+                    .HasMaxLength(4)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.LimitAmount).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LimitAvailable).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LimitCode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('''')");
+
+                entity.Property(e => e.LimitDescription)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.LimitName)
+                    .HasMaxLength(35)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.LimitNumber)
+                    .IsRequired()
+                    .HasMaxLength(25)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.LimitUtilisation).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.OutBalTHB).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ProcessStatus)
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ProcessTime)
+                    .HasMaxLength(26)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ProcessingDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RecordType)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.Share_Amount).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SystemID)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+            });
+
+            modelBuilder.Entity<SCV>(entity =>
+            {
+                entity.HasKey(e => e.ReferenceNumber);
+
+                entity.ToTable("SCV");
+
+                entity.Property(e => e.ReferenceNumber)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AccruedInterestAmount).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ActualRate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.AgingInterestDay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.AgingPricipleDay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ApprovedLimitAmount).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BOTPurposecode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BaseRate)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BookingBranchCode)
+                    .HasMaxLength(5)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.BusinessSizeBOT)
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.CCS_LmType)
+                    .HasMaxLength(3)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CountryCode)
+                    .HasMaxLength(3)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CreateDate).HasColumnType("smalldatetime");
+
+                entity.Property(e => e.CreatetBy)
+                    .HasMaxLength(12)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CurrencyID)
+                    .HasMaxLength(3)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CustCode)
+                    .HasMaxLength(6)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CustName)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.CustNumber)
+                    .HasMaxLength(15)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.DataAsOfDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.DateStartAccru).HasColumnType("smalldatetime");
+
+                entity.Property(e => e.DeferredIncomeAmount).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisbursementAmountFCY).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisbursementAmountLCY).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisbursementDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.DiscountRate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DueDate).HasColumnType("smalldatetime");
+
+                entity.Property(e => e.EntityCode1P)
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ErrorCode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ErrorDesc)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.FacNo)
+                    .HasMaxLength(13)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.FeeCommissionAmountLTD).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Filler)
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.FlagDue)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ISP_Module)
+                    .HasMaxLength(6)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.IntRateCode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.InterfaceNumber)
+                    .HasMaxLength(4)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.LimitNumber)
+                    .HasMaxLength(15)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.MaturityDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.Module)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.OutstandingAmountFCY).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.OutstandingAmountLCY).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.PaidIntAccr).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.PaidIntIncome).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.PaidM).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.PaidMemoAccr).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.PaidP).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.PayType)
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ProcessStatus)
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ProcessTime)
+                    .HasMaxLength(26)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ProcessingDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ProductCode)
+                    .HasMaxLength(5)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ProductDescription)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ProductGroupCode)
+                    .HasMaxLength(5)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.ProductType)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.RecordType)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.RevalueRate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SpreadCode)
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.SpreadRate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.StopAccruedDate)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.StopAccruedFlag)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SuspendedInterestAmount).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SystemID)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+            });
+
             modelBuilder.Entity<Sheet12_>(entity =>
             {
                 entity.HasNoKey();
@@ -2809,6 +3271,50 @@ namespace ISPTF.Models
                     .IsUnicode(false);
             });
 
+            modelBuilder.Entity<TMP_ViewVolumeCom>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("TMP_ViewVolumeCom");
+
+                entity.Property(e => e.CenterID).HasMaxLength(4);
+
+                entity.Property(e => e.CustCode).HasMaxLength(8);
+
+                entity.Property(e => e.CustName).HasMaxLength(180);
+
+                entity.Property(e => e.Keynumber).HasMaxLength(20);
+
+                entity.Property(e => e.SendFlag)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.TRANEVENT).HasMaxLength(20);
+
+                entity.Property(e => e.TranAccount).HasMaxLength(15);
+
+                entity.Property(e => e.TranCcy).HasMaxLength(3);
+
+                entity.Property(e => e.TranDept).HasMaxLength(4);
+
+                entity.Property(e => e.TranDesc).HasMaxLength(50);
+
+                entity.Property(e => e.TranMod).HasMaxLength(5);
+
+                entity.Property(e => e.TranNature)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.TranStatus)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.VouchDate).HasColumnType("smalldatetime");
+            });
+
             modelBuilder.Entity<TMP_VolCorrBank>(entity =>
             {
                 entity.HasNoKey();
@@ -2833,7 +3339,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.BalanceAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.BalanceAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BhtNet)
                     .HasMaxLength(1)
@@ -2897,7 +3403,7 @@ namespace ISPTF.Models
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Rate_MidRate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Rate_MidRate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Reference)
                     .HasMaxLength(70)
@@ -3344,19 +3850,19 @@ namespace ISPTF.Models
 
                 entity.ToTable("TmpExchange");
 
-                entity.Property(e => e.TExchBNBuy).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TExchBNBuy).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TExchBNSell).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TExchBNSell).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TExchCcy).HasMaxLength(3);
 
                 entity.Property(e => e.TExchDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.TExchTRate1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TExchTRate1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TExchTRate2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TExchTRate2).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TExchTRate3).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TExchTRate3).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TExchTime)
                     .HasMaxLength(5)
@@ -3804,7 +4310,7 @@ namespace ISPTF.Models
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Username)
-                    .HasName("PK__User__536C85E55AEAE3BE");
+                    .HasName("PK__User__536C85E5EA97E1A6");
 
                 entity.ToTable("User");
 
@@ -3824,7 +4330,7 @@ namespace ISPTF.Models
             modelBuilder.Entity<UserLogin>(entity =>
             {
                 entity.HasKey(e => e.Username)
-                    .HasName("PK__UserLogi__536C85E555526011");
+                    .HasName("PK__UserLogi__536C85E50AF0E147");
 
                 entity.ToTable("UserLogin");
 
@@ -3839,7 +4345,7 @@ namespace ISPTF.Models
 
                 entity.ToView("VAuthModule");
 
-                entity.Property(e => e.CTL_Desc).HasMaxLength(50);
+                entity.Property(e => e.CTL_Desc).HasMaxLength(200);
 
                 entity.Property(e => e.CTL_Name).HasMaxLength(50);
 
@@ -3854,39 +4360,40 @@ namespace ISPTF.Models
                 entity.Property(e => e.UserID).HasMaxLength(12);
             });
 
-            modelBuilder.Entity<VDayTranSum>(entity =>
+            modelBuilder.Entity<VIEWDCSinterface>(entity =>
             {
                 entity.HasNoKey();
 
-                entity.ToView("VDayTranSum");
+                entity.ToView("VIEWDCSinterface");
 
-                entity.Property(e => e.Ccy).HasMaxLength(3);
-
-                entity.Property(e => e.CustCode).HasMaxLength(13);
-
-                entity.Property(e => e.KeyNumber).HasMaxLength(20);
-
-                entity.Property(e => e.Module)
+                entity.Property(e => e.AS400_COLL_NO)
                     .IsRequired()
-                    .HasMaxLength(4)
+                    .HasMaxLength(1)
                     .IsUnicode(false);
-            });
 
-            modelBuilder.Entity<VDayTranSum2>(entity =>
-            {
-                entity.HasNoKey();
+                entity.Property(e => e.CCS_ACC_NO).HasMaxLength(20);
 
-                entity.ToView("VDayTranSum2");
+                entity.Property(e => e.CCS_CUST_CODE).HasMaxLength(20);
 
-                entity.Property(e => e.Ccy).HasMaxLength(3);
-
-                entity.Property(e => e.CustCode).HasMaxLength(13);
-
-                entity.Property(e => e.KeyNumber).HasMaxLength(20);
-
-                entity.Property(e => e.Module)
+                entity.Property(e => e.ISP_FAC_NO)
                     .IsRequired()
-                    .HasMaxLength(4)
+                    .HasMaxLength(13);
+
+                entity.Property(e => e.NAME).HasMaxLength(70);
+
+                entity.Property(e => e.ORIGINAL_CUST_CODE)
+                    .IsRequired()
+                    .HasMaxLength(6);
+
+                entity.Property(e => e.PID_RID).HasMaxLength(13);
+
+                entity.Property(e => e.SAFE_CIF_NO)
+                    .HasMaxLength(13)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.SAFE_COLL_NO)
+                    .IsRequired()
+                    .HasMaxLength(1)
                     .IsUnicode(false);
             });
 
@@ -3937,10 +4444,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FLAGDUE)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
-                entity.Property(e => e.MODULE).HasMaxLength(4);
+                entity.Property(e => e.MODULE).HasMaxLength(15);
             });
 
             modelBuilder.Entity<VIEWTMP24GrpOSCL>(entity =>
@@ -3959,10 +4465,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FLAGDUE)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
-                entity.Property(e => e.MODULE).HasMaxLength(4);
+                entity.Property(e => e.MODULE).HasMaxLength(15);
             });
 
             modelBuilder.Entity<VIEWTMP34GrpOSCL>(entity =>
@@ -3979,10 +4484,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FLAGDUE)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
-                entity.Property(e => e.MODULE).HasMaxLength(4);
+                entity.Property(e => e.MODULE).HasMaxLength(15);
             });
 
             modelBuilder.Entity<VIEWTMP44GrpOSCL>(entity =>
@@ -4006,8 +4510,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.FLAGDUE)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FLAG_SHARE).HasMaxLength(6);
 
@@ -4017,7 +4520,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.MODULE)
                     .IsRequired()
-                    .HasMaxLength(4);
+                    .HasMaxLength(15);
             });
 
             modelBuilder.Entity<VIEWTMPGrpOSCL>(entity =>
@@ -4148,10 +4651,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FLAGDUE)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
-                entity.Property(e => e.MODULE).HasMaxLength(4);
+                entity.Property(e => e.MODULE).HasMaxLength(15);
             });
 
             modelBuilder.Entity<VIEW_OSbyCCS1>(entity =>
@@ -4170,10 +4672,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FLAGDUE)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
-                entity.Property(e => e.MODULE).HasMaxLength(4);
+                entity.Property(e => e.MODULE).HasMaxLength(15);
             });
 
             modelBuilder.Entity<VIEW_REPOSGrpCL>(entity =>
@@ -4197,8 +4698,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.FLAGDUE)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FLAG_SHARE).HasMaxLength(6);
 
@@ -4208,41 +4708,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.MODULE)
                     .IsRequired()
-                    .HasMaxLength(4);
-            });
-
-            modelBuilder.Entity<VIEW_ShowOSbyCC>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("VIEW_ShowOSbyCCS");
-
-                entity.Property(e => e.CCS_ACCT).HasMaxLength(20);
-
-                entity.Property(e => e.CCS_LMTYPE).HasMaxLength(3);
-
-                entity.Property(e => e.CNAME)
-                    .HasMaxLength(75)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.CUSTCODE).HasMaxLength(20);
-
-                entity.Property(e => e.Cust_CIF).HasMaxLength(20);
-
-                entity.Property(e => e.FACNO).HasMaxLength(15);
-
-                entity.Property(e => e.FLAGDUE)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.MODULE).HasMaxLength(4);
-
-                entity.Property(e => e.TITL)
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .HasMaxLength(15);
             });
 
             modelBuilder.Entity<ViewARemExchRate>(entity =>
@@ -4318,8 +4784,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.RemType)
                     .HasMaxLength(2)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RemrefNo)
                     .IsRequired()
@@ -4412,81 +4877,6 @@ namespace ISPTF.Models
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .IsFixedLength(true);
-            });
-
-            modelBuilder.Entity<ViewBusVolume>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("ViewBusVolume");
-
-                entity.Property(e => e.Allocation).HasMaxLength(15);
-
-                entity.Property(e => e.Amend).HasMaxLength(15);
-
-                entity.Property(e => e.AmendFlag)
-                    .IsRequired()
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.AuthCode).HasMaxLength(12);
-
-                entity.Property(e => e.AuthDate).HasColumnType("datetime");
-
-                entity.Property(e => e.Ccy).HasMaxLength(3);
-
-                entity.Property(e => e.CenterID).HasMaxLength(4);
-
-                entity.Property(e => e.CustCode).HasMaxLength(20);
-
-                entity.Property(e => e.CustName).HasMaxLength(180);
-
-                entity.Property(e => e.DueDate).HasColumnType("datetime");
-
-                entity.Property(e => e.EventDate).HasColumnType("datetime");
-
-                entity.Property(e => e.EventFlag)
-                    .HasMaxLength(7)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.EventName).HasMaxLength(30);
-
-                entity.Property(e => e.KeyNumber).HasMaxLength(35);
-
-                entity.Property(e => e.Module)
-                    .IsRequired()
-                    .HasMaxLength(4)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.PayFlag)
-                    .IsRequired()
-                    .HasMaxLength(6)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.RecStatus).HasMaxLength(10);
-
-                entity.Property(e => e.Reference).HasMaxLength(35);
-
-                entity.Property(e => e.RpReceiptNo).HasMaxLength(15);
-
-                entity.Property(e => e.Section)
-                    .HasMaxLength(7)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TenorTerm).HasMaxLength(50);
-
-                entity.Property(e => e.TenorType).HasMaxLength(20);
-
-                entity.Property(e => e.UserCode).HasMaxLength(12);
-
-                entity.Property(e => e.collectrefund).HasMaxLength(25);
-
-                entity.Property(e => e.remark)
-                    .IsRequired()
-                    .HasMaxLength(200);
             });
 
             modelBuilder.Entity<ViewCC>(entity =>
@@ -5020,8 +5410,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.RemType)
                     .HasMaxLength(2)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RmForward).HasMaxLength(15);
             });
@@ -5037,8 +5426,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.AcceptFlag)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Allocation).HasMaxLength(15);
 
@@ -5052,8 +5440,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.BPOFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.COLLECTION)
                     .IsRequired()
@@ -5090,14 +5477,12 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.EventFlag)
                     .HasMaxLength(7)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EventMode)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EventName).HasMaxLength(30);
 
@@ -5105,8 +5490,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.ISS_BANK)
                     .IsRequired()
@@ -5149,14 +5533,12 @@ namespace ISPTF.Models
                 entity.Property(e => e.WithOutFlag)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.WithOutType)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Wref_Bank_ID).HasMaxLength(14);
 
@@ -5177,7 +5559,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.BENE_ID).HasMaxLength(13);
 
-                entity.Property(e => e.DOCNUMBER).HasMaxLength(15);
+                entity.Property(e => e.DOCNUMBER)
+                    .IsRequired()
+                    .HasMaxLength(15);
 
                 entity.Property(e => e.DRAFT_CCY).HasMaxLength(3);
 
@@ -5221,9 +5605,13 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.RECEIVED_NO).HasMaxLength(15);
 
-                entity.Property(e => e.RECORD_TYPE).HasMaxLength(10);
+                entity.Property(e => e.RECORD_TYPE)
+                    .IsRequired()
+                    .HasMaxLength(10);
 
-                entity.Property(e => e.REC_STATUS).HasMaxLength(10);
+                entity.Property(e => e.REC_STATUS)
+                    .IsRequired()
+                    .HasMaxLength(10);
 
                 entity.Property(e => e.RpChqBank).HasMaxLength(10);
 
@@ -5468,8 +5856,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.AmendFlag)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Ccy).HasMaxLength(3);
 
@@ -5503,8 +5890,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PayMentFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Paymethod).HasMaxLength(15);
 
@@ -5528,29 +5914,21 @@ namespace ISPTF.Models
 
                 entity.ToView("ViewGenACC");
 
-                entity.Property(e => e.ACcy)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                entity.Property(e => e.ACcy).HasMaxLength(255);
 
-                entity.Property(e => e.AEvent)
-                    .IsRequired()
-                    .HasMaxLength(20);
+                entity.Property(e => e.AEvent).HasMaxLength(255);
 
-                entity.Property(e => e.AModule)
-                    .IsRequired()
-                    .HasMaxLength(4);
+                entity.Property(e => e.AModule).HasMaxLength(255);
 
-                entity.Property(e => e.AName).HasMaxLength(20);
+                entity.Property(e => e.AName).HasMaxLength(255);
 
-                entity.Property(e => e.ANature)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                entity.Property(e => e.ANature).HasMaxLength(255);
+
+                entity.Property(e => e.ASeq).HasMaxLength(255);
 
                 entity.Property(e => e.Acc_Map).HasMaxLength(15);
 
-                entity.Property(e => e.Accode).HasMaxLength(8);
+                entity.Property(e => e.Accode).HasMaxLength(255);
             });
 
             modelBuilder.Entity<ViewGroupGL>(entity =>
@@ -5579,86 +5957,6 @@ namespace ISPTF.Models
                     .IsFixedLength(true);
 
                 entity.Property(e => e.VouchDate).HasColumnType("smalldatetime");
-            });
-
-            modelBuilder.Entity<ViewISPTFL>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("ViewISPTFL");
-
-                entity.Property(e => e.CCS_ISP).HasMaxLength(20);
-
-                entity.Property(e => e.CCS_TFL)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.CCS_related_TFL)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.Cust_Name).HasMaxLength(70);
-
-                entity.Property(e => e.LM_amt_TFL).HasColumnType("money");
-
-                entity.Property(e => e.Ref_TFL)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.bal_TFL).HasColumnType("money");
-
-                entity.Property(e => e.ccy_ISP).HasMaxLength(3);
-
-                entity.Property(e => e.ccy_TFL)
-                    .IsRequired()
-                    .HasMaxLength(3)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.cust_ISP).HasMaxLength(20);
-
-                entity.Property(e => e.cust_TFL)
-                    .IsRequired()
-                    .HasMaxLength(14)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.cust_code).HasMaxLength(20);
-
-                entity.Property(e => e.keynumber).HasMaxLength(35);
-
-                entity.Property(e => e.module).HasMaxLength(4);
-            });
-
-            modelBuilder.Entity<ViewISPTFL2>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("ViewISPTFL2");
-
-                entity.Property(e => e.CCS_No).HasMaxLength(20);
-
-                entity.Property(e => e.Credit_Acct)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.Facility_No)
-                    .IsRequired()
-                    .HasMaxLength(13);
-
-                entity.Property(e => e.Ref_no)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
             });
 
             modelBuilder.Entity<ViewLastExchRate>(entity =>
@@ -5795,8 +6093,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.AcceptFlag)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.AuthCode).HasMaxLength(12);
 
@@ -5858,8 +6155,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.EventMode)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EventName).HasMaxLength(25);
 
@@ -5868,13 +6164,11 @@ namespace ISPTF.Models
                 entity.Property(e => e.FlagBack)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.ISS_BANK)
                     .IsRequired()
@@ -5900,13 +6194,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PayType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RateFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RecStatus).HasMaxLength(10);
 
@@ -5928,13 +6220,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.WithOutFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.WithOutType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Wref_Bank_ID).HasMaxLength(14);
 
@@ -5952,8 +6242,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.AcceptFlag)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.AuthCode).HasMaxLength(12);
 
@@ -6017,8 +6306,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.EventMode)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EventName).HasMaxLength(25);
 
@@ -6027,13 +6315,11 @@ namespace ISPTF.Models
                 entity.Property(e => e.FlagBack)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.ISS_BANK)
                     .IsRequired()
@@ -6059,13 +6345,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PayType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RateFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RecStatus).HasMaxLength(10);
 
@@ -6083,13 +6367,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.WithOutFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.WithOutType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Wref_Bank_ID).HasMaxLength(14);
 
@@ -6146,7 +6428,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.RMCode).HasMaxLength(10);
 
-                entity.Property(e => e.Reference).HasMaxLength(20);
+                entity.Property(e => e.Reference).HasMaxLength(50);
 
                 entity.Property(e => e.SBUCode).HasMaxLength(5);
 
@@ -6225,8 +6507,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.KeyNumber)
                     .IsRequired()
@@ -6248,13 +6529,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.WithOutFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.WithOutType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Wref_Bank_ID).HasMaxLength(14);
 
@@ -6272,8 +6551,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.AcceptFlag)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.AuthCode).HasMaxLength(12);
 
@@ -6335,8 +6613,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.EventMode)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EventName).HasMaxLength(25);
 
@@ -6345,13 +6622,11 @@ namespace ISPTF.Models
                 entity.Property(e => e.FlagBack)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.ISS_BANK)
                     .IsRequired()
@@ -6377,13 +6652,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PayType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RateFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RecStatus).HasMaxLength(10);
 
@@ -6405,13 +6678,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.WithOutFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.WithOutType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Wref_Bank_ID).HasMaxLength(14);
 
@@ -6546,7 +6817,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.RpEvent).HasMaxLength(20);
 
-                entity.Property(e => e.RpIssBank).HasMaxLength(14);
+                entity.Property(e => e.RpIssBank).HasMaxLength(70);
 
                 entity.Property(e => e.RpModule).HasMaxLength(5);
 
@@ -6605,8 +6876,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.EventFlag)
                     .HasMaxLength(7)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EventName).HasMaxLength(30);
 
@@ -6632,14 +6902,12 @@ namespace ISPTF.Models
                 entity.Property(e => e.WithOutFlag)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.WithOutType)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Wref_Bank_ID)
                     .IsRequired()
@@ -6682,8 +6950,7 @@ namespace ISPTF.Models
                 entity.Property(e => e.Tenor)
                     .IsRequired()
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.UserCode).HasMaxLength(12);
             });
@@ -6729,8 +6996,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.SubProduct)
                     .HasMaxLength(5)
@@ -6841,15 +7107,13 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.EventFlag)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.EventName).HasMaxLength(25);
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.ISS_BANK)
                     .IsRequired()
@@ -6940,7 +7204,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Bran_Code)
                     .IsRequired()
-                    .HasMaxLength(3);
+                    .HasMaxLength(4);
 
                 entity.Property(e => e.Bran_Name).HasMaxLength(70);
 
@@ -6975,48 +7239,6 @@ namespace ISPTF.Models
                     .IsFixedLength(true);
 
                 entity.Property(e => e.TRANEVENT).HasMaxLength(20);
-
-                entity.Property(e => e.TranAccount).HasMaxLength(15);
-
-                entity.Property(e => e.TranCcy).HasMaxLength(3);
-
-                entity.Property(e => e.TranDept).HasMaxLength(4);
-
-                entity.Property(e => e.TranDesc).HasMaxLength(50);
-
-                entity.Property(e => e.TranMod).HasMaxLength(5);
-
-                entity.Property(e => e.TranNature)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TranStatus)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.VouchDate).HasColumnType("smalldatetime");
-            });
-
-            modelBuilder.Entity<ViewVolumeCom1>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("ViewVolumeCom1");
-
-                entity.Property(e => e.CenterID).HasMaxLength(4);
-
-                entity.Property(e => e.CustCode).HasMaxLength(8);
-
-                entity.Property(e => e.CustName).HasMaxLength(180);
-
-                entity.Property(e => e.Keynumber).HasMaxLength(20);
-
-                entity.Property(e => e.SendFlag)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
 
                 entity.Property(e => e.TranAccount).HasMaxLength(15);
 
@@ -7112,6 +7334,88 @@ namespace ISPTF.Models
                 entity.Property(e => e.RecStatus).HasMaxLength(255);
 
                 entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<fm314wc03>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("fm314wc03");
+
+                entity.Property(e => e.F1).HasMaxLength(255);
+
+                entity.Property(e => e.F10).HasMaxLength(255);
+
+                entity.Property(e => e.F11).HasMaxLength(255);
+
+                entity.Property(e => e.F12).HasMaxLength(255);
+
+                entity.Property(e => e.F13).HasMaxLength(255);
+
+                entity.Property(e => e.F14).HasMaxLength(255);
+
+                entity.Property(e => e.F15).HasMaxLength(255);
+
+                entity.Property(e => e.F18).HasMaxLength(255);
+
+                entity.Property(e => e.F19).HasMaxLength(255);
+
+                entity.Property(e => e.F2).HasMaxLength(255);
+
+                entity.Property(e => e.F20).HasMaxLength(255);
+
+                entity.Property(e => e.F23).HasMaxLength(255);
+
+                entity.Property(e => e.F3).HasMaxLength(255);
+
+                entity.Property(e => e.F37).HasMaxLength(255);
+
+                entity.Property(e => e.F42).HasMaxLength(255);
+
+                entity.Property(e => e.F49).HasMaxLength(255);
+
+                entity.Property(e => e.F50).HasMaxLength(255);
+
+                entity.Property(e => e.F8).HasMaxLength(255);
+
+                entity.Property(e => e.F9).HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<fm315wl01>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("fm315wl01");
+
+                entity.Property(e => e.F1).HasMaxLength(255);
+
+                entity.Property(e => e.F10).HasMaxLength(255);
+
+                entity.Property(e => e.F11).HasMaxLength(255);
+
+                entity.Property(e => e.F12).HasMaxLength(255);
+
+                entity.Property(e => e.F13).HasMaxLength(255);
+
+                entity.Property(e => e.F14).HasMaxLength(255);
+
+                entity.Property(e => e.F15).HasMaxLength(255);
+
+                entity.Property(e => e.F16).HasMaxLength(255);
+
+                entity.Property(e => e.F17).HasMaxLength(255);
+
+                entity.Property(e => e.F18).HasMaxLength(255);
+
+                entity.Property(e => e.F2).HasMaxLength(255);
+
+                entity.Property(e => e.F24).HasMaxLength(255);
+
+                entity.Property(e => e.F3).HasMaxLength(255);
+
+                entity.Property(e => e.F8).HasMaxLength(255);
+
+                entity.Property(e => e.F9).HasMaxLength(255);
             });
 
             modelBuilder.Entity<holiday>(entity =>
@@ -7267,7 +7571,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Bank_AcCcy1)
                     .HasMaxLength(3)
-                    .HasDefaultValueSql("(0)");
+                    .HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Bank_AcCcy2).HasMaxLength(3);
 
@@ -7323,7 +7627,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Bank_LimitAmt1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Bank_LimitAmt1).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Bank_LimitCcy1).HasMaxLength(3);
 
@@ -7337,11 +7641,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Bank_LimitCode3)
                     .HasMaxLength(10)
-                    .HasDefaultValueSql("(0)");
+                    .HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Bank_Name).HasMaxLength(70);
 
-                entity.Property(e => e.Bank_Nego).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Bank_Nego).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Bank_Nostro1).HasMaxLength(19);
 
@@ -7349,15 +7653,15 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Bank_Nostro3).HasMaxLength(19);
 
-                entity.Property(e => e.Bank_Outsource).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Bank_Outsource).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Bank_Rating).HasMaxLength(4);
 
-                entity.Property(e => e.Bank_Rebate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Bank_Rebate).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Bank_Reissue).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Bank_Reissue).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Bank_Relay).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Bank_Relay).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Bank_Remark).HasMaxLength(250);
 
@@ -7448,11 +7752,12 @@ namespace ISPTF.Models
 
             modelBuilder.Entity<mCampaign>(entity =>
             {
-                entity.HasKey(e => e.Campaign_Code);
+                entity.HasNoKey();
 
                 entity.ToTable("mCampaign");
 
                 entity.Property(e => e.Campaign_Code)
+                    .IsRequired()
                     .HasMaxLength(10)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
@@ -7612,11 +7917,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.CreateDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.Def_Base).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Def_Base).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Def_Max).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Def_Max).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Def_Min).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Def_Min).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Def_Type)
                     .HasMaxLength(1)
@@ -8413,6 +8718,27 @@ namespace ISPTF.Models
                 entity.Property(e => e.UserCode).HasMaxLength(12);
             });
 
+            modelBuilder.Entity<mMap1PCIF>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("mMap1PCIF");
+            });
+
+            modelBuilder.Entity<mMap1PLimit>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("mMap1PLimit");
+            });
+
+            modelBuilder.Entity<mMapAOBR>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("mMapAOBR");
+            });
+
             modelBuilder.Entity<mMapAccount>(entity =>
             {
                 entity.HasKey(e => e.mAcc_Code);
@@ -8495,19 +8821,15 @@ namespace ISPTF.Models
                 entity.Property(e => e.RefNo).HasMaxLength(5);
             });
 
-            modelBuilder.Entity<mMapFacno>(entity =>
+            modelBuilder.Entity<mMapFacNo>(entity =>
             {
                 entity.HasNoKey();
 
-                entity.ToTable("mMapFacno");
+                entity.ToTable("mMapFacNo");
 
-                entity.Property(e => e.Cust_Code).HasMaxLength(20);
+                entity.Property(e => e.CreateDate).HasColumnType("datetime");
 
-                entity.Property(e => e.FacNo).HasMaxLength(20);
-
-                entity.Property(e => e.ISIC_CODE).HasMaxLength(20);
-
-                entity.Property(e => e.Purpose_Code).HasMaxLength(50);
+                entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<mMapProduct>(entity =>
@@ -8639,11 +8961,11 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.ComMax).HasDefaultValueSql("(0)");
+                entity.Property(e => e.ComMax).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.ComMin).HasDefaultValueSql("(0)");
+                entity.Property(e => e.ComMin).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.ComRate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.ComRate).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<mProvince>(entity =>
@@ -8705,7 +9027,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.cust_run)
                     .HasColumnType("numeric(18, 0)")
-                    .HasDefaultValueSql("(0)");
+                    .HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.cust_show)
                     .IsRequired()
@@ -9009,11 +9331,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.LCondition).HasMaxLength(150);
 
-                entity.Property(e => e.LCredit_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCredit_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LCredit_Ccy).HasMaxLength(3);
 
-                entity.Property(e => e.LCredit_Share).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCredit_Share).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LExpiryDate).HasColumnType("smalldatetime");
 
@@ -9024,7 +9346,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.LLimit_Code).HasMaxLength(10);
 
-                entity.Property(e => e.LOrigin_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LOrigin_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LRemark).HasMaxLength(350);
 
@@ -9033,7 +9355,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.LSseqno).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LSseqno).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LStartDate).HasColumnType("smalldatetime");
 
@@ -9095,67 +9417,67 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Facility_No).HasMaxLength(13);
 
-                entity.Property(e => e.DBE_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DBE_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.DBE_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DBE_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.DLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.DLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DLC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.NLTR_book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.NLTR_book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<pBankLiab>(entity =>
@@ -9170,59 +9492,59 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Currency).HasMaxLength(3);
 
-                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.NLTR_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.NLTR_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<pBankLimit>(entity =>
@@ -9267,7 +9589,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.CreateDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Credit_Ccy).HasMaxLength(3);
 
@@ -9280,11 +9602,11 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Hold_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Hold_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Limit_Code).HasMaxLength(10);
 
-                entity.Property(e => e.Origin_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Origin_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RecCode)
                     .HasMaxLength(1)
@@ -9310,7 +9632,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Susp_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Susp_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
@@ -9389,11 +9711,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.LCondition).HasMaxLength(150);
 
-                entity.Property(e => e.LCredit_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCredit_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LCredit_Ccy).HasMaxLength(3);
 
-                entity.Property(e => e.LCredit_Share).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCredit_Share).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LExpiryDate).HasColumnType("smalldatetime");
 
@@ -9404,7 +9726,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.LLimit_Code).HasMaxLength(10);
 
-                entity.Property(e => e.LOrigin_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LOrigin_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LParent_Id).HasMaxLength(6);
 
@@ -9425,7 +9747,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.LSseqno).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LSseqno).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LStartDate).HasColumnType("smalldatetime");
 
@@ -9631,7 +9953,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Appv_No).HasMaxLength(15);
 
-                entity.Property(e => e.Appv_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Appv_Amt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Appv_CanDate).HasColumnType("smalldatetime");
 
@@ -9661,7 +9983,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Comment).HasMaxLength(500);
 
-                entity.Property(e => e.Credit_Line).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Credit_Line).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Cust_Code).HasMaxLength(6);
 
@@ -9680,28 +10002,28 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Facility_No).HasMaxLength(13);
 
-                entity.Property(e => e.Hold_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Hold_Amt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Hold_Cust).HasMaxLength(6);
 
                 entity.Property(e => e.Hold_FacNo).HasMaxLength(13);
 
-                entity.Property(e => e.Liab_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Liab_Amt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RecStatus)
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Refer_BhtAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Refer_BhtAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Refer_Ccy).HasMaxLength(3);
 
-                entity.Property(e => e.Refer_CcyAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Refer_CcyAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Refer_DocNo).HasMaxLength(20);
 
-                entity.Property(e => e.Refer_ExchRate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Refer_ExchRate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Refer_RefNo).HasMaxLength(16);
 
@@ -9709,23 +10031,23 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Remark).HasMaxLength(200);
 
-                entity.Property(e => e.Reverse_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reverse_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Share_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Share_Amt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Share_Type).HasMaxLength(10);
 
-                entity.Property(e => e.TotAppv_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TotAppv_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TotCredit_Line).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TotCredit_Line).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TotHold_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TotHold_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TotLiab_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TotLiab_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TotShare_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TotShare_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TxHold_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TxHold_Amt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
@@ -9742,41 +10064,41 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Cust_Code).HasMaxLength(6);
 
-                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Facility_No).HasMaxLength(13);
 
-                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<pCustLSum>(entity =>
@@ -9789,67 +10111,67 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Facility_No).HasMaxLength(13);
 
-                entity.Property(e => e.DBE_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DBE_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.DBE_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DBE_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.DLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.DLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DLC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.NLTR_book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.NLTR_book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<pCustLiab>(entity =>
@@ -9864,59 +10186,59 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Currency).HasMaxLength(3);
 
-                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.EXPC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLS_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IBLT_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMBL_Over).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMLC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.IMTR_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.NLTR_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.NLTR_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGBC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SGLC_Book).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XBCP_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCC_Book).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("(0)");
+                entity.Property(e => e.XLCP_Book).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<pCustLimit>(entity =>
@@ -9966,11 +10288,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.CreateDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Credit_Ccy).HasMaxLength(3);
 
-                entity.Property(e => e.Credit_Share).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Credit_Share).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.ExpiryDate).HasColumnType("smalldatetime");
 
@@ -9981,11 +10303,11 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Hold_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Hold_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Limit_Code).HasMaxLength(10);
 
-                entity.Property(e => e.Origin_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Origin_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Parent_Id).HasMaxLength(6);
 
@@ -10010,7 +10332,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Share_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Share_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Share_Flag)
                     .HasMaxLength(1)
@@ -10029,7 +10351,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Susp_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Susp_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
@@ -10109,7 +10431,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Share_CCS).HasMaxLength(20);
 
-                entity.Property(e => e.Share_Credit).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Share_Credit).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Share_Cust)
                     .IsRequired()
@@ -10144,7 +10466,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Share_Used).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Share_Used).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Status)
                     .HasMaxLength(1)
@@ -11444,6 +11766,15 @@ namespace ISPTF.Models
                 entity.Property(e => e.TranTerm).HasMaxLength(10);
             });
 
+            modelBuilder.Entity<pDetailForex>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("pDetailForex");
+
+                entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            });
+
             modelBuilder.Entity<pDocRegInv>(entity =>
             {
                 entity.HasNoKey();
@@ -11527,9 +11858,9 @@ namespace ISPTF.Models
                     .HasMaxLength(4)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Reg_Amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_Amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Reg_Amt1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_Amt1).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Reg_Appv)
                     .HasMaxLength(1)
@@ -11540,13 +11871,13 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Reg_BankCode).HasMaxLength(14);
 
-                entity.Property(e => e.Reg_BhtAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_BhtAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Reg_Ccy).HasMaxLength(3);
 
-                entity.Property(e => e.Reg_CcyAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_CcyAmt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Reg_CcyBal).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_CcyBal).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Reg_CustCode).HasMaxLength(6);
 
@@ -11557,20 +11888,20 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Reg_ExchRate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_ExchRate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Reg_FacilityNo).HasMaxLength(13);
 
-                entity.Property(e => e.Reg_Minus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_Minus).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Reg_Plus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_Plus).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Reg_RecStat)
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Reg_RefAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reg_RefAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Reg_RefNo).HasMaxLength(35);
 
@@ -11873,7 +12204,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PAYMENT_INSTRU).HasMaxLength(10);
 
-                entity.Property(e => e.PAY_TYPE).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PAY_TYPE).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.ParTnor_Type1)
                     .HasMaxLength(1)
@@ -11910,35 +12241,35 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.RECEIVE_PAY_AMT).HasDefaultValueSql("(0)");
+                entity.Property(e => e.RECEIVE_PAY_AMT).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.REC_STATUS).HasMaxLength(10);
 
-                entity.Property(e => e.SETTLEMENT_CREDIT).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SETTLEMENT_CREDIT).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.SIGHT_FORWARD).HasMaxLength(15);
 
-                entity.Property(e => e.SIGHT_PAID_AMT).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SIGHT_PAID_AMT).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SIGHT_PAID_THB).HasDefaultValueSql("(0)");
+                entity.Property(e => e.SIGHT_PAID_THB).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TERM_FORWARD).HasMaxLength(15);
 
-                entity.Property(e => e.TERM_PAID_AMT).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TERM_PAID_AMT).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TERM_PAID_THB).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TERM_PAID_THB).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.TOT_PRINC_PAID).HasDefaultValueSql("(0)");
+                entity.Property(e => e.TOT_PRINC_PAID).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.fb_amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.fb_amt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.fb_amt_thb).HasDefaultValueSql("(0)");
+                entity.Property(e => e.fb_amt_thb).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.fb_ccy).HasMaxLength(3);
 
-                entity.Property(e => e.fb_rate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.fb_rate).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.over_paid_amt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.over_paid_amt).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<pExad>(entity =>
@@ -12432,13 +12763,13 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FACNO).HasMaxLength(13);
 
-                entity.Property(e => e.FB_AMT).HasDefaultValueSql("(0)");
+                entity.Property(e => e.FB_AMT).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.FB_AMT_THB).HasDefaultValueSql("(0)");
+                entity.Property(e => e.FB_AMT_THB).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.FB_CURRENCY).HasMaxLength(3);
 
-                entity.Property(e => e.FB_RATE).HasDefaultValueSql("(0)");
+                entity.Property(e => e.FB_RATE).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.FORWARD_CONRACT_NO).HasMaxLength(15);
 
@@ -12650,15 +12981,15 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.AuthDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Exch_BNBuy).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Exch_BNBuy).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Exch_BNSell).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Exch_BNSell).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Exch_TRate1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Exch_TRate1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Exch_TRate2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Exch_TRate2).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Exch_TRate3).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Exch_TRate3).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RecStatus)
                     .HasMaxLength(1)
@@ -12850,13 +13181,13 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FACNO).HasMaxLength(13);
 
-                entity.Property(e => e.FB_AMT).HasDefaultValueSql("(0)");
+                entity.Property(e => e.FB_AMT).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.FB_AMT_THB).HasDefaultValueSql("(0)");
+                entity.Property(e => e.FB_AMT_THB).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.FB_CURRENCY).HasMaxLength(3);
 
-                entity.Property(e => e.FB_RATE).HasDefaultValueSql("(0)");
+                entity.Property(e => e.FB_RATE).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.FORWARD_CONRACT_NO).HasMaxLength(15);
 
@@ -14895,9 +15226,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.AuthDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Exch_CA).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Exch_CA).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Exch_SA).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Exch_SA).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RecStatus)
                     .HasMaxLength(1)
@@ -14907,6 +15238,21 @@ namespace ISPTF.Models
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
 
                 entity.Property(e => e.UserCode).HasMaxLength(12);
+            });
+
+            modelBuilder.Entity<pHeaderForex>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("pHeaderForex");
+
+                entity.Property(e => e.FileCreateDate).HasColumnType("datetime");
+
+                entity.Property(e => e.FileCreateTime).HasMaxLength(255);
+
+                entity.Property(e => e.ProcessDate).HasColumnType("datetime");
+
+                entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<pHoliday>(entity =>
@@ -15332,7 +15678,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.ChipNego).HasMaxLength(20);
 
-                entity.Property(e => e.CommBenCcy).HasDefaultValueSql("(0)");
+                entity.Property(e => e.CommBenCcy).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.CommDesc).HasMaxLength(200);
 
@@ -15423,7 +15769,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.LCBal).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCBal).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LCNumber)
                     .HasMaxLength(15)
@@ -15704,25 +16050,25 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Allocation).HasMaxLength(10);
 
-                entity.Property(e => e.AllowMinus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.AllowMinus).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.AllowPlus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.AllowPlus).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.AmendAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.AmendAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.AmendFlag)
                     .HasMaxLength(1)
                     .IsUnicode(false)
-                    .HasDefaultValueSql("(0)")
+                    .HasDefaultValueSql("((0))")
                     .IsFixedLength(true);
 
-                entity.Property(e => e.AmendMinus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.AmendMinus).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.AmendNo).HasMaxLength(15);
 
-                entity.Property(e => e.AmendPlus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.AmendPlus).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.AmendSeq).HasDefaultValueSql("(0)");
+                entity.Property(e => e.AmendSeq).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.AmendStatus)
                     .HasMaxLength(1)
@@ -15787,7 +16133,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.CommLCRate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.CommLCRate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.CommType)
                     .HasMaxLength(1)
@@ -15842,7 +16188,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.EventFlag).HasMaxLength(7);
 
-                entity.Property(e => e.ExchRate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.ExchRate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.FacNo).HasMaxLength(13);
 
@@ -15860,15 +16206,15 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Incoterms).HasMaxLength(20);
 
-                entity.Property(e => e.LCAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCAmt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.LCAvalBal).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCAvalBal).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.LCBal).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCBal).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LCCcy).HasMaxLength(3);
 
-                entity.Property(e => e.LCDays).HasDefaultValueSql("(0)");
+                entity.Property(e => e.LCDays).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LCForm).HasMaxLength(50);
 
@@ -15923,9 +16269,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PayRemark).HasMaxLength(200);
 
-                entity.Property(e => e.PeriodComm).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PeriodComm).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PeriodCommExt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PeriodCommExt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PlaceExpiry).HasMaxLength(29);
 
@@ -15934,11 +16280,11 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.PresentDay).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PresentDay).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PresentPeriod).HasMaxLength(144);
 
-                entity.Property(e => e.PrevAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PrevAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PrevBenInfo).HasMaxLength(144);
 
@@ -15946,15 +16292,15 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PrevDateExpiry).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.PrevLCAvalBal).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PrevLCAvalBal).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PrevLCBal).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PrevLCBal).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PrevLCDays).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PrevLCDays).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PrevMunus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PrevMunus).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PrevPlus).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PrevPlus).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PurposeCode).HasMaxLength(6);
 
@@ -16626,7 +16972,7 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.BalanceAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.BalanceAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.CenterID).HasMaxLength(4);
 
@@ -16652,51 +16998,51 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FwdContInt2).HasMaxLength(15);
 
-                entity.Property(e => e.InterestAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.InterestAmt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.OverDueDate).HasColumnType("smalldatetime");
 
                 entity.Property(e => e.PastdueDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.PayAmtBht1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayAmtBht1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayAmtBht2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayAmtBht2).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayAmtBht3).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayAmtBht3).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayAmtBht4).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayAmtBht4).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayAmtBht5).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayAmtBht5).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayAmtBht6).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayAmtBht6).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayBaht1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayBaht1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayBaht2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayBaht2).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayBaht3).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayBaht3).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayBaht4).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayBaht4).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayBaht5).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayBaht5).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayBaht6).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayBaht6).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayCcyAmt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayCcyAmt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayCcyInt).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayCcyInt).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayExch1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayExch1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayExch2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayExch2).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayExch3).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayExch3).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayExch4).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayExch4).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayExch5).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayExch5).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayExch6).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayExch6).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PayFCD).HasMaxLength(20);
 
@@ -16705,17 +17051,17 @@ namespace ISPTF.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.PayIntBaht1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayIntBaht1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayIntBaht2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayIntBaht2).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayIntBht1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayIntBht1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayIntBht2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayIntBht2).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayIntExch1).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayIntExch1).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.PayIntExch2).HasDefaultValueSql("(0)");
+                entity.Property(e => e.PayIntExch2).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PayMode)
                     .HasMaxLength(1)
@@ -16916,7 +17262,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.BLAdvice).HasMaxLength(15);
 
-                entity.Property(e => e.BLBalance).HasDefaultValueSql("(0)");
+                entity.Property(e => e.BLBalance).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BLFwd).HasMaxLength(15);
 
@@ -17830,12 +18176,6 @@ namespace ISPTF.Models
 
                 entity.ToTable("pLog_Connect1P");
 
-                entity.HasIndex(e => new { e.TrType, e.TrEvent, e.TrRefSeq, e.RqDate, e.ACType, e.ACNo, e.ACAmt }, "IX_pLog_Connect1P_1");
-
-                entity.HasIndex(e => new { e.TrType, e.RqDate, e.RqSeq, e.ACType, e.ACNo, e.ACAmt }, "IX_pLog_Connect1P_2");
-
-                entity.HasIndex(e => new { e.TrType, e.TrEvent, e.TrRefSeq, e.RqDate, e.RqSeq, e.ACType, e.ACNo, e.ACAmt }, "IX_pLog_Connect1P_3");
-
                 entity.Property(e => e.ACNo)
                     .IsRequired()
                     .HasMaxLength(10)
@@ -18054,12 +18394,6 @@ namespace ISPTF.Models
 
                 entity.ToTable("pLog_MainConnect1P");
 
-                entity.HasIndex(e => new { e.TrType, e.TrEvent, e.TrRefSeq, e.RqDate, e.ACType, e.ACNo, e.ACAmt }, "IX_pLog_MainConnect1P_1");
-
-                entity.HasIndex(e => new { e.TrType, e.RqDate, e.RqSeq, e.ACType, e.ACNo, e.ACAmt }, "IX_pLog_MainConnect1P_2");
-
-                entity.HasIndex(e => new { e.TrType, e.TrEvent, e.TrRefSeq, e.RqDate, e.RqSeq, e.ACType, e.ACNo, e.ACAmt }, "IX_pLog_MainConnect1P_3");
-
                 entity.Property(e => e.ACNo)
                     .IsRequired()
                     .HasMaxLength(10)
@@ -18148,8 +18482,6 @@ namespace ISPTF.Models
 
                 entity.ToTable("pLog_QueryAC1P");
 
-                entity.HasIndex(e => new { e.ACType, e.ACNo, e.RqSeq, e.RsDate }, "IX_pLog_QueryAC1P_1");
-
                 entity.Property(e => e.ACNo)
                     .IsRequired()
                     .HasMaxLength(10)
@@ -18196,8 +18528,6 @@ namespace ISPTF.Models
                 entity.HasNoKey();
 
                 entity.ToTable("pLog_Request1P");
-
-                entity.HasIndex(e => new { e.TrType, e.TrEvent, e.TrRefSeq, e.TrRqDate, e.TrRqSeq, e.ACType, e.ACNo, e.ACAmt }, "IX_pLog_Request1P_1");
 
                 entity.Property(e => e.ACNo)
                     .IsRequired()
@@ -18301,10 +18631,6 @@ namespace ISPTF.Models
                 entity.HasKey(e => new { e.FileName, e.RefNo, e.SeqNo });
 
                 entity.ToTable("pLog_Swift");
-
-                entity.HasIndex(e => new { e.RefNo, e.SeqNo }, "ID_pLog_Swift_1");
-
-                entity.HasIndex(e => e.RefNo, "ID_pLog_Swift_2");
 
                 entity.Property(e => e.FileName).HasMaxLength(35);
 
@@ -18479,7 +18805,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.DocCcy).HasMaxLength(3);
 
-                entity.Property(e => e.DocCommCcy).HasDefaultValueSql("(0)");
+                entity.Property(e => e.DocCommCcy).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DocDate).HasColumnType("smalldatetime");
 
@@ -19038,7 +19364,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.UserCode).HasMaxLength(12);
 
-                entity.Property(e => e.pRefSeq).HasDefaultValueSql("(0)");
+                entity.Property(e => e.pRefSeq).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<pRefinance>(entity =>
@@ -19761,7 +20087,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.EventDate).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.ExchRate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.ExchRate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.F20).HasMaxLength(16);
 
@@ -19928,9 +20254,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.AuthDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Reval_Pack).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reval_Pack).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.Reval_Rate).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Reval_Rate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UpdateDate).HasColumnType("smalldatetime");
             });
@@ -22765,7 +23091,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Facility_No).HasMaxLength(13);
 
-                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Limit_Code).HasMaxLength(10);
 
@@ -22880,7 +23206,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Facility_No).HasMaxLength(13);
 
-                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("(0)");
+                entity.Property(e => e.Credit_Amount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Limit_Code).HasMaxLength(10);
 
@@ -23160,7 +23486,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.EventName).HasMaxLength(30);
 
-                entity.Property(e => e.KeyNumber).HasMaxLength(35);
+                entity.Property(e => e.KeyNumber)
+                    .IsRequired()
+                    .HasMaxLength(35);
 
                 entity.Property(e => e.Module)
                     .IsRequired()
@@ -23184,8 +23512,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.status)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<vContingent>(entity =>
@@ -23208,9 +23535,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.KeyNumber)
                     .IsRequired()
-                    .HasMaxLength(15)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .HasMaxLength(35);
 
                 entity.Property(e => e.Module)
                     .IsRequired()
@@ -23229,9 +23554,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Reference)
                     .IsRequired()
-                    .HasMaxLength(15)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .HasMaxLength(15);
 
                 entity.Property(e => e.UserCode).HasMaxLength(12);
             });
@@ -23324,7 +23647,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.ForwardCont).HasMaxLength(15);
 
-                entity.Property(e => e.RefNumber).HasMaxLength(15);
+                entity.Property(e => e.RefNumber)
+                    .IsRequired()
+                    .HasMaxLength(15);
             });
 
             modelBuilder.Entity<vForwardCont>(entity =>
@@ -23342,7 +23667,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.DocCcy).HasMaxLength(3);
 
-                entity.Property(e => e.DocNo).HasMaxLength(15);
+                entity.Property(e => e.DocNo).HasMaxLength(35);
 
                 entity.Property(e => e.EventDate).HasColumnType("datetime");
 
@@ -23380,68 +23705,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.DocNumber)
                     .IsRequired()
-                    .HasMaxLength(15)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-            });
-
-            modelBuilder.Entity<vLinkTFL>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("vLinkTFL");
-
-                entity.Property(e => e.Cust_Code)
-                    .IsRequired()
-                    .HasMaxLength(6);
-
-                entity.Property(e => e.Cust_Name).HasMaxLength(70);
-
-                entity.Property(e => e.ISP_CCS).HasMaxLength(20);
-
-                entity.Property(e => e.ISP_CIF).HasMaxLength(20);
-
-                entity.Property(e => e.New_Fac)
-                    .IsRequired()
-                    .HasMaxLength(13);
-
-                entity.Property(e => e.TFL_CCS)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TFL_CCS_Relate)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TFL_CIF)
-                    .IsRequired()
-                    .HasMaxLength(14)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TFL_Ref)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TFL_amt).HasColumnType("money");
-
-                entity.Property(e => e.TFL_cur)
-                    .IsRequired()
-                    .HasMaxLength(3)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TFL_prod)
-                    .IsRequired()
-                    .HasMaxLength(10)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .HasMaxLength(15);
             });
 
             modelBuilder.Entity<vMasterMonInt>(entity =>
@@ -23470,8 +23734,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.KeyNumber)
                     .IsRequired()
@@ -23535,8 +23798,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.KeyNumber).HasMaxLength(35);
 
@@ -23553,8 +23815,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PayType)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RecStatus).HasMaxLength(10);
 
@@ -23583,10 +23844,7 @@ namespace ISPTF.Models
 
                 entity.ToView("vMonAccured");
 
-                entity.Property(e => e.BankType)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                entity.Property(e => e.BankType).HasMaxLength(14);
 
                 entity.Property(e => e.CalDate).HasColumnType("smalldatetime");
 
@@ -23684,7 +23942,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.EventName).HasMaxLength(25);
 
-                entity.Property(e => e.KeyNumber).HasMaxLength(15);
+                entity.Property(e => e.KeyNumber)
+                    .IsRequired()
+                    .HasMaxLength(15);
 
                 entity.Property(e => e.Module)
                     .IsRequired()
@@ -23693,7 +23953,9 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.PURCH_DISC_DATE).HasColumnType("smalldatetime");
 
-                entity.Property(e => e.Rec_Status).HasMaxLength(10);
+                entity.Property(e => e.Rec_Status)
+                    .IsRequired()
+                    .HasMaxLength(10);
 
                 entity.Property(e => e.Reference)
                     .IsRequired()
@@ -23741,119 +24003,6 @@ namespace ISPTF.Models
                 entity.Property(e => e.RpPayBy).HasMaxLength(15);
             });
 
-            modelBuilder.Entity<vTranPaymentLoan>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("vTranPaymentLoan");
-
-                entity.Property(e => e.Allocation).HasMaxLength(15);
-
-                entity.Property(e => e.AuthCode).HasMaxLength(12);
-
-                entity.Property(e => e.Ccy).HasMaxLength(3);
-
-                entity.Property(e => e.CenterID).HasMaxLength(4);
-
-                entity.Property(e => e.CustCode).HasMaxLength(20);
-
-                entity.Property(e => e.CustName)
-                    .IsRequired()
-                    .HasMaxLength(1)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.DueDate).HasColumnType("smalldatetime");
-
-                entity.Property(e => e.EventDate).HasColumnType("datetime");
-
-                entity.Property(e => e.EventName).HasMaxLength(25);
-
-                entity.Property(e => e.KeyNumber).HasMaxLength(35);
-
-                entity.Property(e => e.LastReceiptNo).HasMaxLength(15);
-
-                entity.Property(e => e.Module).HasMaxLength(4);
-
-                entity.Property(e => e.PayFlag)
-                    .IsRequired()
-                    .HasMaxLength(6)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.RecStatus).HasMaxLength(10);
-
-                entity.Property(e => e.Reference).HasMaxLength(35);
-
-                entity.Property(e => e.UserCode).HasMaxLength(12);
-
-                entity.Property(e => e.collectrefund).HasMaxLength(25);
-
-                entity.Property(e => e.paymentDate).HasColumnType("smalldatetime");
-            });
-
-            modelBuilder.Entity<vfindkeyno>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("vfindkeyno");
-
-                entity.Property(e => e.ISP_Custno).HasMaxLength(6);
-
-                entity.Property(e => e.ISP_ccs).HasMaxLength(20);
-
-                entity.Property(e => e.ISP_ccy)
-                    .HasMaxLength(3)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.ISP_cust).HasMaxLength(20);
-
-                entity.Property(e => e.ISP_fac)
-                    .IsRequired()
-                    .HasMaxLength(13);
-
-                entity.Property(e => e.ISP_prod).HasMaxLength(15);
-
-                entity.Property(e => e.ISP_relate).HasMaxLength(20);
-
-                entity.Property(e => e.TF_Ref)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TF_amt).HasColumnType("money");
-
-                entity.Property(e => e.TF_ccs)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TF_ccy)
-                    .IsRequired()
-                    .HasMaxLength(3)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TF_cust)
-                    .IsRequired()
-                    .HasMaxLength(14)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TF_prod)
-                    .IsRequired()
-                    .HasMaxLength(10)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.TF_relate)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-            });
-
             modelBuilder.Entity<viewBankLSum>(entity =>
             {
                 entity.HasNoKey();
@@ -23899,42 +24048,6 @@ namespace ISPTF.Models
                     .HasMaxLength(13);
             });
 
-            modelBuilder.Entity<viewCustLm>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("viewCustLm");
-
-                entity.Property(e => e.CCS_Ccy)
-                    .HasMaxLength(3)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.CCS_LmType).HasMaxLength(3);
-
-                entity.Property(e => e.CCS_Stat).HasMaxLength(10);
-
-                entity.Property(e => e.Cust_CCID).HasMaxLength(8);
-
-                entity.Property(e => e.Cust_CIF).HasMaxLength(20);
-
-                entity.Property(e => e.Cust_Code).HasMaxLength(6);
-
-                entity.Property(e => e.Facility_No)
-                    .IsRequired()
-                    .HasMaxLength(13);
-
-                entity.Property(e => e.ISP_ccs_no).HasMaxLength(20);
-
-                entity.Property(e => e.ISP_related_ac).HasMaxLength(20);
-
-                entity.Property(e => e.Limit_Code).HasMaxLength(10);
-
-                entity.Property(e => e.Prod_Mod).HasMaxLength(15);
-
-                entity.Property(e => e.Prod_Ref).HasMaxLength(5);
-            });
-
             modelBuilder.Entity<viewMasterLoan>(entity =>
             {
                 entity.HasNoKey();
@@ -23965,8 +24078,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.KeyNumber)
                     .IsRequired()
@@ -24031,10 +24143,11 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.FlagDue)
                     .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                    .IsUnicode(false);
 
-                entity.Property(e => e.KeyNumber).HasMaxLength(35);
+                entity.Property(e => e.KeyNumber)
+                    .IsRequired()
+                    .HasMaxLength(35);
 
                 entity.Property(e => e.Module)
                     .IsRequired()
@@ -24084,44 +24197,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Limit_Code).HasMaxLength(10);
 
-                entity.Property(e => e.Module).HasMaxLength(4);
-            });
-
-            modelBuilder.Entity<viewPayPrnciple>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("viewPayPrnciple");
-
-                entity.Property(e => e.Ccy).HasMaxLength(3);
-
-                entity.Property(e => e.CenterID).HasMaxLength(4);
-
-                entity.Property(e => e.CustCode).HasMaxLength(13);
-
-                entity.Property(e => e.DueDate).HasColumnType("smalldatetime");
-
-                entity.Property(e => e.EventDate).HasColumnType("datetime");
-
-                entity.Property(e => e.EventName).HasMaxLength(25);
-
-                entity.Property(e => e.FlagDue)
-                    .IsRequired()
-                    .HasMaxLength(1)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.KeyNumber).HasMaxLength(35);
-
-                entity.Property(e => e.Module).HasMaxLength(4);
-
-                entity.Property(e => e.PayFlag)
-                    .IsRequired()
-                    .HasMaxLength(6)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Reference).HasMaxLength(35);
-
-                entity.Property(e => e.paymentDate).HasColumnType("smalldatetime");
+                entity.Property(e => e.Module).HasMaxLength(15);
             });
 
             modelBuilder.Entity<vtempCC>(entity =>

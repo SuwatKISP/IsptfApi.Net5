@@ -49,7 +49,7 @@ namespace ISPTF.Models
         public string CENTERID { get; set; }
         public string FlagDue { get; set; }
         public double? intRate { get; set; }
-        public double? AccruCcy { get; set; }
+        public double AccruCcy { get; set; }
         public double? TermDay { get; set; }
         public DateTime? OverdueDate { get; set; }
     }

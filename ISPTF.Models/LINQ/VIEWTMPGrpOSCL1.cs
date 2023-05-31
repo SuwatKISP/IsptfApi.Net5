@@ -15,6 +15,6 @@ namespace ISPTF.Models
         public string FLAG_SHARE { get; set; }
         public double SHARE_AMT { get; set; }
         public double HOLD_AMT { get; set; }
-        public double? NET_AVL_AMT { get; set; }
+        public double NET_AVL_AMT { get; set; }
     }
 }

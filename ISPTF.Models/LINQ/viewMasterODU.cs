@@ -9,7 +9,7 @@ namespace ISPTF.Models
     {
         public DateTime? EventDate { get; set; }
         public string Module { get; set; }
-        public int? Seqno { get; set; }
+        public int Seqno { get; set; }
         public string EventName { get; set; }
         public string Reference { get; set; }
         public string KeyNumber { get; set; }

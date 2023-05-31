@@ -53,8 +53,8 @@ namespace ISPTF.Models
         public string Allocation { get; set; }
         public string EventFlag { get; set; }
         public string Amend { get; set; }
-        public double? IntRate { get; set; }
-        public double? BalPD { get; set; }
+        public double IntRate { get; set; }
+        public double BalPD { get; set; }
         public string FlagDue { get; set; }
         public string BName { get; set; }
         public string BCnty { get; set; }

@@ -36,7 +36,7 @@ namespace ISPTF.Models
         public string Condition { get; set; }
         public string AutoRec { get; set; }
         public double? Origin_Amount { get; set; }
-        public double? Available_Amt { get; set; }
+        public double Available_Amt { get; set; }
         public double Liab_Amt { get; set; }
         public double Pending_Amt { get; set; }
     }

@@ -54,7 +54,7 @@ namespace ISPTF.Models
         public string EventFlag { get; set; }
         public string Amend { get; set; }
         public double? IntRate { get; set; }
-        public double? BALPD { get; set; }
+        public double BALPD { get; set; }
         public string FlagDue { get; set; }
         public string BName { get; set; }
         public string BCnty { get; set; }

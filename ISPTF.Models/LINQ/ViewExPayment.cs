@@ -9,7 +9,7 @@ namespace ISPTF.Models
     {
         public string RECORD_TYPE { get; set; }
         public string REC_STATUS { get; set; }
-        public int? EVENT_NO { get; set; }
+        public int EVENT_NO { get; set; }
         public string DOCNUMBER { get; set; }
         public string EVENT_TYPE { get; set; }
         public int? TENOR_OF_COLL { get; set; }

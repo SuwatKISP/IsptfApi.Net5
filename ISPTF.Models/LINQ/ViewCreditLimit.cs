@@ -47,6 +47,6 @@ namespace ISPTF.Models
         public string CLMS_Flag { get; set; }
         public double? Ear_Amount { get; set; }
         public double? Origin_Amount { get; set; }
-        public double? Available_Amt { get; set; }
+        public double Available_Amt { get; set; }
     }
 }
