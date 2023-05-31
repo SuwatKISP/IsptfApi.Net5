@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models
 {
+    /*
     public class BOT_Classification
     {
         public string CL_SCM_ID { get; set; }
@@ -24,4 +25,5 @@ namespace ISPTF.Models
         public string USERID { get; set; }
         public int RWA { get; set; }
     }
+    */
 }
