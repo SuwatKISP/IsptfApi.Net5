@@ -41,9 +41,9 @@ namespace ISPTF.API.Controllers
             try
             {
                 var item = (from row in _context.mUsers
-                           where row.UserId == userLogin.username 
-                                && row.UserPassword == EnPassword
-                           select row).FirstOrDefault();
+                            where row.UserId == userLogin.username
+                                 && row.UserPassword == EnPassword
+                            select row).FirstOrDefault();
                 if (item != null)
                 {
                     var response = new LoginReturn();
@@ -71,6 +71,50 @@ namespace ISPTF.API.Controllers
                 return BadRequest("Unknown error");
             }
         }
+        //    string EnPassword = PasswordCheck.Encryption(userLogin.password);
+
+        //    DynamicParameters param = new DynamicParameters();
+        //    param.Add("@UserId", userLogin.username);
+        //    param.Add("@UserPassword", EnPassword);
+        //    try
+        //    {
+        //        var result = await _db.LoadData<LoginReturn, dynamic>(storedProcedure: "usp_MUserSelect",
+        //            param);
+        //        if (result == null)
+        //        {
+        //            return BadRequest("Username or Password erors/not found");
+        //        }
+        //        var response = new List<LoginReturn>();
+        //        foreach (var item in result)
+        //        {
+        //            response.Add(new LoginReturn()
+        //            {
+        //                userId = item.userId,
+        //                userBran = item.userBran,
+        //                userEmail = item.userEmail,
+        //                userName = item.userName,
+        //                userLevel = item.userLevel,
+        //                userRole = item.userDept,
+        //                userToken = jwtAuth.Authentication(userLogin.username, userLogin.password),
+        //                //PasswordEncrypted= PasswordCheck.Encryption(userLogin.password)
+        //            });
+        //        };
+        //        if (response.Count != 0)
+        //        {
+        //            return Ok(response);
+        //        }
+        //        else
+        //        {
+        //            return Unauthorized();
+        //        }
+
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return BadRequest("Unknown error");
+        //    }
+        //}
+
         //[HttpPost("decrypt")]
         //public ActionResult Decrypt(string encryptPassword)
         //{

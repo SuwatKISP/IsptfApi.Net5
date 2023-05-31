@@ -406,9 +406,9 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
 
-            //param.Add("@Resp2", dbType: DbType.String,
-            //   direction: System.Data.ParameterDirection.Output,
-            //   size: 5215585);
+            param.Add("@PCustAppvRsp", dbType: DbType.String,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
 
             try
             {
@@ -416,17 +416,19 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
                     storedProcedure: "usp_TradeLiability_Cust_Save",
                     param);
 
-                //var PCustLimitRsp = param.Get<dynamic>("@PCustLimitRsp");
+                var PCustAppvRsp = param.Get<dynamic>("@PCustAppvRsp");
 
                 var resp = param.Get<int>("@Resp");
+
                 if (resp == 1)
                 {
-                  //  ISPModule.modLiability.RevalueLiab(pCustAppvReq.Cust_Code, "");
+                    //  ISPModule.modLiability.RevalueLiab(pCustAppvReq.Cust_Code, "");
                     //return Ok(PCustLimitRsp);
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message =  "Save Customer Liability Complete";
-                    return Ok(response);
+                    //ReturnResponse response = new();
+                    //response.StatusCode = "200";
+                    //response.Message =  "Save Customer Liability Complete";
+                    //return Ok(response);
+                    return Ok(PCustAppvRsp);
                 }
                 else
                 {

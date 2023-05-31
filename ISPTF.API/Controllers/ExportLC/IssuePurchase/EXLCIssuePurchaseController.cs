@@ -163,10 +163,10 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("releaselist")]
-        public async Task<ActionResult<EXLCIssuePurchaseReleaseListResponse>> GetAllrelease(string? CenterID, string? USER_ID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCIssuePurchaseReleaseListResponse>> GetAllrelease(string? CenterID, string? EXPORT_LC_NO, string? BENNAME, string? Page, string? PageSize)
         {
             EXLCIssuePurchaseReleaseListResponse response = new EXLCIssuePurchaseReleaseListResponse();
-
+            var USER_ID = User.Identity.Name;
             // Validate
             if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(USER_ID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
             {

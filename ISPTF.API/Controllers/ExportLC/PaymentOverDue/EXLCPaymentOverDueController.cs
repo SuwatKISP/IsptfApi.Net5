@@ -36,10 +36,10 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<EXLCPaymentOverDueListResponse>> List(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        public async Task<ActionResult<EXLCPaymentOverDueListResponse>> List(string? ListType, string? CenterID, string? EXPORT_LC_NO, string? BENName, string? Page, string? PageSize)
         {
             EXLCPaymentOverDueListResponse response = new EXLCPaymentOverDueListResponse();
-
+            var USER_ID = User.Identity.Name;
             // Validate
             if (string.IsNullOrEmpty(ListType) || 
                 string.IsNullOrEmpty(CenterID) || 
