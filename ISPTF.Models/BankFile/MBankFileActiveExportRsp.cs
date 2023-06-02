@@ -16,7 +16,8 @@ namespace ISPTF.Models.BankFile
         public string Bank_Add2 { get; set; }
         public string Bank_Add3 { get; set; }
         public string Bank_Add4 { get; set; }
-
+        public string Bank_Address { get; set; }
+        public string Bank_Authen { get; set; }
 
     }
 }

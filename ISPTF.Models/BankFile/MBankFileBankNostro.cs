@@ -13,6 +13,8 @@ namespace ISPTF.Models.BankFile
         public string Bank_Name { get; set; }
         public string Cnty_Name { get; set; }
         public string Nostro_Ccy { get; set; }
+        public string Bank_Address { get; set; }
+        public string Bank_Authen { get; set; }
 
     }
 }
