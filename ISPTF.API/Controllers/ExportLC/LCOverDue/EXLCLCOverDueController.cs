@@ -125,10 +125,10 @@ namespace ISPTF.API.Controllers.ExportLC
             }
 
             // 0 - Select EXLC Master
-            var pExlcMaster = (from row in _context.pExlcs
-                               where row.EXPORT_LC_NO == EXPORT_LC_NO &&
-                                     row.RECORD_TYPE == "MASTER"
-                               select row).FirstOrDefault();
+            var pExlcMaster = await (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefaultAsync();
             try
             {
                 // 1 - Check if Master Exists
@@ -145,13 +145,13 @@ namespace ISPTF.API.Controllers.ExportLC
 
                 if (LFROM == "TRUE")
                 {
-                    var eventRow = (from row in _context.pExlcs
-                                    where row.EXPORT_LC_NO == EXPORT_LC_NO &&
-                                          row.RECORD_TYPE == "EVENT" &&
-                                          row.REC_STATUS == "R" &&
-                                          row.EVENT_TYPE == EVENT_TYPE &&
-                                          row.EVENT_NO == targetEventNo
-                                    select row).FirstOrDefault();
+                    var eventRow = await (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "R" &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).FirstOrDefaultAsync();
 
                     if (eventRow == null)
                     {
@@ -166,7 +166,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
 
-                    
+
                     pEXLCPPaymentDataContainer.PEXLC = eventRow;
                     pEXLCPPaymentDataContainer.PPAYMENT = pPayment;
 
@@ -175,13 +175,13 @@ namespace ISPTF.API.Controllers.ExportLC
                 }
                 else if (LFROM == "FALSE")
                 {
-                    var eventRow = (from row in _context.pExlcs
-                                    where row.EXPORT_LC_NO == EXPORT_LC_NO &&
-                                          row.RECORD_TYPE == "EVENT" &&
-                                          row.REC_STATUS == "P" &&
-                                          row.EVENT_TYPE == EVENT_TYPE &&
-                                          row.EVENT_NO == targetEventNo
-                                    select row).FirstOrDefault();
+                    var eventRow = await (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).FirstOrDefaultAsync();
 
                     if (eventRow == null)
                     {
@@ -195,9 +195,9 @@ namespace ISPTF.API.Controllers.ExportLC
                         response.Data = pEXLCPPaymentDataContainer;
                         return Ok(response);
                     }
-                    var pPayment = (from row in _context.pPayments
-                                    where row.RpReceiptNo == eventRow.RECEIVED_NO
-                                    select row).FirstOrDefault();
+                    var pPayment = await (from row in _context.pPayments
+                                          where row.RpReceiptNo == eventRow.RECEIVED_NO
+                                          select row).FirstOrDefaultAsync();
 
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
