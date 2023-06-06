@@ -37,9 +37,9 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCEditFlagListPageResponse response = new EXLCEditFlagListPageResponse();
             var USER_ID = User.Identity.Name;
             // Validate
-            if (string.IsNullOrEmpty(ListType) || 
-                string.IsNullOrEmpty(CenterID) || 
-                string.IsNullOrEmpty(Page) || 
+            if (string.IsNullOrEmpty(ListType) ||
+                string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(Page) ||
                 string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -54,7 +54,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 response.Data = new List<Q_EXLCEditFlagListPageRsp>();
                 return BadRequest(response);
             }
-            
+
             // Call Store Procedure
             try
             {
@@ -95,7 +95,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Page = 0;
                     response.Total = 0;
                     response.TotalPage = 0;
-                   
+
                 }
                 return Ok(response);
             }
@@ -109,62 +109,112 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXLCRecordResponse>> Select(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
+        public async Task<ActionResult<PEXLCPPaymentSelectResponse>> Select(string? EXPORT_LC_NO, string? EVENT_NO, string? LFROM)
         {
-            PEXLCRecordResponse response = new PEXLCRecordResponse();
+            PEXLCPPaymentSelectResponse response = new PEXLCPPaymentSelectResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
-                string.IsNullOrEmpty(EVENT_NO) || 
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
+                string.IsNullOrEmpty(EVENT_NO) ||
                 string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, LFROM is required";
-                response.Data = new PEXLCRecordRsp();
+                response.Data = new PEXLCPPaymentDataContainer();
                 return BadRequest(response);
             }
 
+            // 0 - Select EXLC Master
+            var pExlcMaster = await (from row in _context.pExlcs
+                                     where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                           row.RECORD_TYPE == "MASTER"
+                                     select row).FirstOrDefaultAsync();
             try
             {
-                DynamicParameters param = new();
-                param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
-                param.Add("@EVENT_NO", EVENT_NO);
-                //param.Add("@RECORD_TYPE", RECORD_TYPE);
-                //param.Add("@REC_STATUS", REC_STATUS);
-                param.Add("@LFROM", LFROM);
-                param.Add("@PEXLCRsp", dbType: DbType.Int32,
-                           direction: System.Data.ParameterDirection.Output,
-                           size: 12800);
-                param.Add("@PEXLCRecordRsp", dbType: DbType.String,
-                   direction: System.Data.ParameterDirection.Output,
-                   size: 5215585);
-
-                var results = await _db.LoadData<PEXLCRecordRsp, dynamic>(
-                           storedProcedure: "usp_pEXLC_LCOverDue_Select",
-                           param);
-                var PEXLCRsp = param.Get<dynamic>("@PEXLCRsp");
-                var pexlrecordrsp = param.Get<dynamic>("@PEXLCRecordRsp");
-
-                if (PEXLCRsp > 0 && !string.IsNullOrEmpty(pexlrecordrsp))
-                {
-                    PEXLCRecordRsp jsonResponse = JsonSerializer.Deserialize<PEXLCRecordRsp>(pexlrecordrsp);
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Success";
-                    response.Data = jsonResponse;
-                }
-                else
+                // 1 - Check if Master Exists
+                if (pExlcMaster == null)
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "EXPORT L/C NO does not exit";
-                    response.Data = new PEXLCRecordRsp();
+                    response.Message = "PEXLC Master does not exists";
+                    return BadRequest(response);
                 }
-                return Ok(response);
+                var targetEventNo = pExlcMaster.EVENT_NO + 1;
+
+                // 3 - Select Existing EVENT
+                PEXLCPPaymentDataContainer pEXLCPPaymentDataContainer = new();
+
+                if (LFROM == "TRUE")
+                {
+                    var eventRow = await (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "R" &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).FirstOrDefaultAsync();
+
+                    if (eventRow == null)
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "PEXLC Event " + EVENT_TYPE + " at Event No: " + targetEventNo.ToString() + " does not exists";
+                        return BadRequest(response);
+                    }
+                    var pPayment = (from row in _context.pPayments
+                                    where row.RpReceiptNo == eventRow.RECEIVED_NO
+                                    select row).FirstOrDefault();
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+
+
+                    pEXLCPPaymentDataContainer.PEXLC = eventRow;
+                    pEXLCPPaymentDataContainer.PPAYMENT = pPayment;
+
+                    response.Data = pEXLCPPaymentDataContainer;
+                    return Ok(response);
+                }
+                else if (LFROM == "FALSE")
+                {
+                    var eventRow = await (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).FirstOrDefaultAsync();
+
+                    if (eventRow == null)
+                    {
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Success";
+
+                        // Return Master
+                        pEXLCPPaymentDataContainer.PEXLC = pExlcMaster;
+                        pEXLCPPaymentDataContainer.PPAYMENT = null;
+
+                        response.Data = pEXLCPPaymentDataContainer;
+                        return Ok(response);
+                    }
+                    var pPayment = await (from row in _context.pPayments
+                                          where row.RpReceiptNo == eventRow.RECEIVED_NO
+                                          select row).FirstOrDefaultAsync();
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+
+                    pEXLCPPaymentDataContainer.PEXLC = eventRow;
+                    pEXLCPPaymentDataContainer.PPAYMENT = pPayment;
+
+                    response.Data = pEXLCPPaymentDataContainer;
+                    return Ok(response);
+                }
             }
+
             catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXLCRecordRsp();
+                response.Data = new PEXLCPPaymentDataContainer();
             }
             return BadRequest(response);
         }
