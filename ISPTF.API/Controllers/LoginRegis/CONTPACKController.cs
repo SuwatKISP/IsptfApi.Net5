@@ -68,6 +68,18 @@ namespace ISPTF.API.Controllers.LoginRegis
             return results;
         }
 
+        [HttpGet("Packing/select")]
+        public async Task<IEnumerable<PControlPackListRsp>> GetPCSelect( string? ContNo )
+        {
+            DynamicParameters param = new();
+
+            param.Add("@ContNo", ContNo);
+
+            var results = await _db.LoadData<PControlPackListRsp    , dynamic>(
+                        storedProcedure: "usp_pControlPack_Select",
+                        param);
+            return results;
+        }
 
         [HttpPost("Packing/save")]
         public async Task<ActionResult<List<PControlPackRsp>>> Save([FromBody] PControlPackSaveReq pControlPack)
@@ -119,7 +131,7 @@ namespace ISPTF.API.Controllers.LoginRegis
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = "Register Doc Error";
+                    response.Message = "Save CONPACK Error";
                     return BadRequest(response);
                 }
             }
