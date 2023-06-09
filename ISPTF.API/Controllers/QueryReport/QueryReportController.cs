@@ -33,6 +33,16 @@ namespace ISPTF.API.Controllers.QueryReport
                 param);
             return results;
         }
-        
+        [HttpGet("ViewMapAccount/selectSAPAccount")]
+        public async Task<IEnumerable<ViewMapAccountSelect>> GetselectSAT(string? Acc_Code)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@Acc_Code", Acc_Code);
+
+            var results = await _db.LoadData<ViewMapAccountSelect, dynamic>(
+                storedProcedure: "usp_ViewMapAccountSelect",
+                param);
+            return results;
+        }
     }
 }

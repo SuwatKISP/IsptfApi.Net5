@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 namespace ISPTF.API.Controllers
 {
     //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CustomerController : ControllerBase
@@ -1231,7 +1232,60 @@ namespace ISPTF.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("release")]
+        public async Task<ActionResult<string>> Release([FromBody] MCustomerRelaseReq customerreq)
+        {
+            DynamicParameters param = new DynamicParameters();
+            var USER_ID = User.Identity.Name;
+            param.Add("@Cust_Code", customerreq.Cust_Code);
+            param.Add("@RecStatus", customerreq.RecStatus);
+            param.Add("@AuthCode", USER_ID);
+            param.Add("@Resp", dbType: DbType.Int32,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
 
+                await _db.SaveData(
+                  storedProcedure: "usp_mCustomerRelease", param);
+                //var resp = param.Get<int>("@Resp");
+                var resp = param.Get<int>("@Resp");
+                if (resp == 1)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    if (customerreq.RecStatus=="P")
+                    {
+                        response.Message = "Un Release Data Complete";
+                    }
+                    else 
+                    {
+                        response.Message = "Release Data Complete";
+                    }
+
+                    return Ok(response);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    if (customerreq.RecStatus == "P")
+                    {
+                        response.Message = "Error for Un Release Data";
+                    }
+                    else
+                    {
+                        response.Message = "Error for Release Data ";
+                    }
+
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }//Release
 
     }
 }

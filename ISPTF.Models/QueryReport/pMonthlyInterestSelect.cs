@@ -8,7 +8,7 @@ namespace ISPTF.Models
 {
     public class pMonthlyInterestSelect
     {
-        public string DocMonth { get; set; }
-        public DateTime CalDate { get; set; }
+        public string Round { get; set; }
+        
     }
 }
