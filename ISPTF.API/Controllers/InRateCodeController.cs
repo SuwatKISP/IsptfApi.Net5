@@ -27,22 +27,23 @@ namespace ISPTF.API.Controllers
         public async Task<IEnumerable<MinRateCode>> GetAll(string? inratecode,string? inrateccyflag)
         {
             DynamicParameters param = new DynamicParameters();
-            if (inratecode == "*" || inratecode == null)
+            if (inratecode == "" || inratecode == null)
             {
-                param.Add("@InRate_Code", "*");
+                param.Add("@InRate_Code", "");
             }
             else
             {
                 param.Add("@InRate_Code", inratecode);
             }
-            if (inrateccyflag == "*" || inrateccyflag == null)
+            if (inrateccyflag == "" || inrateccyflag == null)
             {
-                param.Add("@InRate_CcyFlag", "*");
+                param.Add("@InRate_CcyFlag", "");
             }
             else
             {
                 param.Add("@InRate_CcyFlag", inrateccyflag);
             }
+
             var results = await _db.LoadData<MinRateCode, dynamic>(
                         storedProcedure: "usp_minratecodeselect",
                         param);

@@ -27,17 +27,17 @@ namespace ISPTF.API.Controllers
         public async Task<IEnumerable<BOT_Classification>> GetAll(string? clscmid,string? prnclid)
         {
             DynamicParameters param = new DynamicParameters();
-            if (clscmid == "*" || clscmid == null)
+            if (clscmid == "" || clscmid == null)
             {
-                param.Add("@CL_SCM_ID", "*");
+                param.Add("@CL_SCM_ID", "");
             }
             else
             {
                 param.Add("@CL_SCM_ID", clscmid);
             }
-            if (prnclid == "*" || prnclid == null)
+            if (prnclid == "" || prnclid == null)
             {
-                param.Add("@PRN_CL_ID", "*");
+                param.Add("@PRN_CL_ID", "");
             }
             else
             {

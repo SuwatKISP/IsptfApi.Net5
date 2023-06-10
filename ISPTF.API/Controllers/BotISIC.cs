@@ -27,9 +27,9 @@ namespace ISPTF.API.Controllers
         public async Task<IEnumerable<BOT_ISIC>> GetAll(string? clfmcode)
         {
             DynamicParameters param = new DynamicParameters();
-            if (clfmcode == "*" || clfmcode == null)
+            if (clfmcode == "" || clfmcode == null)
             {
-                param.Add("@CL_FM_CODE", "*");
+                param.Add("@CL_FM_CODE", "");
             }
             else
             {

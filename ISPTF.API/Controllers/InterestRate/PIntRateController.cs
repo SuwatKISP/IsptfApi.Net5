@@ -197,12 +197,13 @@ namespace ISPTF.API.Controllers.InterestRate
         [HttpPost("release")]
         public async Task<ActionResult<List<PIntRate>>> Release([FromBody] PIntRate IntRate)
         {
+            var USER_ID = User.Identity.Name;
             DynamicParameters param = new DynamicParameters();
             param.Add("@IRate_Code", IntRate.IRate_Code);
             param.Add("@IRate_EffDate", IntRate.IRate_EffDate);
             param.Add("@IRate_EffTime", IntRate.IRate_EffTime);
             param.Add("@RecStatus", IntRate.RecStatus);
-            param.Add("@AuthCode", IntRate.AuthCode);
+            param.Add("@AuthCode", USER_ID);
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
