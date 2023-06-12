@@ -400,7 +400,7 @@ namespace ISPTF.API.Controllers
                 dt.Columns.Add("Def_Max", typeof(double));
                 //dt.Columns.Add("CreateDate", typeof(DateTime)).DefaultValue = DateTime.Now;
                 //dt.Columns.Add("UpdateDate", typeof(DateTime)).DefaultValue = DateTime.Now; ;
-           //     dt.Columns.Add("UserCode", typeof(string)).DefaultValue =USER_ID;
+                dt.Columns.Add("UserCode", typeof(string));
                 dt.Columns.Add("RecStatus", typeof(string));
                 dt.Columns.Add("AuthDate", typeof(DateTime)).DefaultValue = DateTime.Now;
                 dt.Columns.Add("AuthCode", typeof(string));
@@ -425,7 +425,7 @@ namespace ISPTF.API.Controllers
                         , customerreq.custRate[i].Def_Max
                         //, DateTime.Now
                         //, DateTime.Now
-                        //, customerreq.custRate[i].UserCode
+                        , customerreq.custRate[i].UserCode
                         , customerreq.custRate[i].RecStatus
                         , DateTime.Now
                         , customerreq.custRate[i].AuthCode
