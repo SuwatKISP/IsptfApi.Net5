@@ -385,6 +385,7 @@ namespace ISPTF.API.Controllers
         public async Task<ActionResult<List<MCustomerNewRsp>>> New([FromBody] MCustomerNewReq customerreq)
         {
             Log.Information("CustomerNew Request : {@customerreq}", customerreq);
+            var USER_ID = User.Identity.Name;
             if (customerreq.customer.Cust_Code == "NEW" )
             {
                 var dt = new DataTable();
@@ -399,7 +400,7 @@ namespace ISPTF.API.Controllers
                 dt.Columns.Add("Def_Max", typeof(double));
                 //dt.Columns.Add("CreateDate", typeof(DateTime)).DefaultValue = DateTime.Now;
                 //dt.Columns.Add("UpdateDate", typeof(DateTime)).DefaultValue = DateTime.Now; ;
-                dt.Columns.Add("UserCode", typeof(string));
+           //     dt.Columns.Add("UserCode", typeof(string)).DefaultValue =USER_ID;
                 dt.Columns.Add("RecStatus", typeof(string));
                 dt.Columns.Add("AuthDate", typeof(DateTime)).DefaultValue = DateTime.Now;
                 dt.Columns.Add("AuthCode", typeof(string));
@@ -424,7 +425,7 @@ namespace ISPTF.API.Controllers
                         , customerreq.custRate[i].Def_Max
                         //, DateTime.Now
                         //, DateTime.Now
-                        , customerreq.custRate[i].UserCode
+                        //, customerreq.custRate[i].UserCode
                         , customerreq.custRate[i].RecStatus
                         , DateTime.Now
                         , customerreq.custRate[i].AuthCode
@@ -519,7 +520,7 @@ namespace ISPTF.API.Controllers
 
                 //param.Add("@CreateDate", DateTime.Now);
                 //param.Add("@UpdateDate", DateTime.Now);
-                param.Add("@UserCode", customerreq.customer.UserCode);
+                param.Add("@UserCode", USER_ID);
                 param.Add("@AuthDate", customerreq.customer.AuthDate);
                 param.Add("@AuthCode", customerreq.customer.AuthCode);
                 param.Add("@DMS", customerreq.customer.DMS);
@@ -1008,7 +1009,7 @@ namespace ISPTF.API.Controllers
         [HttpPost("update")]
         public async Task<ActionResult<List<MCustomerNewRsp>>> Update([FromBody] MCustomerNewReq customerreq)
         {
-
+            var USER_ID = User.Identity.Name;
             var dt = new DataTable();
 
             dt.Columns.Add("Def_Cust", typeof(string));
@@ -1021,6 +1022,7 @@ namespace ISPTF.API.Controllers
             dt.Columns.Add("Def_Max", typeof(double));
             //dt.Columns.Add("CreateDate", typeof(DateTime)).DefaultValue = DateTime.Now;
             //dt.Columns.Add("UpdateDate", typeof(DateTime)).DefaultValue = DateTime.Now; ;
+            //dt.Columns.Add("UserCode", typeof(string)).DefaultValue =USER_ID;
             dt.Columns.Add("UserCode", typeof(string));
             dt.Columns.Add("RecStatus", typeof(string));
             dt.Columns.Add("AuthDate", typeof(DateTime)).DefaultValue = DateTime.Now;
@@ -1141,7 +1143,7 @@ namespace ISPTF.API.Controllers
 
             //param.Add("@CreateDate", DateTime.Now);
             //param.Add("@UpdateDate", DateTime.Now);
-            param.Add("@UserCode", customerreq.customer.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@AuthDate", DateTime.Now);
             //param.Add("@CreateDate", customerreq.customer.CreateDate);
             //param.Add("@UpdateDate", customerreq.customer.UpdateDate);
