@@ -19,8 +19,8 @@ namespace ISPTF.Models.ExchangeRate
         public double? exch_TRate2 { get; set; }
         public double? exch_TRate3 { get; set; }
         public double? exch_Average { get; set; }
-        public double? recStatus { get; set; }
-        public double? UpdateDate { get; set; }
+        public string? recStatus { get; set; }
+        public DateTime? UpdateDate { get; set; }
         public int? RCount { get; set; }
 
     }
