@@ -4,12 +4,12 @@
     {
         public string EXPORT_LC_NO { get; set; }
         public string EVENT_DATE { get; set; }
-        public bool? WITHOUT_RECOURSE { get; set; }
-        public string APPROVE_NO { get; set; }
-        public string BANK_CODE { get; set; }
-        public string FACILITY_NO { get; set; }
+        public string WithOutFlag { get; set; }
+        public string ADJUST_LC_REF { get; set; }
+        public string Wref_Bank_ID { get; set; }
+        public string FACNO { get; set; }
         public string DRAFT_CCY { get; set; }
-        public double DRAFT_AMT1 { get; set; }
+        public double DRAFT_AMT { get; set; }
         public string VOUCH_ID { get; set; }
     }
 }
