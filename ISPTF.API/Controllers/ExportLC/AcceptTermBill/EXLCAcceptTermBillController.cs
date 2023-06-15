@@ -376,8 +376,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
             // Validate
             if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
-                string.IsNullOrEmpty(data.EVENT_DATE) ||
-                data.WITHOUT_RECOURSE == null
+                string.IsNullOrEmpty(data.EVENT_DATE)
                 )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -454,10 +453,10 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 4 - Without recourse
 
-                        if (data.WITHOUT_RECOURSE == true)
+                        if (data.WithOutFlag == "Y")
                         {
                             var pCustApprvs = (from row in _context.pCustAppvs
-                                               where row.Appv_No == data.APPROVE_NO
+                                               where row.Appv_No == data.ADJUST_LC_REF
                                                select row).ToListAsync();
                             foreach (var row in await pCustApprvs)
                             {
@@ -467,8 +466,8 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
 
                             var pBankLiabs = (from row in _context.pBankLiabs
-                                              where row.Bank_Code == data.BANK_CODE &&
-                                                    row.Facility_No == data.FACILITY_NO &&
+                                              where row.Bank_Code == data.Wref_Bank_ID &&
+                                                    row.Facility_No == data.FACNO &&
                                                     row.Currency == data.DRAFT_CCY
                                               select row).ToListAsync();
                             foreach(var row in await pBankLiabs)
@@ -478,7 +477,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 {
                                     XLCP_Book = (double)row.XLCP_Book;
                                 }
-                                row.XLCP_Book = XLCP_Book - data.DRAFT_AMT1;
+                                row.XLCP_Book = XLCP_Book - data.DRAFT_AMT;
                                 row.UpdateDate = DateTime.Now;
                             }
                         }

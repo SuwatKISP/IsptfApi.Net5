@@ -353,6 +353,226 @@ namespace ISPTF.API.Controllers.ExportLC
 
         }
 
+        [HttpPost("Release")]
+        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        {
+            EXLCResultResponse response = new();
+
+            // Validate
+
+            //from vb (not implimented here)
+            try
+            {
+                bool onePUse = false;
+                if (onePUse && data.PEXLC.TOTAL_AMOUNT > 0)
+                {
+                    string op_event;
+                    if (data.PEXLC.METHOD.Contains("DEBIT"))
+                    {
+                        op_event = "DR";
+                    }
+                    else if (data.PEXLC.METHOD.Contains("CREDIT"))
+                    {
+                        op_event = "CR";
+                    }
+                    else
+                    {
+                        op_event = "";
+                    }
+                    // Use Socket
+                }
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        //SaveMaster
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+                        // 2 - Select Existing Event
+                        var cEventNo = pExlcMaster.EVENT_NO + 1;
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == cEventNo
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                        // 3 - Check if Event Exist
+                        if (pExlcEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event does not exists";
+                            return BadRequest(response);
+                        }
+
+                        // 4 - Update Event
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlcEvent.RECEIVED_NO = data.PEXLC.RECEIVED_NO;
+                        pExlcEvent.AUTH_CODE = data.PEXLC.AUTH_CODE;
+                        pExlcEvent.AUTH_DATE = data.PEXLC.AUTH_DATE;
+                        pExlcEvent.GENACC_FLAG = "Y";
+                        pExlcEvent.GENACC_DATE = DateTime.Today;
+
+                        // 5 - Update Master
+                        pExlcMaster.AUTH_CODE = data.PEXLC.AUTH_CODE;
+                        pExlcMaster.AUTH_DATE = data.PEXLC.AUTH_DATE;
+                        pExlcMaster.VOUCH_ID = data.PEXLC.VOUCH_ID;
+                        pExlcMaster.GENACC_FLAG = "Y";
+                        pExlcMaster.GENACC_DATE = DateTime.Today;
+                        pExlcMaster.USER_ID = USER_ID;
+                        pExlcMaster.UPDATE_DATE = DateTime.Today;
+                        pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
+                        pExlcMaster.EVENT_TYPE = EVENT_TYPE;
+                        pExlcMaster.SEQ_ACCEPT_DUE = data.PEXLC.SEQ_ACCEPT_DUE;
+                        pExlcMaster.CONFIRM_DATE = data.PEXLC.CONFIRM_DATE;
+                        pExlcMaster.DISC_DAYS_PLUS_MINUS = data.PEXLC.DISC_DAYS_PLUS_MINUS;
+                        pExlcMaster.PLUS_MINUS_DISC = data.PEXLC.PLUS_MINUS_DISC;
+                        pExlcMaster.REFUND_DISC_RECEIVE = data.PEXLC.REFUND_DISC_RECEIVE;
+                        pExlcMaster.DISC_RECEIVE = data.PEXLC.DISC_RECEIVE;
+                        pExlcMaster.RECEIVE_PAY_AMT = data.PEXLC.RECEIVE_PAY_AMT;
+                        pExlcMaster.EXCHANGE_RATE = data.PEXLC.EXCHANGE_RATE;
+                        pExlcMaster.DISCRATE = data.PEXLC.DISCRATE;
+                        pExlcMaster.TOTAL_AMOUNT = data.PEXLC.TOTAL_AMOUNT;
+                        pExlcMaster.NARRATIVE = data.PEXLC.NARRATIVE;
+                        pExlcMaster.CFRRate = data.PEXLC.CFRRate;
+                        pExlcMaster.IntRateCode = data.PEXLC.IntRateCode;
+                        pExlcMaster.COLLECT_REFUND = data.PEXLC.COLLECT_REFUND;
+                        if (data.PEXLC.TENOR_TYPE == 4)
+                        {
+                            pExlcMaster.TERM_START_DATE = data.PEXLC.TERM_START_DATE;
+                            pExlcMaster.TERM_DUE_DATE = data.PEXLC.TERM_DUE_DATE;
+                        }
+                        else
+                        {
+                            if (data.PEXLC.PLUS_MINUS_DISC == "1")
+                            {
+                                pExlcMaster.TERM_START_DATE = data.PEXLC.TERM_START_DATE;
+                                pExlcMaster.TERM_DUE_DATE = data.PEXLC.TERM_DUE_DATE.Value.AddDays((Double)data.PEXLC.DISC_DAYS_PLUS_MINUS);
+                                pExlcMaster.DISCOUNT_CCY = data.PEXLC.DISCOUNT_CCY + data.PEXLC.RECEIVE_PAY_AMT;
+                                if (data.PEXLC.REFUND_DISC_RECEIVE > 0)
+                                {
+                                    pExlcMaster.DISCOUNT_AMT = data.PEXLC.DISCOUNT_AMT + data.PEXLC.REFUND_DISC_RECEIVE;
+                                }
+                                else
+                                {
+                                    pExlcMaster.DISCOUNT_AMT = data.PEXLC.DISCOUNT_AMT + data.PEXLC.DISC_RECEIVE;
+                                }
+                            }
+                            else if (data.PEXLC.PLUS_MINUS_DISC == "2")
+                            {
+                                pExlcMaster.TERM_START_DATE = data.PEXLC.TERM_START_DATE;
+                                pExlcMaster.TERM_DUE_DATE = data.PEXLC.CONFIRM_DATE;
+                                pExlcMaster.DISCOUNT_CCY = data.PEXLC.DISCOUNT_CCY + data.PEXLC.RECEIVE_PAY_AMT;
+                                if (data.PEXLC.REFUND_DISC_RECEIVE > 0)
+                                {
+                                    pExlcMaster.DISCOUNT_AMT = data.PEXLC.DISCOUNT_AMT + data.PEXLC.REFUND_DISC_RECEIVE;
+                                }
+                                else
+                                {
+                                    pExlcMaster.DISCOUNT_AMT = data.PEXLC.DISCOUNT_AMT + data.PEXLC.DISC_RECEIVE;
+                                }
+                            }
+                        }
+                        pExlcMaster.DISCOUNT_DAY = data.PEXLC.DISCOUNT_DAY;
+                        pExlcMaster.CURRENT_DIS_RATE = data.PEXLC.CURRENT_DIS_RATE;
+                        if(data.PEXLC.TENOR_TYPE != 4)
+                        {
+                            var netDiscount = data.PEXLC.DISCOUNT_CCY - data.PEXLC.TOTALACCRUAMT;
+                            var netDay = data.PEXLC.DISCOUNT_DAY - data.PEXLC.SUSPAMT;
+                            if (netDay + data.PEXLC.DISC_DAYS_PLUS_MINUS != 0)
+                            {
+                                if(data.PEXLC.PLUS_MINUS_DISC == "1")
+                                {
+                                    pExlcMaster.ACCRUAMT = (netDiscount + data.PEXLC.RECEIVE_PAY_AMT) / (netDay + data.PEXLC.DISC_DAYS_PLUS_MINUS);
+                                }
+                                else
+                                {
+                                    if(netDiscount - data.PEXLC.RECEIVE_PAY_AMT <= 0 || netDay - data.PEXLC.DISC_DAYS_PLUS_MINUS == 0 )
+                                    {
+                                        pExlcMaster.ACCRUAMT = 0;
+                                    }
+                                    else
+                                    {
+                                        pExlcMaster.ACCRUAMT = (netDiscount - data.PEXLC.RECEIVE_PAY_AMT) / (netDay - data.PEXLC.DISC_DAYS_PLUS_MINUS);
+                                        if (data.PEXLC.ACCRUAMT < 0)
+                                        {
+                                            pExlcMaster.ACCRUAMT = 0;
+                                        }
+                                    }
+                                }
+                            }
+                            pExlcMaster.LASTINTDATE = data.PEXLC.LASTINTDATE;
+                        }
+                        // 6 - Update pPayment
+                        if (data.PEXLC.PAYMENT_INSTRU == "PAID")
+                        {
+                            pExlcMaster.PAYMENT_INSTRU = "PAID";
+                            pExlcMaster.METHOD = data.PEXLC.METHOD;
+                            pExlcMaster.RECEIVED_NO = data.PEXLC.RECEIVED_NO;
+                            var pPayment = (from row in _context.pPayments
+                                            where row.RpReceiptNo == data.PEXLC.RECEIVED_NO
+                                            select row).AsNoTracking().FirstOrDefault();
+                            pPayment.RpRecStatus = "R";
+                        }
+                        else
+                        {
+                            pExlcMaster.PAYMENT_INSTRU = "UNPAID";
+                            pExlcMaster.METHOD = "";
+                            pExlcMaster.RECEIVED_NO = data.PEXLC.RECEIVED_NO;
+                        }
+                        // 7 - Update pDailyGL
+                        if (data.PEXLC.PAYMENT_INSTRU == "PAID")
+                        {
+                            var dailyGL = (from row in _context.pDailyGLs
+                                           where row.VouchID == data.PEXLC.VOUCH_ID &&
+                                                 row.VouchDate == data.PEXLC.EVENT_DATE
+                                           select row).AsNoTracking().FirstOrDefault();
+                            dailyGL.SendFlag = "R";
+                        }
+                        await _context.SaveChangesAsync();
+
+                        // 8 - Updata Master,Event PK
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {cEventNo} WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
+                        transaction.Complete();
+
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Export L/C Released";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("delete")]
         public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
         {
