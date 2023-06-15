@@ -243,7 +243,7 @@ namespace ISPTF.API.Controllers.ExchangeRate
         {
             DynamicParameters param = new DynamicParameters();
             var USER_ID = User.Identity.Name;
-            param.Add("@exch_Date", exchange.exch_Date);
+            param.Add("@ExchDate", exchange.exch_Date);
             param.Add("@UserCode", USER_ID);
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
