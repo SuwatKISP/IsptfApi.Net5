@@ -132,6 +132,20 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             return results;
         }
 
+        [HttpGet("GetOriginalAmount")]
+        public async Task<IEnumerable<OrignalAmtRsp>> GetOriginalAmount(string Cust_code, string Facility_no)
+        {
+            DynamicParameters param = new();
+
+            param.Add("@Cust_Code", Cust_code);
+            param.Add("@Facility_no", Facility_no);
+
+            var results = await _db.LoadData<OrignalAmtRsp, dynamic>(
+                        storedProcedure: "usp_TradeLiability_GetOriginalAmt",
+                        param);
+            return results;
+        }
+
         [HttpGet("InsGrdFacilitySelect")]
         public async Task<ActionResult<InsGrdFacilitySelectJSON_Rsp>> GetInsGrdFacility(string Login , string? CustCode, string? ReferDocNo,string? Facility_No, string? Facility_No_Old)
         {
@@ -492,6 +506,51 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
 
         }
 
+        [HttpPost("AddTempReport")]
+        public async Task<ActionResult<string>> Add2Temp([FromBody] LiabAdd2TempReq LiabAdd2Tem)
+        {
+            DynamicParameters param = new();
+            param.Add("@AppvNo", LiabAdd2Tem.Appv_No);
+            param.Add("@CustCode", LiabAdd2Tem.Cust_Code);
+            param.Add("@Facility_No", LiabAdd2Tem.Facility_No);
+            param.Add("@TxStatus", LiabAdd2Tem.Status);
+            param.Add("@LbLogin", LiabAdd2Tem.Login);
+            param.Add("@TxCredit", LiabAdd2Tem.TxCredit);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+            //param.Add("@Resp", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_TradeLiability_Addtmp_liability", param);
+                var resp = param.Get<int>("@Resp");
+                //var resp = param.Get<string>("@Resp");
+                if (resp > 0)
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    response.Message = "Add tmp_liability  Complete";
+                    return Ok(response);
+                }
+                else
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    //response.Message = "RELEASE Customer Liability Error";
+                    response.Message = resp.ToString();
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
         [HttpPost("UpdateUsing")]
         public async Task<ActionResult<List<UpdateUsingReq>>> chkinuse([FromBody] UpdateUsingReq updateusing)
         {
