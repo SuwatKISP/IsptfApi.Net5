@@ -68,6 +68,7 @@ namespace ISPTF.API.Controllers.LoginRegis
             return results;
         }
 
+
         [HttpGet("Packing/select")]
         public async Task<IEnumerable<PControlPackListRsp>> GetPCSelect( string? ContNo )
         {
@@ -77,6 +78,20 @@ namespace ISPTF.API.Controllers.LoginRegis
 
             var results = await _db.LoadData<PControlPackListRsp    , dynamic>(
                         storedProcedure: "usp_pControlPack_Select",
+                        param);
+            return results;
+        }
+
+        [HttpGet("CheckReferenceNo")]
+        public async Task<IEnumerable<PControlPack_CheckRep>> CheckReferenceNo(string? ReferLcNo, string? ContNo)
+        {
+            DynamicParameters param = new();
+
+            param.Add("@ReferLcNo", ReferLcNo);
+            param.Add("@ContNo", ContNo);
+
+            var results = await _db.LoadData<PControlPack_CheckRep, dynamic>(
+                        storedProcedure: "usp_pControlPack_CheckRefNo",
                         param);
             return results;
         }

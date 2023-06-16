@@ -15,6 +15,7 @@ namespace ISPTF.Models.ExportBC
         public double? DRAFT_AMT { get; set; }
         public string? BENE_ID { get; set; }
         public double? TOT_NEGO_AMOUNT { get; set; }
+        public string? USER_ID { get; set; }
 
 
     }

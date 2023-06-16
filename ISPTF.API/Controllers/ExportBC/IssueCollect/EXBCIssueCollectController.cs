@@ -952,6 +952,7 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@DRAFT_AMT", pExBcRelease.DRAFT_AMT);
             param.Add("@BENE_ID", pExBcRelease.BENE_ID);
             param.Add("@TOT_NEGO_AMOUNT", pExBcRelease.TOT_NEGO_AMOUNT);
+            param.Add("@USER_ID", pExBcRelease.USER_ID);
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
