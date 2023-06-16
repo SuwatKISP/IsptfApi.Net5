@@ -88,7 +88,15 @@ namespace ISPTF.API.Controllers.LoginRegis
             DynamicParameters param = new();
 
             param.Add("@ReferLcNo", ReferLcNo);
-            param.Add("@ContNo", ContNo);
+            if (ContNo ==null)
+            {
+                param.Add("@ContNo", "");
+            }
+                else
+            {
+                param.Add("@ContNo", ContNo);
+            }
+
 
             var results = await _db.LoadData<PControlPack_CheckRep, dynamic>(
                         storedProcedure: "usp_pControlPack_CheckRefNo",
