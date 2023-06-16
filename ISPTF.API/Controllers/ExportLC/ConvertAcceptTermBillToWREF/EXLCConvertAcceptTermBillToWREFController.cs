@@ -143,10 +143,10 @@ namespace ISPTF.API.Controllers.ExportLC
 
             EXLCConvertAcceptTermBillToWREFSelectResponse response = new EXLCConvertAcceptTermBillToWREFSelectResponse();
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
-                EVENT_NO == null || 
-                string.IsNullOrEmpty(RECORD_TYPE) || 
-                string.IsNullOrEmpty(REC_STATUS) || 
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
+                EVENT_NO == null ||
+                string.IsNullOrEmpty(RECORD_TYPE) ||
+                string.IsNullOrEmpty(REC_STATUS) ||
                 string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -371,18 +371,19 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCAcceptTermBillDeleteRequest data)
+        public async Task<ActionResult<EXLCResultResponse>> Delete(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS)
         {
             EXLCResultResponse response = new EXLCResultResponse();
             DynamicParameters param = new();
 
             // Validate
-            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
-                string.IsNullOrEmpty(data.EVENT_DATE)
-                )
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
+                EVENT_NO == null ||
+                string.IsNullOrEmpty(RECORD_TYPE) ||
+                string.IsNullOrEmpty(REC_STATUS))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_LC_NO, EVENT_DATE, WITHOUT_RECOURSE is required";
+                response.Message = "EXPORT_LC_NO, EVENT_NO, RECORD_TYPE, REC_STATUS is required";
                 return BadRequest(response);
             }
 
@@ -393,6 +394,14 @@ namespace ISPTF.API.Controllers.ExportLC
                 {
                     try
                     {
+                        // -1 - Select Target Exlc
+                        var data = (from row in _context.pExlcs
+                                    where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                          row.EVENT_NO == EVENT_NO &&
+                                          row.RECORD_TYPE == RECORD_TYPE &&
+                                          row.REC_STATUS == REC_STATUS
+                                    select row).AsNoTracking().FirstOrDefault();
+
                         // 0 - Select EXLC MASTER
                         var pExlc = (from row in _context.pExlcs
                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
@@ -430,7 +439,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 2 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
                                        where row.VouchID == data.VOUCH_ID &&
-                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                             row.VouchDate == data.EVENT_DATE
                                        select row).ToListAsync();
 
                         foreach (var row in await dailyGL)

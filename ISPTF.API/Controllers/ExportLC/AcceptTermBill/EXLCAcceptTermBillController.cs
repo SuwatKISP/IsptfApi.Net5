@@ -40,9 +40,9 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCAcceptTermDueListResponse response = new EXLCAcceptTermDueListResponse();
             var USER_ID = User.Identity.Name;
             // Validate
-            if (string.IsNullOrEmpty(ListType) || 
-                string.IsNullOrEmpty(CenterID) || 
-                string.IsNullOrEmpty(Page) || 
+            if (string.IsNullOrEmpty(ListType) ||
+                string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(Page) ||
                 string.IsNullOrEmpty(PageSize))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -144,10 +144,10 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCPPaymentResponse response = new PEXLCPPaymentResponse();
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) || 
-                EVENT_NO == null || 
-                string.IsNullOrEmpty(RECORD_TYPE) || 
-                string.IsNullOrEmpty(REC_STATUS) || 
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
+                EVENT_NO == null ||
+                string.IsNullOrEmpty(RECORD_TYPE) ||
+                string.IsNullOrEmpty(REC_STATUS) ||
                 string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
@@ -236,11 +236,11 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 2 - Update Master
                         var checkNew = false;
-                        if(pExlcMaster.REC_STATUS == "R")
+                        if (pExlcMaster.REC_STATUS == "R")
                         {
                             checkNew = true;
                         }
-                        if(data.PEXLC.WithOutFlag == "Y")
+                        if (data.PEXLC.WithOutFlag == "Y")
                         {
                             // Call Save Back Liability with checkNew param
                         }
@@ -341,7 +341,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     catch (Exception e)
                     {
-                        if (e.InnerException != null && 
+                        if (e.InnerException != null &&
                             e.InnerException.Message.Contains("Violation of PRIMARY KEY constraint / Wrong Event State"))
                         {
                             // Key already exists
@@ -369,21 +369,21 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCAcceptTermBillDeleteRequest data)
+        public async Task<ActionResult<EXLCResultResponse>> Delete(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS) //([FromBody] PEXLCAcceptTermBillDeleteRequest data)
         {
             EXLCResultResponse response = new EXLCResultResponse();
             DynamicParameters param = new();
 
             // Validate
-            if (string.IsNullOrEmpty(data.EXPORT_LC_NO) ||
-                string.IsNullOrEmpty(data.EVENT_DATE)
-                )
+            if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
+                EVENT_NO == null ||
+                string.IsNullOrEmpty(RECORD_TYPE) ||
+                string.IsNullOrEmpty(REC_STATUS))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_LC_NO, EVENT_DATE, WITHOUT_RECOURSE is required";
+                response.Message = "EXPORT_LC_NO, EVENT_NO, RECORD_TYPE, REC_STATUS is required";
                 return BadRequest(response);
             }
-
 
             try
             {
@@ -391,6 +391,15 @@ namespace ISPTF.API.Controllers.ExportLC
                 {
                     try
                     {
+
+                        // -1 - Select Target Exlc
+                        var data = (from row in _context.pExlcs
+                                    where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                          row.EVENT_NO == EVENT_NO &&
+                                          row.RECORD_TYPE == RECORD_TYPE &&
+                                          row.REC_STATUS == REC_STATUS
+                                    select row).AsNoTracking().FirstOrDefault();
+
                         // 0 - Select EXLC MASTER
                         var pExlc = (from row in _context.pExlcs
                                      where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
@@ -428,7 +437,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 2 - Delete Daily GL
                         var dailyGL = (from row in _context.pDailyGLs
                                        where row.VouchID == data.VOUCH_ID &&
-                                             row.VouchDate == DateTime.Parse(data.EVENT_DATE)
+                                             row.VouchDate == data.EVENT_DATE
                                        select row).ToListAsync();
 
                         foreach (var row in await dailyGL)
@@ -470,10 +479,10 @@ namespace ISPTF.API.Controllers.ExportLC
                                                     row.Facility_No == data.FACNO &&
                                                     row.Currency == data.DRAFT_CCY
                                               select row).ToListAsync();
-                            foreach(var row in await pBankLiabs)
+                            foreach (var row in await pBankLiabs)
                             {
                                 double XLCP_Book = 0;
-                                if(row.XLCP_Book != null)
+                                if (row.XLCP_Book != null)
                                 {
                                     XLCP_Book = (double)row.XLCP_Book;
                                 }
