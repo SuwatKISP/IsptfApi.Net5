@@ -368,8 +368,11 @@ namespace ISPTF.API.Controllers.ExportLC
 
         }
 
-        [HttpPost("Release")]
-        public async Task<ActionResult<EXLCResultResponse>> Release(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS)
+        [HttpPost("release")]
+        public async Task<ActionResult<EXLCResultResponse>> Release(string? EXPORT_LC_NO, 
+                                                                    int? EVENT_NO, 
+                                                                    string? RECORD_TYPE, 
+                                                                    string? REC_STATUS)
         {
             EXLCResultResponse response = new();
 
@@ -411,13 +414,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // 2 - Select Existing Event
-                        var cEventNo = pExlcMaster.EVENT_NO + 1;
                         var pExlcEvent = (from row in _context.pExlcs
                                           where row.EXPORT_LC_NO == EXPORT_LC_NO &&
-                                                row.RECORD_TYPE == "EVENT" &&
-                                                (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                row.RECORD_TYPE == RECORD_TYPE &&
+                                                (row.REC_STATUS == REC_STATUS) &&
                                                 row.EVENT_TYPE == EVENT_TYPE &&
-                                                row.EVENT_NO == cEventNo
+                                                row.EVENT_NO == EVENT_NO
                                           select row).AsNoTracking().FirstOrDefault();
 
                         // 3 - Check if Event Exist
@@ -575,7 +577,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         await _context.SaveChangesAsync();
 
                         // 9 - Updata Master,Event PK
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {cEventNo} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {EVENT_NO} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
                         transaction.Complete();
 
