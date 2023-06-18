@@ -364,10 +364,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXLCResultResponse>> Release(string? EXPORT_LC_NO,
-                                                                    int? EVENT_NO,
-                                                                    string? RECORD_TYPE,
-                                                                    string? REC_STATUS)
+        public async Task<ActionResult<EXLCResultResponse>> Release(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS)
         {
             EXLCResultResponse response = new();
 
@@ -593,9 +590,9 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         await _context.SaveChangesAsync();
 
-                        // 8 - Updata Master,Event PK << Use in Set_Delete not Release
-                        //await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {EVENT_NO} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
-                        //await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
+                        // 8 - Updata Master,Event PK
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {EVENT_NO} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
                         transaction.Complete();
 
                         response.Code = Constants.RESPONSE_OK;
