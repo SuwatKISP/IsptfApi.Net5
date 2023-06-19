@@ -27,15 +27,38 @@ namespace ISPTF.API.Controllers.MidRate
         }
 
         [HttpGet("select")]
-        public async Task<IEnumerable<PMidRateRsp>> GetAll(DateTime RateDate, string RateTime,string RateCcy)
+        public async Task<IEnumerable<PMidRateRsp>> GetAll(DateTime RateDate, string? RateTime,string? RateCcy)
         {
             DynamicParameters param = new();
             param.Add("@Rate_Date", RateDate);
-            param.Add("@Rate_Time", RateTime);
-            param.Add("@Rate_Ccy", RateCcy);
+            if (RateTime==null)
+            {
+                param.Add("@Rate_Time", "");
+            }
+            else
+            {
+                param.Add("@Rate_Time", RateTime);
+            }
+            if (RateCcy == null)
+            {
+                param.Add("@Rate_Ccy", "");
+            }
+            else
+            {
+                param.Add("@Rate_Ccy", RateCcy);
+            }
 
             var results = await _db.LoadData<PMidRateRsp, dynamic>(
                         storedProcedure: "usp_pMidRateSelect",
+                        param);
+            return results;
+        }
+        [HttpGet("selectmax")]
+        public async Task<IEnumerable<PMidRateMaxRsp>> selectMax()
+        {
+            DynamicParameters param = new();
+            var results = await _db.LoadData<PMidRateMaxRsp, dynamic>(
+                        storedProcedure: "usp_pMidRateSelectMax",
                         param);
             return results;
         }

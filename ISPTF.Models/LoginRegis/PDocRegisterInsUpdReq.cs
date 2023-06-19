@@ -10,5 +10,7 @@ namespace ISPTF.Models.LoginRegis
     {
         //public string ScreenMenu { get; set; }
         public string logType { get; set; }
+        public PDocRegInv[] DocRegInv { get; set; }
+
     }
 }

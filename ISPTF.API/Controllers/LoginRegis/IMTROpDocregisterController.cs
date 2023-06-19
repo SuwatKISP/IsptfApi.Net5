@@ -220,6 +220,31 @@ namespace ISPTF.API.Controllers.LoginRegis
             param.Add("@BPOFlag", pdocregisterreq.bpoFlag);
             param.Add("@Reg_RefNo4", pdocregisterreq.reg_RefNo4);
 
+            if (pdocregisterreq.DocRegInv.Length > 0)
+            {
+                var dt = new DataTable();
+
+                dt.Columns.Add("Reg_Docno", typeof(string));
+                dt.Columns.Add("Reg_Docseq", typeof(int));
+                dt.Columns.Add("CustCode", typeof(string));
+                dt.Columns.Add("InvNumber", typeof(string));
+                dt.Columns.Add("InvAmount", typeof(double));
+                dt.Columns.Add("InvUse", typeof(double));
+                System.Diagnostics.Debug.Write(dt);
+
+                for (int i = 0; i < pdocregisterreq.DocRegInv.Length; i++)
+                {
+                    dt.Rows.Add(
+                        pdocregisterreq.DocRegInv[i].Reg_Docno
+                        , pdocregisterreq.DocRegInv[i].Reg_Docseq
+                        , pdocregisterreq.DocRegInv[i].CustCode
+                        , pdocregisterreq.DocRegInv[i].InvNumber
+                        , pdocregisterreq.DocRegInv[i].InvAmount
+                        , pdocregisterreq.DocRegInv[i].InvUse
+                        );
+                }
+                param.Add("@pDocRegInv", dt.AsTableValuedParameter("TYPE_pDocRegisterInv"));
+            }
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
