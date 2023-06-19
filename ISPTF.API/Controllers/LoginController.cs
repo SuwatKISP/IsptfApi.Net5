@@ -40,12 +40,25 @@ namespace ISPTF.API.Controllers
             string EnPassword = PasswordCheck.Encryption(userLogin.password);
             try
             {
-                var item = (from row in _context.mUsers
+                var item = (from row in _context.mUsers 
                             where row.UserId == userLogin.username
                                  && row.UserPassword == EnPassword
                             select row).FirstOrDefault();
+
                 if (item != null)
                 {
+                    var itembrn = (from row in _context.mBranches
+                                   where row.Bran_Code == item.UserBran
+                                   select row).FirstOrDefault();
+                    string OnePUse ="N";
+                    if (itembrn!=null)
+                    {
+                        if (itembrn.OnePUse!=null && itembrn.OnePUse != "" )
+                        {
+                            OnePUse = itembrn.OnePUse;
+                        }
+                    }
+
                     var response = new LoginReturn();
                     response = new LoginReturn
                     {
@@ -55,7 +68,9 @@ namespace ISPTF.API.Controllers
                         userName = item.UserName,
                         userLevel = item.UserLevel,
                         userRole = item.UserDept,
+                        OnePUse =OnePUse,                     
                         userToken = jwtAuth.Authentication(userLogin.username, userLogin.password),
+ 
                         //PasswordEncrypted= PasswordCheck.Encryption(userLogin.password)
                     };
                     return Ok(response);

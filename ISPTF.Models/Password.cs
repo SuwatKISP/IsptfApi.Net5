@@ -23,7 +23,9 @@ namespace ISPTF.Models
         public string userDept { get; set; }
         public string userLevel { get; set; }
         public string userRole { get; set; }
+        public string OnePUse { get; set; }        
         public string userToken { get; set; }
+   
         //public string PasswordEncrypted { get; set; }
     }
 }
