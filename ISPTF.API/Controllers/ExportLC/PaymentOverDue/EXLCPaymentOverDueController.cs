@@ -180,6 +180,17 @@ namespace ISPTF.API.Controllers.ExportLC
             return BadRequest(response);
         }
 
+        [HttpGet("GetOverDue")]
+        public async Task<IEnumerable<Q_EXLCGetOverDueRsp>> GetOverDue(string? EXPORT_LC_NO)
+        {
+            DynamicParameters param = new();
+            param.Add("EXPORT_LC_NO", EXPORT_LC_NO);
+            var results = await _db.LoadData<Q_EXLCGetOverDueRsp, dynamic>(
+                        storedProcedure: "usp_pEXLC_GetOverDue",
+                        param);
+            return results;
+        }
+
         [HttpPost("save")]
         public async Task<ActionResult<PEXLCPPaymentPPayDetailsSaveResponse>> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
         {
