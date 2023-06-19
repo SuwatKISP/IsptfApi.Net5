@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ISPTF.API.Controllers.ExportADV
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXADVAdvicingController : ControllerBase
@@ -29,6 +29,170 @@ namespace ISPTF.API.Controllers.ExportADV
             _db = db;
             _context = context;
         }
+
+        [HttpGet("OriginalLCLoad")]
+        public async Task<ActionResult<OriginalLCLoadListPageResponse>> LoadList(string? CenterID, string? LCNo, string? MTType, string? BenName, string? Page, string? PageSize)
+        {
+            OriginalLCLoadListPageResponse response = new OriginalLCLoadListPageResponse();
+            var USER_ID = User.Identity.Name;
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CenterID, Page, PageSize is required";
+                response.Data = new List<Q_OriginalLCLoadListPageRsp>();
+                return BadRequest(response);
+            }
+            //if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "USER_ID is required";
+            //    response.Data = new List<Q_IssuePCNewListPageRsp>();
+            //    return BadRequest(response);
+            //}
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                //param.Add("@ListType", ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@LCNo", LCNo);
+                param.Add("@MTType", MTType);
+                param.Add("@BenName", BenName);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (LCNo == null)
+                {
+                    param.Add("@LCNo", "");
+                }
+                if (MTType == null)
+                {
+                    param.Add("@MTType", "");
+                }
+                if (BenName == null)
+                {
+                    param.Add("@BenName", "");
+                }
+
+                var results = await _db.LoadData<Q_OriginalLCLoadListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXAD_AdvisingLCOriginalLoadListPage",
+                            param);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_OriginalLCLoadListPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_OriginalLCLoadListPageRsp>();
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet("list")]
+        public async Task<ActionResult<AdvisingListPageResponse>> List(string? TypeLC, string? ListType, string? CenterID, string? EXPORT_ADVICE_NO, string? LC_NO, string? BENEFICIARY_ID, string? BENEFICIARY_INFO, string? Page, string? PageSize)
+        {
+            AdvisingListPageResponse response = new AdvisingListPageResponse();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(TypeLC) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "TypeLC, ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_AdvisingListPageRsp>();
+                return BadRequest(response);
+            }
+            if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "USER_ID is required";
+                response.Data = new List<Q_AdvisingListPageRsp>();
+                return BadRequest(response);
+            }
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@TypeLC", TypeLC);
+                param.Add("@ListType", ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
+                param.Add("@LC_NO", LC_NO);
+                param.Add("@BENEFICIARY_ID", BENEFICIARY_ID);
+                param.Add("@BENEFICIARY_INFO", BENEFICIARY_INFO);
+                param.Add("@UserCode", USER_ID);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (EXPORT_ADVICE_NO == null)
+                {
+                    param.Add("@EXPORT_ADVICE_NO", "");
+                }
+                if (LC_NO == null)
+                {
+                    param.Add("@LC_NO", "");
+                }
+                if (BENEFICIARY_ID == null)
+                {
+                    param.Add("@BENEFICIARY_ID", "");
+                }
+                if (BENEFICIARY_INFO == null)
+                {
+                    param.Add("@BENEFICIARY_INFO", "");
+                }
+
+                var results = await _db.LoadData<Q_AdvisingListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXAD_AdvisingLCListPage",
+                            param);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_AdvisingListPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_AdvisingListPageRsp>();
+            }
+            return BadRequest(response);
+        }
+
+
 
         [HttpGet("test")]
         public async Task<ActionResult<PEXADResponse>> Test()

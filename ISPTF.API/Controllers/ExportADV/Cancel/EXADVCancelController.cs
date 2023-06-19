@@ -30,6 +30,90 @@ namespace ISPTF.API.Controllers.ExportADV
             _context = context;
         }
 
+        [HttpGet("list")]
+        public async Task<ActionResult<CancelLCListPageResponse>> List(string? ListType, string? CenterID, string? EXPORT_ADVICE_NO, string? LC_NO, string? BENEFICIARY_ID, string? BENEFICIARY_INFO, string? Page, string? PageSize)
+        {
+            CancelLCListPageResponse response = new CancelLCListPageResponse();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new List<Q_CancelLCListPageRsp>();
+                return BadRequest(response);
+            }
+            if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "USER_ID is required";
+                response.Data = new List<Q_CancelLCListPageRsp>();
+                return BadRequest(response);
+            }
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@ListType", ListType);
+                param.Add("@CenterID", CenterID);
+                param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
+                param.Add("@LC_NO", LC_NO);
+                param.Add("@BENEFICIARY_ID", BENEFICIARY_ID);
+                param.Add("@BENEFICIARY_INFO", BENEFICIARY_INFO);
+                param.Add("@UserCode", USER_ID);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                if (EXPORT_ADVICE_NO == null)
+                {
+                    param.Add("@EXPORT_ADVICE_NO", "");
+                }
+                if (LC_NO == null)
+                {
+                    param.Add("@LC_NO", "");
+                }
+                if (BENEFICIARY_ID == null)
+                {
+                    param.Add("@BENEFICIARY_ID", "");
+                }
+                if (BENEFICIARY_INFO == null)
+                {
+                    param.Add("@BENEFICIARY_INFO", "");
+                }
+
+                var results = await _db.LoadData<Q_CancelLCListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_EXAD_CancelLCListPage",
+                            param);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_CancelLCListPageRsp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_CancelLCListPageRsp>();
+            }
+            return BadRequest(response);
+        }
+
         [HttpGet("select")]
         public async Task<ActionResult<PEXADPPaymentResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
         {
