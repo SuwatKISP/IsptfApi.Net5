@@ -112,7 +112,50 @@ namespace ISPTF.API.Controllers.PackingCredit
             return BadRequest(response);
         }
 
+        [HttpGet("select")]
+        public async Task<ActionResult<PEXPCPPaymentResponse>> Select(string? PACKING_NO, string? record_type, string? rec_status, int? event_no, string? LFROM)
+        {
+            PEXPCPPaymentResponse response = new();
+            response.Data = new();
 
+            // Validate
+            if (string.IsNullOrEmpty(PACKING_NO) || string.IsNullOrEmpty(record_type) || string.IsNullOrEmpty(rec_status) || event_no == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
+                return BadRequest(response);
+            }
+
+            try
+            {
+                // pExad
+                var expc = (from row in _context.pExpcs
+                            where row.PACKING_NO == PACKING_NO &&
+                                  row.record_type == record_type &&
+                                  row.rec_status == rec_status &&
+                                  row.event_no == event_no
+                            select row).FirstOrDefault();
+
+                if (expc != null)
+                {
+                    // pPayment
+                    if (expc.pay_instruc == "1")
+                    {
+                        response.Data.PPAYMENT = await EXHelper.GetPPayment(_context, expc.received_no);
+                    }
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Data.PEXPC = expc;
+                    return Ok(response);
+                }
+                response.Message = "PACKING_NO does not exist";
+            }
+            catch (Exception e)
+            {
+                response.Message = e.ToString();
+            }
+            response.Code = Constants.RESPONSE_ERROR;
+            return BadRequest(response);
+        }
 
 
 
