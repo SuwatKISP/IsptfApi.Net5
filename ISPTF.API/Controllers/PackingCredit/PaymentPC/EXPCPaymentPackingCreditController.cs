@@ -26,7 +26,7 @@ namespace ISPTF.API.Controllers.PackingCredit
         private readonly ISPTFContext _context;
 
         //private const string BUSINESS_TYPE = "4";
-        //private const string EVENT_TYPE = "Accept Due";
+        private const string EVENT_TYPE = "Payment";
 
         public EXPCPaymentPackingCreditController(ISqlDataAccess db, ISPTFContext context)
         {
@@ -113,39 +113,78 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXPCPPaymentResponse>> Select(string? PACKING_NO, string? record_type, string? rec_status, int? event_no, string? LFROM)
+        public async Task<ActionResult<PEXPCPPaymentResponse>> Select(string? PACKING_NO, string? LFROM)
         {
             PEXPCPPaymentResponse response = new();
             response.Data = new();
 
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO) || string.IsNullOrEmpty(record_type) || string.IsNullOrEmpty(rec_status) || event_no == null)
+            if (string.IsNullOrEmpty(PACKING_NO) || string.IsNullOrEmpty(LFROM))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
+                response.Message = "EXPORT_ADVICE_NO, LFROM is required";
                 return BadRequest(response);
             }
 
             try
             {
-                // pExad
-                var expc = (from row in _context.pExpcs
-                            where row.PACKING_NO == PACKING_NO &&
-                                  row.record_type == record_type &&
-                                  row.rec_status == rec_status &&
-                                  row.event_no == event_no
-                            select row).FirstOrDefault();
-
-                if (expc != null)
+                if (LFROM == "false")
                 {
-                    // pPayment
-                    if (expc.pay_instruc == "1")
+                    // 0 - Get Master
+                    var eXpcMaster = (from row in _context.pExpcs
+                                      where row.PACKING_NO == PACKING_NO &&
+                                            row.record_type == "MASTER"
+                                      select row).FirstOrDefault();
+                    if (eXpcMaster == null)
                     {
-                        response.Data.PPAYMENT = await EXHelper.GetPPayment(_context, expc.received_no);
+                        response.Message = "PACKING_NO does not exist";
+                        response.Code = Constants.RESPONSE_ERROR;
+                        return BadRequest(response);
                     }
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Data.PEXPC = expc;
-                    return Ok(response);
+
+                    var event_no = eXpcMaster.event_no + 1;
+
+                    // 1 - Get Event
+                    var eXpcEvent = (from row in _context.pExpcs
+                                where row.PACKING_NO == PACKING_NO &&
+                                      row.event_type == EVENT_TYPE &&
+                                      row.event_no == event_no &&
+                                      row.record_type == "EVENT" &&
+                                      (row.rec_status == "P" || row.rec_status == "W")
+                                select row).FirstOrDefault();
+
+                    if (eXpcEvent == null)
+                    {
+                        response.Data.PEXPC = eXpcMaster;
+                    }
+                    else
+                    {
+                        response.Data.PEXPC = eXpcEvent;
+                    }
+                }
+                else
+                {
+                    //"select * from pExpc where packing_no='" & sPackNo & "'  and EVENT_TYPE ='" & eventType & "'  and rec_status ='R' and Event_no =" & Val(LbqEvent.Caption) & " and record_type='EVENT' "
+                    var eXpcEvent = (from row in _context.pExpcs
+                                     where row.PACKING_NO == PACKING_NO &&
+                                           row.event_type == EVENT_TYPE &&
+                                           //row.event_no == event_no &&
+                                           row.record_type == "EVENT" &&
+                                           row.rec_status == "R"
+                                     select row).FirstOrDefault();
+                }
+
+                // pPayment
+                if (response.Data.PEXPC.pay_instruc == "1")
+                {
+                    response.Data.PPAYMENT = await EXHelper.GetPPayment(_context, response.Data.PEXPC.received_no);
+                }
+                response.Code = Constants.RESPONSE_OK;
+                return Ok(response);
+
+                if (response.Data.PEXPC != null)
+                {
+                    
                 }
                 response.Message = "PACKING_NO does not exist";
             }
