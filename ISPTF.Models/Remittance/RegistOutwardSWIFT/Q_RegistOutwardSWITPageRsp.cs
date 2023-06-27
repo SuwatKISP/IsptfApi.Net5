@@ -8,7 +8,7 @@ namespace ISPTF.Models.Remittance
 {
     public class Q_RegistOutwardSWITPageRsp
     {
-        public int Rcount { get; set; }
+        public int RCount { get; set; }
         public string RemRefNo { get; set; }
         public string RemBankRefNo { get; set; }
         public string Cust_Code { get; set; }

@@ -48,6 +48,24 @@ namespace ISPTF.API.Controllers
                         param);
             return results;
         }
+
+        [HttpGet("selectCLID")]
+        public async Task<IEnumerable<BOT_Classification>> GetCLID(string? clid)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CL_ID", clid);
+
+            //if (clid == "" || clid == null)
+            //{
+            //    param.Add("@CL_ID", "");
+            //}
+
+            var results = await _db.LoadData<BOT_Classification, dynamic>(
+                        storedProcedure: "usp_BotClassificationCLIDSelect",
+                        param);
+            return results;
+        }
+
         [HttpPost("insert")]
         public async Task<ActionResult<List<BOT_Classification>>> BotClassificationInsert([FromBody] BOT_Classification botclassification)
         {
