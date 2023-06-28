@@ -22,7 +22,7 @@ namespace ISPTF.API.Controllers
                 from row in _context.pPayments
                 where
                 row.RpReceiptNo == RECEIPT_NO
-                select row).AsNoTracking().FirstOrDefaultAsync();
+                select row).FirstOrDefaultAsync();
             return pPayment;
         }
 
@@ -33,7 +33,7 @@ namespace ISPTF.API.Controllers
                 where
                 row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
                 row.REC_STATUS == REC_STATUS
-                select row).AsNoTracking().FirstOrDefaultAsync();
+                select row).FirstOrDefaultAsync();
             return pTransfer;
         }
 
@@ -56,7 +56,7 @@ namespace ISPTF.API.Controllers
                 row.CTL_Code == "PAID" &&
                 row.CTL_ID == refTran
                 orderby row.CTL_ID
-                select row).AsNoTracking().FirstOrDefaultAsync();
+                select row).FirstOrDefaultAsync();
             if (mControl == null)
             {
                 prefix = "DDR";
@@ -72,7 +72,7 @@ namespace ISPTF.API.Controllers
                 row.pRefBran == CENTER_ID &&
                 row.pRefYear == DateTime.Now.Year.ToString() &&
                 row.pRefPrefix == prefix
-                select row).AsNoTracking().FirstOrDefaultAsync();
+                select row).FirstOrDefaultAsync();
             if (pReferenceNO == null)
             {
                 pReferenceNO = new();
@@ -92,7 +92,6 @@ namespace ISPTF.API.Controllers
                 pReferenceNO.InUse = false;
                 pReferenceNO.LastUpdate = DateTime.Now;
                 pReferenceNO.UserCode = USER_ID;
-                _context.pReferenceNos.Update(pReferenceNO);
             }
             int seq = pReferenceNO.pRefSeq.Value;
             return CENTER_ID + prefix + DateTime.Now.ToString("yy") + seq.ToString("000000");
@@ -150,6 +149,26 @@ namespace ISPTF.API.Controllers
             return 0;
         }
 
-        
+        public static string GenSWNo(ISPTFContext _context)
+        {
+            var year = DateTime.Now.ToString("yy");
+            var max = _context.pSWExports.Max(x => x.AutoNum);
+            if(max == null)
+            {
+                return year + "00000001";
+            }
+            else
+            {
+                if (max.Substring(0, 2) == year)
+                {
+                    return year + (int.Parse(max.Substring(2, 8).TrimStart('0')) + 1).ToString("00000000.##");
+                }
+                else
+                {
+                    return year + "00000001";
+                }
+                return "";
+            }
+        }
     }
 }
