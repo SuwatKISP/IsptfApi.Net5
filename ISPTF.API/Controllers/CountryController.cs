@@ -38,6 +38,19 @@ namespace ISPTF.API.Controllers
                 param);
             return results;
         }
+
+        [HttpGet("selectCntyCode")]
+        public async Task<IEnumerable<MCountry>> GetCntyCode(string? cntycode)
+        {
+            DynamicParameters param = new DynamicParameters();
+                param.Add("@Cnty_Code", cntycode);
+
+            var results = await _db.LoadData<MCountry, dynamic>(
+                storedProcedure: "usp_mcountry_CntyCode_select",
+                param);
+            return results;
+        }
+
         [HttpPost("insert")]
         public async Task<ActionResult<List<MCountry>>> Insert([FromBody] MCountry country)
         {

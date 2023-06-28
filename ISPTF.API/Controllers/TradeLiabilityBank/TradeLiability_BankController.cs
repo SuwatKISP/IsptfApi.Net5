@@ -27,14 +27,12 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
             _db = db;
         }
         [HttpGet("ReferenceNoList")]
-        public async Task<IEnumerable<ReferenceNoLisBanktRsp>> ReferenceList(string? CenterID, string? CustCode, string? FacilityNo,string? Bank_Code, string? Credit_Ccy, string? ReferDocNo, int? Page, int? PageSize)
+        public async Task<IEnumerable<ReferenceNoLisBanktRsp>> ReferenceList(string? CenterID, string? CustCode, string? CustName, string? ReferDocNo, int? Page, int? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@CenterID", CenterID);
             param.Add("@CustCode", CustCode);
-            param.Add("@Bank_Code", Bank_Code);
-            param.Add("@Credit_Ccy", Credit_Ccy);
-            param.Add("@Facility_No", FacilityNo);
+            param.Add("@CustName", CustName);
             param.Add("@Refer_DocNo", ReferDocNo);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
@@ -43,17 +41,9 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
             {
                 param.Add("@CustCode", "");
             }
-            if (Bank_Code == null)
+            if (CustName == null)
             {
-                param.Add("@Bank_Code", "");
-            }
-            if (Credit_Ccy == null)
-            {
-                param.Add("@Credit_Ccy", "");
-            }
-            if (FacilityNo == null)
-            {
-                param.Add("@Facility_No", "");
+                param.Add("@CustName", "");
             }
             if (ReferDocNo == null)
             {
@@ -61,7 +51,7 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
             }
 
             var results = await _db.LoadData<ReferenceNoLisBanktRsp, dynamic>(
-                        storedProcedure: "usp_TradeLiability_Bank_RefNo_SelectPage",
+                        storedProcedure: "usp_TradeLiability_Bank_RefNo_List",
                         param);
             return results;
         }
@@ -81,11 +71,12 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
 
 
         [HttpGet("InsGrdAppvList")]
-        public async Task<IEnumerable<InsGrdAppvBankRsp>> GetInsGrdAppvList(string? CenterID,string? Bank_Code, string? CustCode, string? CustName, int? Page, int? PageSize)
+        public async Task<IEnumerable<InsGrdAppvBankRsp>> GetInsGrdAppvList(string? ListType,string? CenterID, string? UserCode,string? Bank_Code, string? CustCode, string? CustName, int? Page, int? PageSize)
         {
             DynamicParameters param = new();
-
+            param.Add("@listtype", ListType);
             param.Add("@CenterID", CenterID);
+            param.Add("@UserCode", UserCode);
             param.Add("@Bank_Code", Bank_Code);
             param.Add("@Cust_Code", CustCode);
             param.Add("Cust_Name", CustName);

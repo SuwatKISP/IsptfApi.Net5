@@ -40,6 +40,20 @@ namespace ISPTF.API.Controllers
                         param);
             return results;
         }
+
+        [HttpGet("selectCLFMCode")]
+        public async Task<IEnumerable<BOT_ISIC>> GetClfmCode(string? clfmcode)
+        {
+            DynamicParameters param = new DynamicParameters();
+
+                param.Add("@CL_FM_CODE", clfmcode);
+
+            var results = await _db.LoadData<BOT_ISIC, dynamic>(
+                        storedProcedure: "usp_BotISIC_CL_FM_Code_Select",
+                        param);
+            return results;
+        }
+
         [HttpPost("insert")]
         public async Task<ActionResult<List<BOT_ISIC>>> BotISICInsert([FromBody] BOT_ISIC botisic)
         {
