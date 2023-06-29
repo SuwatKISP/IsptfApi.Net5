@@ -484,21 +484,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             row.SendFlag = "R";
                         }
 
-
-                        if (data.PEXLC.WithOutFlag == "N")
-                        {
-                            var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
-                        }
-                        else if (data.PEXLC.WithOutFlag == "Y")
-                        {
-                            //Call UpdateBankLiab
-                            //var result = await ExportLCHelper.UpdateBankLiability(_context, data.PEXLC);
-                        }
-
                         transaction.Complete();
-
-
-
 
                         response.Code = Constants.RESPONSE_OK;
                         response.Message = "Export L/C Released";
