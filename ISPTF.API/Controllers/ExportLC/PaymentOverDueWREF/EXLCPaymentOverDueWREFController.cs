@@ -525,6 +525,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         else if(data.PEXLC.WithOutFlag == "Y")
                         {
                             //Call UpdateBankLiab
+                            //var result = await ExportLCHelper.UpdateBankLiability(_context, data.PEXLC);
                         }
 
                         transaction.Complete();
