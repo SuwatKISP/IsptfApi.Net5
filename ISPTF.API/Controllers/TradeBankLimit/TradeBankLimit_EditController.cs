@@ -79,7 +79,6 @@ namespace ISPTF.API.Controllers.TradeBankLimit
         public async Task<ActionResult<PBankLimitRsp>> GetSelect(string? Bank_Code, string? Facility_No)
         {
             DynamicParameters param = new();
-
             param.Add("@Bank_Code", Bank_Code);
             param.Add("@Facility_No", Facility_No);
 
@@ -88,7 +87,7 @@ namespace ISPTF.API.Controllers.TradeBankLimit
                size: 5215585);
 
             var results = await _db.LoadData<PBankLimitRsp, dynamic>(
-                        storedProcedure: "usp_pBankLimit_Select",
+                        storedProcedure: "usp_pBankLimit_SelectEdit",
                         param);
             var PBankLimitRsp = param.Get<dynamic>("@PBankLimitRsp");
 

@@ -44,5 +44,123 @@ namespace ISPTF.API.Controllers.QueryReport
                 param);
             return results;
         }
+
+        [HttpGet("RemittanceReport/DailyTransaction/ListRefundTax")]
+        public async Task<IEnumerable<TmpRefundTaxReport>> GetRemittRefundTax(string? CenterID, string? CustCode , DateTime? TranDateFrom, DateTime? TranDateTo, string? Module)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@modTrd", "N");
+            param.Add("@CenterID", CenterID);
+            param.Add("@CustCode", CustCode);
+            param.Add("@TranDateFrom", TranDateFrom);
+            param.Add("@TranDateTo", TranDateTo);
+            param.Add("@Module", Module);
+
+            if (Module == "" || Module == null)
+            {
+                param.Add("@Module", null);
+            }
+            if (CustCode == null)
+            {
+                param.Add("@CustCode", "");
+            }
+
+
+            var results = await _db.LoadData<TmpRefundTaxReport, dynamic>(
+                storedProcedure: "usp_QReport_DailyTran_RefundTax",
+                param);
+            return results;
+        }
+
+        [HttpGet("RemittanceReport/QueryDataComm")]
+        public async Task<IEnumerable<TmpCommReport>> GetRemittDailyComm(string? CenterID, string? CustCode, string? CollRefund, DateTime? TranDate)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CenterID", CenterID);
+            param.Add("@CustCode", CustCode);
+            param.Add("@CollRefund", CollRefund);
+            param.Add("@TranDate", TranDate);
+
+            if (CustCode == null)
+            {
+                param.Add("@CustCode", "");
+            }
+
+            var results = await _db.LoadData<TmpCommReport, dynamic>(
+                storedProcedure: "usp_QReport_Remitt_Commission",
+                param);
+            return results;
+        }
+
+        [HttpGet("TradeFinanceReport/DailyTransaction/ListRefundTax")]
+        public async Task<IEnumerable<TmpRefundTaxReport>> GetTradeRefundTax(string? CenterID, string? CustCode , DateTime? TranDateFrom, DateTime? TranDateTo,string? Module)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@modTrd", "Y");
+            param.Add("@CenterID", CenterID);
+            param.Add("@CustCode", CustCode);
+            param.Add("@TranDateFrom", TranDateFrom);
+            param.Add("@TranDateTo", TranDateTo);
+            param.Add("@Module", Module);
+
+            if (Module == "" || Module == null)
+            {
+                param.Add("@Module", null);
+            }
+            if (CustCode == null)
+            {
+                param.Add("@CustCode", "");
+            }
+            var results = await _db.LoadData<TmpRefundTaxReport, dynamic>(
+                storedProcedure: "usp_QReport_DailyTran_RefundTax",
+                param);
+            return results;
+        }
+
+        [HttpGet("TradeFinanceReport/QueryDataFX")]
+        public async Task<IEnumerable<TmpForwardReport>> GetTradDataFX(string? CenterID, string? CustCode, DateTime? TranDate)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CenterID", CenterID);
+            param.Add("@CustCode", CustCode);
+            param.Add("@TranDate", TranDate);
+
+            if (CustCode == null)
+            {
+                param.Add("@CustCode", "");
+            }
+
+            var results = await _db.LoadData<TmpForwardReport, dynamic>(
+                storedProcedure: "usp_QReport_Trade_DailyFX",
+                param);
+            return results;
+        }
+
+        [HttpGet("TradeFinanceReport/1PResponse")]
+        public async Task<IEnumerable<TmpCon1PReport>> Get1P(string? CenterID, string? UserCode, string? ProductCode , DateTime? TranDateFrom, DateTime? TranDateTo)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CenterID", CenterID);
+            param.Add("@UserCode", UserCode);
+            param.Add("@ProductCode", ProductCode);
+            param.Add("@TranDateFrom", TranDateFrom);
+            param.Add("@TranDateTo", TranDateTo);
+
+            //if (CustCode == null)
+            //{
+            //    param.Add("@CustCode", "");
+            //}
+
+            var results = await _db.LoadData<TmpCon1PReport, dynamic>(
+                storedProcedure: "usp_QReport_Trade_1PResponse",
+                param);
+            return results;
+        }
+
+
+
+
+
+
     }
 }

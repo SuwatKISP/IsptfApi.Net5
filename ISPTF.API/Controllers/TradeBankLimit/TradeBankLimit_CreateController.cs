@@ -79,7 +79,6 @@ namespace ISPTF.API.Controllers.TradeBankLimit
         public async Task<ActionResult<PBankLimitRsp>> GetSelect(string? Bank_Code, string? Facility_No)
         {
             DynamicParameters param = new();
-
             param.Add("@Bank_Code", Bank_Code);
             param.Add("@Facility_No", Facility_No);
 
