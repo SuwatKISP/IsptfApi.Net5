@@ -452,6 +452,149 @@ namespace ISPTF.API.Controllers.ExportLC
             }
         }
 
+        [HttpPost("release")]
+        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        {
+            EXLCResultResponse response = new();
+            // Class validate
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).FirstOrDefault();
+
+                        // 1 - Check if Master Exists
+                        if (pExlcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
+
+
+                        var targetEventNo = pExlcMaster.EVENT_NO + 1;
+
+                        // 2 - Select Existing EVENT
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.BUSINESS_TYPE == BUSINESS_TYPE
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                        // 3 - Check Event Exists
+                        if (pExlcEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event does not exists";
+                            return BadRequest(response);
+                        }
+
+                        // 4 - Insert/Update EVENT
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlc eventRow = pExlcEvent;
+
+                        var opEvent = "";
+                        if (eventRow.METHOD.Contains("DEBIT"))
+                        {
+                            opEvent = "DR";
+                        }
+                        else if (eventRow.METHOD.Contains("CREDIT"))
+                        {
+                            opEvent = "CR";
+                        }
+                        if (opEvent != "")
+                        {
+                            /*
+                             Req1PSys = Send1PTxn(txtBeneCode.Text, TxtExLcCode.Text, OPSeqNo, "EXLC", op_event, _
+                                txtAcctNo(1).Text, txtAmtDebt(1).Text, _
+                                txtAcctNo(2).Text, txtAmtDebt(2).Text, _
+                                txtAcctNo(3).Text, txtAmtDebt(3).Text)
+                                If Req1PSys = False Then
+                                    cSql = "Update pExlc set   REC_STATUS ='W'   where EXPORT_LC_NO='" & TxtExLcCode.Text & "' " _
+                                           & "and record_type='EVENT' and Event_No =" & OPSeqNo & ""
+                                    cn.Execute cSql
+                                    framRelease.Visible = False
+                                    CmdDel.Enabled = True
+                                    CmdSave.Enabled = False
+                                    CmdPrint.Enabled = False
+                                     CmdExit.Enabled = True: SSTab1.Enabled = True
+                                    TxtExLcCode.Enabled = True: cmdFndLC.Enabled = True
+                                    Exit Sub
+                                End If
+                            */
+                        }
+
+
+                        // 4 - Update Master
+                        pExlcMaster.AUTH_CODE = USER_ID;
+                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
+                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
+
+
+
+                        await _context.SaveChangesAsync();
+
+                        // 5 - Update Master/Event PK to Release
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+
+
+                        /*
+                         * FRONT OR BACK LOGIC
+                         If Duplicate = True Then
+                            If ChkReleaseMaster("EXLC", Trim(TxtExLcCode.Text)) = True Then CmdDel.Enabled = False: framRelease.Visible = False: CmdSave.Enabled = False: Exit Sub
+                         End If
+                         */
+
+                        // 6 - Update GL Flag
+                        var gls = (from row in _context.pDailyGLs
+                                   where row.VouchID == data.PEXLC.VOUCH_ID &&
+                                            row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
+                                   select row).ToListAsync();
+
+                        foreach (var row in await gls)
+                        {
+                            row.SendFlag = "R";
+                        }
+
+
+                        var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+                       
+                        transaction.Complete();
+
+
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Export L/C Released";
+                        return Ok(response);
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
         [HttpPost("delete")]
         public async Task<ActionResult<EXLCResultResponse>> Delete([FromBody] PEXLCDeleteRequest data)
         {
