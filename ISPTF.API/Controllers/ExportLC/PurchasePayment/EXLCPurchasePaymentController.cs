@@ -289,6 +289,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             foreach (var row in await existingPaymentRows)
                             {
                                 _context.pPayments.Remove(row);
+
                             }
 
                             var existingPPayDetailRows = (from row in _context.pPayDetails
@@ -312,6 +313,8 @@ namespace ISPTF.API.Controllers.ExportLC
                             // Update
                             _context.pExlcs.Update(eventRow);
                         }
+
+                        // TODO
 
                         await _context.SaveChangesAsync();
                         transaction.Complete();
@@ -480,8 +483,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         else if (data.PEXLC.WithOutFlag == "Y")
                         {
-                            //Call UpdateBankLiab
-                            //var result = await ExportLCHelper.UpdateBankLiability(_context, data.PEXLC);
+                            var result = await ExportLCHelper.UpdateBankLiability(_context, data.PEXLC);
                         }
 
                         transaction.Complete();

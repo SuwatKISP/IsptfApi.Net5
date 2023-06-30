@@ -320,22 +320,22 @@ namespace ISPTF.API.Controllers.ExportLC
                                                       where rowMother.Refer_Cust == parentCode &&
                                                             rowMother.Refer_Facility == parentFacility
                                                       select rowMother).ToListAsync();
-                        foreach(var row2 in custLimitMothers)
+                        foreach (var row2 in custLimitMothers)
                         {
-                            if(row2.Share_Amount == null)
+                            if (row2.Share_Amount == null)
                             {
                                 row2.Share_Amount = 0;
                             }
                             row2.Share_Amount = (double)row2.Share_Amount + liabilityAmount;
                             shareUse = (double)row2.Share_Amount;
 
-                            if(row2.Share_Type == null)
+                            if (row2.Share_Type == null)
                             {
                                 row2.Share_Type = "";
                             }
                             shareType = row2.Share_Type;
 
-                            if(row2.Facility_Type == "T" && row2.Revol_Flag == "N")
+                            if (row2.Facility_Type == "T" && row2.Revol_Flag == "N")
                             {
                                 row2.Credit_Amount = row2.Credit_Amount - liabilityAmount;
                             }
@@ -348,16 +348,16 @@ namespace ISPTF.API.Controllers.ExportLC
                                                       row3.Facility_No == row.Facility_No
                                                 select row3).ToListAsync();
 
-                        foreach(var row3 in custShares)
+                        foreach (var row3 in custShares)
                         {
-                            if(row3.Share_Used == null)
+                            if (row3.Share_Used == null)
                             {
                                 row3.Share_Used = 0;
                             }
                             row3.Share_Used = row3.Share_Used + liabilityAmount;
                         }
 
-                        
+
 
                     }
 
@@ -365,12 +365,12 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     // 8 - For none fix
                     var custLimitNones = await (from row in _context.pCustLimits
-                                            where row.Share_Flag == "Y" &&
-                                                  row.Share_Type == "N" &&
-                                                  row.Status != "D" &&
-                                                  row.Cust_Code == parentCode &&
-                                                  row.Facility_No == parentFacility
-                                            select row).ToListAsync();
+                                                where row.Share_Flag == "Y" &&
+                                                      row.Share_Type == "N" &&
+                                                      row.Status != "D" &&
+                                                      row.Cust_Code == parentCode &&
+                                                      row.Facility_No == parentFacility
+                                                select row).ToListAsync();
 
                     // No Use as of
                     //'        ParentCode = rsTmp!Cust_Code
@@ -380,20 +380,20 @@ namespace ISPTF.API.Controllers.ExportLC
                     // 9 - Update Share Group Child (Liability Child)
 
                     var viewCustLiabilities = await (from row in _context.ViewCustLiabs
-                                               where row.Facility_No.StartsWith("MX") &&
-                                                     row.Refer_Cust == parentCode &&
-                                                     row.Refer_Facility == parentFacility
-                                               select row).ToListAsync();
+                                                     where row.Facility_No.StartsWith("MX") &&
+                                                           row.Refer_Cust == parentCode &&
+                                                           row.Refer_Facility == parentFacility
+                                                     select row).ToListAsync();
 
-                    foreach(var row in viewCustLiabilities)
+                    foreach (var row in viewCustLiabilities)
                     {
                         childCode = row.Cust_Code;
                         facilityNo = row.Facility_No;
                         CCY = row.Currency;
                         amount = row.Liability;
 
-                        if (CCY == "ODU" || 
-                            CCY == "PDU" || 
+                        if (CCY == "ODU" ||
+                            CCY == "PDU" ||
                             CCY == "THB")
                         {
                             cAmountTHB = Math.Truncate(amount * 100) / 100;
@@ -405,22 +405,22 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                     }
 
-                    
-                    var custLimitChilds2 = await (from row in _context.pCustLimits
-                                                where row.Refer_Cust == parentCode &&
-                                                      row.Status != "I" &&
-                                                      row.Cust_Code != childCode &&
-                                                      row.Facility_No == parentFacility
-                                                select row).ToListAsync();
 
-                    foreach(var row in custLimitChilds2)
+                    var custLimitChilds2 = await (from row in _context.pCustLimits
+                                                  where row.Refer_Cust == parentCode &&
+                                                        row.Status != "I" &&
+                                                        row.Cust_Code != childCode &&
+                                                        row.Facility_No == parentFacility
+                                                  select row).ToListAsync();
+
+                    foreach (var row in custLimitChilds2)
                     {
-                        if(row.Ear_Amount == null)
+                        if (row.Ear_Amount == null)
                         {
                             row.Ear_Amount = 0;
                         }
                         row.Ear_Amount = row.Ear_Amount + cAmountTHB;
-                        if(row.Ear_Amount < 0)
+                        if (row.Ear_Amount < 0)
                         {
                             row.Ear_Amount = 0;
                         }
@@ -431,9 +431,9 @@ namespace ISPTF.API.Controllers.ExportLC
                     // 10 - Update Share Group Parent
 
                     var viewCustLiabilityParents = await (from row in _context.ViewCustLiabs
-                                                     where row.Cust_Code == parentCode &&
-                                                           row.Facility_No == parentFacility
-                                                     select row).ToListAsync();
+                                                          where row.Cust_Code == parentCode &&
+                                                                row.Facility_No == parentFacility
+                                                          select row).ToListAsync();
                     foreach (var row in viewCustLiabilityParents)
                     {
                         childCode = row.Cust_Code;
@@ -455,11 +455,11 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
 
                     var custLimitParents2 = await (from row in _context.pCustLimits
-                                                 where row.Refer_Cust == parentCode &&
-                                                       row.Status != "I" &&
-                                                       row.Cust_Code != childCode &&
-                                                       row.Facility_No == parentFacility
-                                                 select row).ToListAsync();
+                                                   where row.Refer_Cust == parentCode &&
+                                                         row.Status != "I" &&
+                                                         row.Cust_Code != childCode &&
+                                                         row.Facility_No == parentFacility
+                                                   select row).ToListAsync();
 
                     foreach (var row in custLimitParents2)
                     {
@@ -480,17 +480,17 @@ namespace ISPTF.API.Controllers.ExportLC
                     // 11 - Update Group Amount
 
                     var groupCustLimits = await (from row in _context.pCustLimits
-                                                     where !row.Facility_No.StartsWith("MX") &&
-                                                           row.Share_Flag == "Y" &&
-                                                           row.Share_Type == "F" &&
-                                                           row.Cust_Code != childCode &&
-                                                           row.Facility_No == parentFacility
-                                                      select row).ToListAsync();
+                                                 where !row.Facility_No.StartsWith("MX") &&
+                                                       row.Share_Flag == "Y" &&
+                                                       row.Share_Type == "F" &&
+                                                       row.Cust_Code != childCode &&
+                                                       row.Facility_No == parentFacility
+                                                 select row).ToListAsync();
 
-                    foreach(var row in groupCustLimits)
+                    foreach (var row in groupCustLimits)
                     {
                         var result = (from c in _context.ViewCreditLimits
-                                      where c.Cust_Code == parentCode && 
+                                      where c.Cust_Code == parentCode &&
                                             c.Facility_No == parentFacility
                                       select new
                                       {
@@ -507,7 +507,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                               row.Refer_Facility == parentFacility
                                                         select row).ToListAsync();
 
-                    foreach(var row in groupCustLimitPartials)
+                    foreach (var row in groupCustLimitPartials)
                     {
                         groupAmount = (double)(row.Credit_Amount - row.Susp_Amount - partialAvailableAmount);
                         if (groupAmount < 0)
@@ -517,6 +517,241 @@ namespace ISPTF.API.Controllers.ExportLC
                         row.Ear_Amount = groupAmount;
                     }
 
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return false;
+                }
+            }
+        }
+
+        public async static Task<bool> UpdateBankLiability(ISPTFContext _context, pExlc data)
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    // 0 - Select EXLC Master
+                    var pExlcMaster = (from row in _context.pExlcs
+                                       where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                                             row.RECORD_TYPE == "MASTER"
+                                       select row).FirstOrDefault();
+
+                    // 1 - Check if Master Exists
+                    if (pExlcMaster == null)
+                    {
+                        return false;
+                    }
+
+
+                    // 2 - CCY
+                    double CCYAmt = 0;
+                    var SettlementCredit = data.PARTIAL_FULL_RATE;
+
+                    var approveFacility = pExlcMaster.FACNO;
+                    if (string.IsNullOrEmpty(approveFacility))
+                    {
+                        approveFacility = "TFL9999";
+                    }
+
+                    /*
+                      If optFullRate(2).Value Then 'full rate
+                           If optSettCredit(0).Value Then 'fcd to thb
+                                If optTnor(1).Value Then
+                                    CCyAmt = Val(num(txtSightPay.Text))
+                                ElseIf optTnor(2).Value Then
+                                    CCyAmt = Val(num(txtTermPay.Text))
+                                End If
+                            Else 'thb
+                                If optTnor(1).Value Then
+                                    CCyAmt = Val(num(txtSightPayBth.Text))
+                                ElseIf optTnor(2).Value Then
+                                    CCyAmt = Val(num(txtTermPayBth.Text))
+                                End If
+                            End If
+                        Else
+                            If optSettCredit(0).Value Then 'fcd to thb
+                                For i% = txtPartAmt.LBound To txtPartAmt.UBound
+                                    CCyAmt = CCyAmt + Val(num(txtPartAmt(i%).Text))
+                                Next
+                            Else
+                                For i% = txtResultAmt.LBound To txtResultAmt.UBound
+                                    CCyAmt = CCyAmt + Val(num(txtResultAmt(i%).Text))
+                                Next
+                            End If
+                        End If
+                     */
+
+
+                    var cCCY = "THB";
+                    var existingBankLiabilityRows = (from row in _context.pBankLiabs
+                                       where row.Bank_Code == data.Wref_Bank_ID &&
+                                             row.Facility_No == approveFacility &&
+                                             row.Currency == cCCY
+                                                    select row).ToListAsync();
+                    foreach(var row in await existingBankLiabilityRows)
+                    {
+                        if(row.XLCP_Amt == null)
+                        {
+                            row.XLCP_Amt = 0;
+                        }
+                        row.XLCP_Amt = row.XLCP_Amt - CCYAmt;
+                        row.UpdateDate = DateTime.Now;
+                        
+                    }
+                    await _context.SaveChangesAsync();
+
+                    // RevalueBankLiab(as_bank As String, as_facno As String)
+                    var revalueBankLiabilityRows = await (from row in _context.pBankLiabs
+                                                          where row.Bank_Code == data.Wref_Bank_ID &&
+                                                                row.Facility_No == approveFacility
+                                                          group row by new { row.Bank_Code, row.Facility_No, row.Currency } into g
+                                                          select new
+                                                          {
+                                                              g.Key.Bank_Code,
+                                                              g.Key.Facility_No,
+                                                              g.Key.Currency,
+                                                              IMLC_Amt = g.Sum(r => r.IMLC_Amt ?? 0),
+                                                              IBLS_Amt = g.Sum(r => r.IBLS_Amt ?? 0),
+                                                              IBLT_Amt = g.Sum(r => r.IBLT_Amt ?? 0),
+                                                              IMTR_Amt = g.Sum(r => r.IMTR_Amt ?? 0),
+                                                              SGBC_Amt = g.Sum(r => r.SGBC_Amt ?? 0),
+                                                              SGLC_Amt = g.Sum(r => r.SGLC_Amt ?? 0),
+                                                              IMBC_Amt = g.Sum(r => r.IMBC_Amt ?? 0),
+                                                              EXPC_Amt = g.Sum(r => r.EXPC_Amt ?? 0),
+                                                              XLCP_Amt = g.Sum(r => r.XLCP_Amt ?? 0),
+                                                              XLCC_Amt = g.Sum(r => r.XLCC_Amt ?? 0),
+                                                              XBCP_Amt = g.Sum(r => r.XBCP_Amt ?? 0),
+                                                              XBCC_Amt = g.Sum(r => r.XBCC_Amt ?? 0),
+                                                              IMLC_Book = g.Sum(r => r.IMLC_Book ?? 0),
+                                                              IBLS_Book = g.Sum(r => r.IBLS_Book ?? 0),
+                                                              IBLT_Book = g.Sum(r => r.IBLT_Book ?? 0),
+                                                              IMTR_Book = g.Sum(r => r.IMTR_Book ?? 0),
+                                                              SGBC_Book = g.Sum(r => r.SGBC_Book ?? 0),
+                                                              SGLC_Book = g.Sum(r => r.SGLC_Book ?? 0),
+                                                              IMBC_Book = g.Sum(r => r.IMBC_Book ?? 0),
+                                                              EXPC_Book = g.Sum(r => r.EXPC_Book ?? 0),
+                                                              XLCP_Book = g.Sum(r => r.XLCP_Book ?? 0),
+                                                              XLCC_Book = g.Sum(r => r.XLCC_Book ?? 0),
+                                                              XBCP_Book = g.Sum(r => r.XBCP_Book ?? 0),
+                                                              XBCC_Book = g.Sum(r => r.XBCC_Book ?? 0),
+                                                              IMBL_Over = g.Sum(r => r.IMBL_Over ?? 0),
+                                                              NLTR_Book = g.Sum(r => r.NLTR_Book ?? 0),
+                                                              NTTR_Book = g.Sum(r => r.NTTR_book ?? 0),
+                                                              DLC_Amt = g.Sum(r => r.DLC_Amt ?? 0),
+                                                              DLC_Book = g.Sum(r => r.DLC_Book ?? 0),
+                                                              NDTR_Book = g.Sum(r => r.NDTR_Book ?? 0),
+                                                              DBE_Amt = g.Sum(r => r.DBE_Amt ?? 0),
+                                                              DBE_Book = g.Sum(r => r.DBE_Book ?? 0),
+                                                              SBLC_Amt = g.Sum(r => r.SBLC_Amt ?? 0),
+                                                              SBLC_Book = g.Sum(r => r.SBLC_Book ?? 0),
+                                                              LG_Amt = g.Sum(r => r.LG_Amt ?? 0),
+                                                              LG_Book = g.Sum(r => r.LG_Book ?? 0),
+                                                              TROA_Amt = g.Sum(r => r.TROA_Amt ?? 0),
+                                                              TRLC_Amt = g.Sum(r => r.TRLC_Amt ?? 0),
+                                                              TRBC_Amt = g.Sum(r => r.TRBC_Amt ?? 0),
+                                                              TRDLC_Amt = g.Sum(r => r.TRDLC_Amt ?? 0),
+                                                              NCTR_Book = g.Sum(r => r.NCTR_Book ?? 0),
+                                                              SGBC_Issued = g.Sum(r => r.SGBC_Issued ?? 0)
+                                                          }).ToListAsync();
+
+                    double cRateEx1 = 0;
+                    double cRateEx2 = 0;
+                    double cRateEx3 = 0;
+                    var tmpCust = "";
+                    foreach(var row in revalueBankLiabilityRows)
+                    {
+                        if(row.Currency == "THB" || row.Currency == "ODU")
+                        {
+                            cRateEx1 = 1;
+                            cRateEx2 = 1;
+                            cRateEx3 = 1;
+                        }
+                        else
+                        {
+                            cRateEx3 = GetExchangeRate(_context, row.Currency);
+                        }
+
+                        // Delete First
+                        if(row.Bank_Code != tmpCust)
+                        {
+                            var pBankLsumRow = (from row2 in _context.pBankLSums
+                                                where row2.Bank_Code == row.Bank_Code &&
+                                                      row2.Facility_No == approveFacility
+                                                select row2).ToListAsync();
+                            foreach(var row3 in await pBankLsumRow) {
+                                _context.Remove(row3);
+                            }
+                            await _context.SaveChangesAsync();
+                        }
+
+                        // Add if not exists
+                        var isPBankLsumsExists = (from row2 in _context.pBankLSums
+                                                  where row2.Bank_Code == row.Bank_Code &&
+                                                        row2.Facility_No == approveFacility
+                                                  select row2).Count();
+                        if(isPBankLsumsExists == 0)
+                        {
+                            pBankLSum newRow = new();
+                            newRow.Bank_Code = row.Bank_Code;
+                            newRow.Facility_No = approveFacility;
+
+                            newRow.IMLC_Amt = (newRow.IMLC_Amt ?? 0) + (row.IMLC_Amt * cRateEx3);
+                            newRow.IBLS_Amt = (newRow.IBLS_Amt ?? 0) + (row.IBLS_Amt * cRateEx3);
+                            newRow.IBLT_Amt = (newRow.IBLT_Amt ?? 0) + (row.IBLT_Amt * cRateEx3);
+                            newRow.IMTR_Amt = (newRow.IMTR_Amt ?? 0) + (row.IMTR_Amt * cRateEx3);
+                            newRow.SGBC_Amt = (newRow.SGBC_Amt ?? 0) + (row.SGBC_Amt * cRateEx3);
+                            newRow.IMBC_Amt = (newRow.IMBC_Amt ?? 0) + (row.IMBC_Amt * cRateEx3);
+                            newRow.SGLC_Amt = (newRow.SGLC_Amt ?? 0) + (row.SGLC_Amt * cRateEx3);
+                            newRow.EXPC_Amt = (newRow.EXPC_Amt ?? 0) + (row.EXPC_Amt * cRateEx3);
+                            newRow.XLCP_Amt = (newRow.XLCP_Amt ?? 0) + (row.XLCP_Amt * cRateEx3);
+                            newRow.XLCC_Amt = (newRow.XLCC_Amt ?? 0) + (row.XLCC_Amt * cRateEx3);
+                            newRow.XBCP_Amt = (newRow.XBCP_Amt ?? 0) + (row.XBCP_Amt * cRateEx3);
+                            newRow.XBCC_Amt = (newRow.XBCC_Amt ?? 0) + (row.XBCC_Amt * cRateEx3);
+                            newRow.DLC_Amt = (newRow.DLC_Amt ?? 0) + (row.DLC_Amt * cRateEx3);
+                            newRow.DBE_Amt = (newRow.DBE_Amt ?? 0) + (row.DBE_Amt * cRateEx3);
+                            newRow.SBLC_Amt = (newRow.SBLC_Amt ?? 0) + (row.SBLC_Amt * cRateEx3);
+                            newRow.LG_Amt = (newRow.LG_Amt ?? 0) + (row.LG_Amt * cRateEx3);
+                            newRow.TRLC_Amt = (newRow.TRLC_Amt ?? 0) + (row.TRLC_Amt * cRateEx3);
+                            newRow.TRDLC_Amt = (newRow.TRDLC_Amt ?? 0) + (row.TRDLC_Amt * cRateEx3);
+                            newRow.TRBC_Amt = (newRow.TRBC_Amt ?? 0) + (row.TRBC_Amt * cRateEx3);
+                            newRow.TROA_Amt = (newRow.TROA_Amt ?? 0) + (row.TROA_Amt * cRateEx3);
+
+                            newRow.IMLC_Book = (newRow.IMLC_Book ?? 0) + (row.IMLC_Book * cRateEx3);
+                            newRow.IBLS_Book = (newRow.IBLS_Book ?? 0) + (row.IBLS_Book * cRateEx3);
+                            newRow.IBLT_Book = (newRow.IBLT_Book ?? 0) + (row.IBLT_Book * cRateEx3);
+                            newRow.IMTR_Book = (newRow.IMTR_Book ?? 0) + (row.IMTR_Book * cRateEx3);
+                            newRow.SGBC_Book = (newRow.SGBC_Book ?? 0) + (row.SGBC_Book * cRateEx3);
+                            newRow.DLC_Book = (newRow.DLC_Book ?? 0) + (row.DLC_Book * cRateEx3);
+                            newRow.DBE_Book = (newRow.DBE_Book ?? 0) + (row.DBE_Book * cRateEx3);
+                            newRow.IMBC_Book = (newRow.IMBC_Book ?? 0) + (row.IMBC_Book * cRateEx3);
+                            newRow.SGLC_Book = (newRow.SGLC_Book ?? 0) + (row.SGLC_Book * cRateEx3);
+                            newRow.EXPC_Book = (newRow.EXPC_Book ?? 0) + (row.EXPC_Book * cRateEx3);
+                            newRow.XLCP_Book = (newRow.XLCP_Book ?? 0) + (row.XLCP_Book * cRateEx3);
+                            newRow.XLCC_Book = (newRow.XLCC_Book ?? 0) + (row.XLCC_Book * cRateEx3);
+                            newRow.XBCP_Book = (newRow.XBCP_Book ?? 0) + (row.XBCP_Book * cRateEx3);
+                            newRow.XBCC_Book = (newRow.XBCC_Book ?? 0) + (row.XBCC_Book * cRateEx3);
+                            newRow.SBLC_Book = (newRow.SBLC_Book ?? 0) + (row.SBLC_Book * cRateEx3);
+                            newRow.LG_Book = (newRow.LG_Book ?? 0) + (row.LG_Book * cRateEx3);
+
+                            newRow.IMBL_Over = (newRow.IMBL_Over ?? 0) + (row.IMBL_Over * cRateEx3);
+                            newRow.NLTR_book = (newRow.NLTR_book ?? 0) + (row.NLTR_Book * cRateEx3);
+                            newRow.NTTR_Book = (newRow.NTTR_Book ?? 0) + (row.NTTR_Book * cRateEx3);
+                            newRow.NCTR_Book = (newRow.NCTR_Book ?? 0) + (row.NCTR_Book * cRateEx3);
+                            newRow.NDTR_Book = (newRow.NDTR_Book ?? 0) + (row.NDTR_Book * cRateEx3);
+                            newRow.SGBC_Issued = (newRow.SGBC_Issued ?? 0) + (row.SGBC_Issued * cRateEx3);
+
+                            newRow.UpdateDate = GetSysDate(_context);
+                            _context.Add(newRow);
+                        }
+
+                        await _context.SaveChangesAsync();
+
+                    }
+
+                    transaction.Complete();
                     return true;
                 }
                 catch (Exception e)
