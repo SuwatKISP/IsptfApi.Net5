@@ -269,6 +269,27 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = DateTime.Today; // Without Time
 
+                        eventRow.PurposeCode = data.PEXLC.PurposeCode;
+
+                        eventRow.WithOutFlag = data.PEXLC.WithOutType;
+                        eventRow.WithOutType = null;
+                        eventRow.Wref_Bank_ID = "";
+
+                        if(eventRow.WithOutFlag == "Y")
+                        {
+                            eventRow.WithOutType = data.PEXLC.WithOutType;
+                            eventRow.Wref_Bank_ID = data.PEXLC.Wref_Bank_ID;
+                        }
+
+                        eventRow.COMMONTT = data.PEXLC.COMMONTT;
+                        eventRow.INT_AMT_THB = data.PEXLC.INT_AMT_THB;
+                        eventRow.INVOICE = data.PEXLC.INVOICE;
+                        eventRow.REC_STATUS = "P";
+                        eventRow.IN_USE = 1;
+                        eventRow.AGENT_BANK_ID = data.PEXLC.AGENT_BANK_ID;
+                        eventRow.AGENT_BANK_INFO = data.PEXLC.AGENT_BANK_INFO;
+                        eventRow.ValueDate = DateTime.Today;
+                        eventRow.PAYMENT_INSTRU = data.PEXLC.PAYMENT_INSTRU;
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
@@ -302,10 +323,37 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         }
 
+                        eventRow.NEGO_COMM = data.PEXLC.NEGO_COMM;
+                        eventRow.TELEX_SWIFT = data.PEXLC.TELEX_SWIFT;
+                        eventRow.COURIER_POSTAGE = data.PEXLC.COURIER_POSTAGE;
+                        eventRow.STAMP_FEE = data.PEXLC.STAMP_FEE;
+                        eventRow.BE_STAMP = data.PEXLC.BE_STAMP;
+                        eventRow.COMM_OTHER = data.PEXLC.COMM_OTHER;
+                        eventRow.HANDING_FEE = data.PEXLC.HANDING_FEE;
+                        eventRow.DRAFTCOMM = data.PEXLC.DRAFTCOMM;
+                        eventRow.TOTAL_CHARGE = data.PEXLC.TOTAL_CHARGE;
+                        eventRow.REFUND_TAX_YN = data.PEXLC.REFUND_TAX_YN;
+                        eventRow.REFUND_TAX_AMT = data.PEXLC.REFUND_TAX_AMT;
+                        eventRow.TOTAL_AMOUNT = data.PEXLC.TOTAL_AMOUNT;
+                        eventRow.PAYMENTTYPE = data.PEXLC.PAYMENTTYPE;
+                        eventRow.NARRATIVE = data.PEXLC.NARRATIVE;
+                        eventRow.ALLOCATION = data.PEXLC.ALLOCATION;
+                        eventRow.DISCOUNT_CCY = data.PEXLC.DISCOUNT_CCY;
+                        eventRow.DISCOUNT_RATE = data.PEXLC.DISCOUNT_RATE;
+                        eventRow.DISCOUNT_AMT = data.PEXLC.DISCOUNT_AMT;
+                        eventRow.CURRENT_INT_RATE = data.PEXLC.CURRENT_INT_RATE;
+                        eventRow.FlagBack = data.PEXLC.FlagBack;
+
+                        // TODO: PAYMENT
+
+                        // TODO: GL
+
                         // Commit
                         if (pExlcEvent == null)
                         {
                             // Insert
+                            eventRow.EVENT_NO = targetEventNo;
+
                             _context.pExlcs.Add(eventRow);
                         }
                         else
