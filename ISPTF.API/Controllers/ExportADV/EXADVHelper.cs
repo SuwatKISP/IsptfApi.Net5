@@ -79,7 +79,14 @@ namespace ISPTF.API.Controllers.ExportADV
                 row.RECORD_TYPE == "MASTER"
                 orderby row.EVENT_NO descending
                 select row).AsNoTracking().FirstOrDefaultAsync();
-            return exad.EVENT_NO + 1;
+            if(exad != null)
+            {
+                return exad.EVENT_NO + 1;
+            }
+            else
+            {
+                return 1;
+            }
         }
 
         public async static Task<int> SaveDBM(ISPTFContext _context, pExad exad)

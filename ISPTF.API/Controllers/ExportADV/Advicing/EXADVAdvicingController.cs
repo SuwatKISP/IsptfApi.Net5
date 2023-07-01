@@ -402,6 +402,12 @@ namespace ISPTF.API.Controllers.ExportADV
                                 await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'T' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='EVENT' and REC_STATUS in('P','W') AND EVENT_NO = {seq}");
                                 await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' AND EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='MASTER'");
                             }
+                            else
+                            {
+                                response.Code = Constants.RESPONSE_ERROR;
+                                response.Message = "Can not delete MASTER of EVENT record is rec_status = R";
+                                return BadRequest(response);
+                            }
                         }
 
                         // Commit
@@ -562,10 +568,12 @@ namespace ISPTF.API.Controllers.ExportADV
                 pExadEvent.EVENT_TYPE = EVENT_TYPE;
                 pExadEvent.REC_STATUS = REC_STATUS;
                 pExadEvent.EVENT_NO = seqNo;
+                pExadEvent.EVENT_MODE = "E";
                 _context.Add(pExadEvent);
             }
             else
             {
+                pExad.EVENT_MODE = "E";
                 _context.Update(pExad);
             }
             if(pExadEvent.PAYMENT_INSTRU == "1")
@@ -703,12 +711,14 @@ namespace ISPTF.API.Controllers.ExportADV
 
         private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp)
         {
+            var vch = pExadTemp.VOUCH_ID; // ???????
             pExadMaster.LC_TYPE = "1";
             pExadMaster.GENACC_FLAG = "Y";
             pExadMaster.GENACC_DATE = DateTime.Now;
             pExadMaster.EVENT_MODE = "E";
-            // pExadMaster.VOUCH_ID = Vch; ????
-            if(pExadTemp.EVENT_TYPE == "Amend")
+            pExadMaster.VOUCH_ID = vch;
+
+            if (pExadTemp.EVENT_TYPE == "Amend")
             {
                 pExadMaster.BUSINESS_TYPE = "3";
                 pExadMaster.AMEND_DATE = pExadTemp.AMEND_DATE;
@@ -719,7 +729,7 @@ namespace ISPTF.API.Controllers.ExportADV
             }
             if(pExadTemp.EVENT_TYPE == "Advice Mail")
             {
-                pExadMaster.BUSINESS_TYPE = pExadTemp.BUSINESS_TYPE;
+                pExadMaster.BUSINESS_TYPE = "4";
                 pExadMaster.ADVICE_COM = pExadTemp.ADVICE_COM;
                 pExadMaster.AMEND_COM = pExadTemp.AMEND_COM;
                 pExadMaster.TRANSFER_COM = pExadTemp.TRANSFER_COM;
@@ -748,6 +758,16 @@ namespace ISPTF.API.Controllers.ExportADV
                 pExadTemp.UNCABLE_COM = pExadTemp.UNCABLE_COM + pExadTemp.CABLE_COM;
                 pExadTemp.UNCONFIRM_COM = pExadTemp.UNCONFIRM_COM + pExadTemp.CONFIRM_COM;
                 pExadTemp.UNOTHER_CHARGE = pExadTemp.UNOTHER_CHARGE + pExadTemp.OTHER_CHARGE;
+            }
+
+            // Update pDailyGL
+            var pDailyGL = (from row in _context.pDailyGLs
+                            where row.VouchID == vch &&
+                                  row.VouchDate == pExadTemp.EVENT_DATE
+                            select row).ToList();
+            foreach (var row in pDailyGL)
+            {
+                row.SendFlag = "R";
             }
 
             return pExadMaster;
@@ -945,6 +965,6 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpPayAmt = exad.ADVICE_COM;
                 _context.pPayDetails.Add(paydetail);
             }
-        }        
+        }
     }
 }
