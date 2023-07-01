@@ -125,6 +125,49 @@ namespace ISPTF.API.Controllers.GetAny
             }
         }
 
+        [HttpGet("GetAmendNoADV")]
+        //        public async Task<IEnumerable<ComSpreadRateRsp>> GetBaseDay(string? As_CCY)
+        public async Task<ActionResult<List<GetAmendNoRsp>>> GetAmendNo(string? EXPORT_ADVICE_NO)
+        {
+            DynamicParameters param = new();
+            param.Add("@EXPORT_ADVICE_NO", @EXPORT_ADVICE_NO);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 5215585);
+            param.Add("@AmendNo", dbType: DbType.String,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 5215585);
+            try
+            {
+                var results = await _db.LoadData<GetAmendNoRsp, dynamic>(
+                           storedProcedure: "[usp_GetAmendNoEXAD]",
+                           param);
+
+                var resp = param.Get<dynamic>("@Resp");
+                var amendno = param.Get<dynamic>("@AmendNo");
+
+                if (resp > 0)
+                {
+                    return Ok(amendno);
+                }
+                else
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Not Found";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
 
 
 

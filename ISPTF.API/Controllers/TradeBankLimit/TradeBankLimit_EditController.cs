@@ -121,7 +121,7 @@ namespace ISPTF.API.Controllers.TradeBankLimit
             param.Add("@LBlock_Note", pBLogLimitReq.pbloglimit.LBlock_Note);
             param.Add("@LHold_Amount", pBLogLimitReq.pbloglimit.LHold_Amount);
             param.Add("@RecStatus", pBLogLimitReq.pbloglimit.RecStatus);
-            param.Add("@CreateDate", pBLogLimitReq.pbloglimit.CreateDate);
+            param.Add("@LCreateDate", pBLogLimitReq.pbloglimit.CreateDate);
             //param.Add("@UpdateDate", pBLogLimitReq.pbloglimit.UpdateDate);
             param.Add("@UserCode", pBLogLimitReq.pbloglimit.UserCode);
             //param.Add("@AuthDate", pBLogLimitReq.pbloglimit.AuthDate);
@@ -195,7 +195,7 @@ namespace ISPTF.API.Controllers.TradeBankLimit
                 var PBLogLimitRsp = param.Get<dynamic>("@PBLogLimitRsp");
 
                 var resp = param.Get<int>("@Resp");
-                if (resp == 1)
+                if (resp > 1)
                 {
                     return Ok(PBLogLimitRsp);
                 }
