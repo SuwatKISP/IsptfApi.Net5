@@ -297,7 +297,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                     }
                                     else
                                     {
-                                        // receiptNo = genRefno("PAYC")
+                                        receiptNo = await ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
                                     }
                                 }
                                 else
@@ -308,7 +308,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                     }
                                     else
                                     {
-                                        // receiptNo = genRefno("PAYD")
+                                        receiptNo = await ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD");
                                     }
                                 }
                             }

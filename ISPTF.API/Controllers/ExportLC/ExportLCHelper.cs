@@ -169,11 +169,11 @@ namespace ISPTF.API.Controllers.ExportLC
                 {
                     string RECEIPT_NO = await GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
 
-                    var existingPpayment = (from row in _context.pPayments
+                    var existingPPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == lc.RECEIVED_NO
                                             select row).FirstOrDefault();
 
-                    if (existingPpayment == null)
+                    if (existingPPayment == null)
                     {
 
                         payment.RpReceiptNo = RECEIPT_NO;
@@ -182,7 +182,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     else
                     {
-                        RECEIPT_NO = existingPpayment.RpReceiptNo;
+                        RECEIPT_NO = existingPPayment.RpReceiptNo;
                     }
 
                     payment.RpModule = "EXLC";
@@ -194,7 +194,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     payment.UserCode = lc.USER_ID;
                     payment.UpdateDate = DateTime.Now;
 
-                    if (existingPpayment == null)
+                    if (existingPPayment == null)
                     {
                         _context.pPayments.Add(payment);
                     }
@@ -225,20 +225,20 @@ namespace ISPTF.API.Controllers.ExportLC
             {
                 try
                 {
-                    var existingPpayment = (from row in _context.pPayments
+                    var existingPPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == lc.RECEIVED_NO
                                             select row).FirstOrDefault();
 
-                    if (existingPpayment == null)
+                    if (existingPPayment == null)
                     {
                         return false;
                     }
 
-                    var existingPpayDetail = (from row in _context.pPayDetails
+                    var existingPPayDetail = (from row in _context.pPayDetails
                                               where row.DpReceiptNo == lc.RECEIVED_NO
                                               select row).ToListAsync();
 
-                    foreach (var row in await existingPpayDetail)
+                    foreach (var row in await existingPPayDetail)
                     {
                         _context.pPayDetails.Remove(row);
                     }
