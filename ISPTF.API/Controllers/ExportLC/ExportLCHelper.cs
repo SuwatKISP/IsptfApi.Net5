@@ -160,6 +160,100 @@ namespace ISPTF.API.Controllers.ExportLC
             return "ERROR";
         }
 
+
+        public async static Task<string> GetReceiptFCD(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    string genRefNo = "";
+                    var sysDate = GetSysDate(_context);
+                    string currentYear = sysDate.Year.ToString();
+                    var pRefNo = (from row in _context.pReferenceNos
+                                  where row.pRefTrans == docType &&
+                                        row.pRefBran == USER_CENTER_ID &&
+                                        row.pRefYear == currentYear
+                                  select row).FirstOrDefault();
+
+                    if (pRefNo != null)
+                    {
+                        if (pRefNo.InUse != false)
+                        {
+                            pRefNo.InUse = true;
+                            _context.pReferenceNos.Update(pRefNo);
+                            await _context.SaveChangesAsync();
+
+                            var currentRunNo = 0;
+                            if (pRefNo.pRefSeq != null)
+                            {
+                                currentRunNo = (int)pRefNo.pRefSeq;
+                            }
+
+                            int runNo = currentRunNo + 1;
+
+                            genRefNo = USER_CENTER_ID + pRefNo.pRefPrefix + currentYear.Substring(currentYear.Length - 2) + runNo.ToString("000000");
+
+                            pRefNo.pRefSeq = runNo;
+                            pRefNo.LastUpdate = DateTime.Now;
+                            pRefNo.UserCode = USER_ID;
+
+                            _context.pReferenceNos.Update(pRefNo);
+                            await _context.SaveChangesAsync();
+
+                            transaction.Complete();
+                            return genRefNo;
+
+
+                        }
+                    }
+                    else
+                    {
+                        // select prefix
+                        string docType1 = "PAID";
+                        if (docType.Contains("PAID"))
+                        {
+                            docType1 = docType;
+                        }
+
+                        var mControl = (from row in _context.mControls
+                                        where row.CTL_Type == "FUNCT" &&
+                                              row.CTL_Code == docType1 &&
+                                              row.CTL_ID == docType
+                                        select row).FirstOrDefault();
+                        if (mControl != null)
+                        {
+                            string prefix = mControl.CTL_Note1;
+
+                            pReferenceNo initialRunNo = new();
+                            initialRunNo.pRefTrans = docType;
+                            initialRunNo.pRefYear = currentYear;
+                            initialRunNo.pRefPrefix = prefix;
+                            initialRunNo.pRefSeq = 0;
+                            initialRunNo.LastUpdate = DateTime.Now;
+                            initialRunNo.UserCode = USER_ID;
+                            initialRunNo.pRefBran = USER_CENTER_ID;
+                            initialRunNo.InUse = false;
+                            _context.pReferenceNos.Add(initialRunNo);
+                            await _context.SaveChangesAsync();
+                            transaction.Complete();
+                            return await GenRefNo(_context, USER_CENTER_ID, USER_ID, docType);
+                        }
+                        else
+                        {
+                            return "ERROR GET PREFIX FROM MCONTROL";
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return e.ToString();
+                }
+            }
+            return "ERROR";
+        }
+
         //LC
         public async static Task<string> SavePayment(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment)
         {

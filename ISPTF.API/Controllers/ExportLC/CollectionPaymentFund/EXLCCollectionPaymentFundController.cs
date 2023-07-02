@@ -305,7 +305,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 {
                                     if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
                                     {
-                                        // receiptNo = GetReceiptFCD("FPAIDC")
+                                        receiptNo = await ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDC");
                                     }
                                     else
                                     {
@@ -316,7 +316,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 {
                                     if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
                                     {
-                                        // receiptNo = GetReceiptFCD("FPAIDD")
+                                        receiptNo = await ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDD");
                                     }
                                     else
                                     {
