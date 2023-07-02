@@ -72,24 +72,110 @@ namespace ISPTF.API.Controllers.ExportLC
             return 0;
         }
 
-
-        //LC
-        public async static Task<string> SavePayment(ISPTFContext _context, pExlc lc, pPayment payment)
+        public async static Task<string> GenRefNo(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
-                    string RECEIPT_NO = "MOC REF NO";
+                    string genRefNo = "";
+                    var sysDate = GetSysDate(_context);
+                    string currentYear = sysDate.Year.ToString();
+                    var pRefNo = (from row in _context.pReferenceNos
+                                  where row.pRefTrans == docType &&
+                                        row.pRefBran == USER_CENTER_ID &&  
+                                        row.pRefYear == currentYear
+                                  select row).FirstOrDefault();
+
+                    if (pRefNo != null)
+                    {
+                        if (pRefNo.InUse != false)
+                        {
+                            pRefNo.InUse = true;
+                            _context.pReferenceNos.Update(pRefNo);
+                            await _context.SaveChangesAsync();
+
+                            var currentRunNo = 0;
+                            if (pRefNo.pRefSeq != null)
+                            {
+                                currentRunNo = (int)pRefNo.pRefSeq;
+                            }
+
+                            int runNo = currentRunNo + 1;
+
+                            genRefNo = USER_CENTER_ID + pRefNo.pRefPrefix + currentYear.Substring(currentYear.Length - 2) + runNo.ToString("000000");
+
+                            pRefNo.pRefSeq = runNo;
+                            pRefNo.LastUpdate = DateTime.Now;
+                            pRefNo.UserCode = USER_ID;
+
+                            _context.pReferenceNos.Update(pRefNo);
+                            await _context.SaveChangesAsync();
+
+                            transaction.Complete();
+                            return genRefNo;
+
+
+                        }
+                    }
+                    else
+                    {
+                        // select prefix
+                        string docType1 = "PAID";
+                        var mControl = (from row in _context.mControls
+                                      where row.CTL_Type == "FUNCT" &&
+                                            row.CTL_Code == docType1 && 
+                                            row.CTL_ID == docType
+                                      select row).FirstOrDefault();
+                        if(mControl != null)
+                        {
+                            string prefix = mControl.CTL_Note1;
+
+                            pReferenceNo initialRunNo = new();
+                            initialRunNo.pRefTrans = docType;
+                            initialRunNo.pRefYear = currentYear;
+                            initialRunNo.pRefPrefix = prefix;
+                            initialRunNo.pRefSeq = 0;
+                            initialRunNo.LastUpdate = DateTime.Now;
+                            initialRunNo.UserCode = USER_ID;
+                            initialRunNo.pRefBran = USER_CENTER_ID;
+                            initialRunNo.InUse = false;
+                            _context.pReferenceNos.Add(initialRunNo);
+                            await _context.SaveChangesAsync();
+                            transaction.Complete();
+                            return await GenRefNo(_context, USER_CENTER_ID, USER_ID, docType);
+                        }
+                        else
+                        {
+                            return "ERROR GET PREFIX FROM MCONTROL";
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return e.ToString();
+                }
+            }
+            return "ERROR";
+        }
+
+        //LC
+        public async static Task<string> SavePayment(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment)
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    string RECEIPT_NO = await GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
 
                     var existingPpayment = (from row in _context.pPayments
-                                       where row.RpReceiptNo == lc.RECEIVED_NO
-                                       select row).FirstOrDefault();
+                                            where row.RpReceiptNo == lc.RECEIVED_NO
+                                            select row).FirstOrDefault();
 
                     if (existingPpayment == null)
                     {
-                        //!RpReceiptNo = genRefno("PAYC")
-                        
+
                         payment.RpReceiptNo = RECEIPT_NO;
                         payment.RpDocNo = lc.EXPORT_LC_NO;
                         payment.RpEvent = lc.EVENT_NO.ToString();
@@ -117,7 +203,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         _context.pPayments.Update(payment);
 
                     }
-                    
+
                     await _context.SaveChangesAsync();
 
                     transaction.Complete();
@@ -152,7 +238,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                               where row.DpReceiptNo == lc.RECEIVED_NO
                                               select row).ToListAsync();
 
-                    foreach(var row in await existingPpayDetail)
+                    foreach (var row in await existingPpayDetail)
                     {
                         _context.pPayDetails.Remove(row);
                     }
@@ -161,7 +247,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     // Save PayDetails[]
 
-                    foreach(var row in payDetails)
+                    foreach (var row in payDetails)
                     {
                         _context.pPayDetails.Add(row);
                     }
