@@ -366,6 +366,14 @@ namespace ISPTF.API.Controllers.ExportADV
                                                 row.EVENT_NO == EVENT_NO &&
                                                 row.REC_STATUS == REC_STATUS
                                           select row).AsNoTracking().FirstOrDefault();
+
+                        if(pExadEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export Advice no does not exist.";
+                            return BadRequest(response);
+                        }
+
                         var seq = EVENT_NO;
                         // 1 - Update pPayment
                         if(pExadEvent.RECEIPT_NO != "")
@@ -468,6 +476,12 @@ namespace ISPTF.API.Controllers.ExportADV
                                                 row.EVENT_NO == EVENT_NO
                                           select row).AsNoTracking().FirstOrDefault();
 
+                        if (pExadEvent_temp == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export Advice no does not exist.";
+                            return BadRequest(response);
+                        }
 
                         //Get RECEIPT_NO pexadreq.RECEIPT_NO = ?
                         if (pExadEvent_temp.EVENT_TYPE == "Full Advice" || pExadEvent_temp.EVENT_TYPE == "Pre Advice")

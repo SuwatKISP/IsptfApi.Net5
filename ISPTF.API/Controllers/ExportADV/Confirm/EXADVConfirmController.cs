@@ -242,6 +242,14 @@ namespace ISPTF.API.Controllers.ExportADV
                                                 row.EVENT_NO == EVENT_NO &&
                                                 row.REC_STATUS == REC_STATUS
                                           select row).AsNoTracking().FirstOrDefault();
+
+                        if (pExadEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export Advice no does not exist.";
+                            return BadRequest(response);
+                        }
+
                         var seq = EVENT_NO;
                         // 1 - Update pPayment
                         if (pExadEvent.RECEIPT_NO != "")
@@ -335,6 +343,14 @@ namespace ISPTF.API.Controllers.ExportADV
                                                      row.EVENT_TYPE == "EVENT" &&
                                                      row.EVENT_NO == EVENT_NO
                                                select row).AsNoTracking().FirstOrDefault();
+
+                        if (pExadEvent_temp == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export Advice no does not exist.";
+                            return BadRequest(response);
+                        }
+
                         // var seq = EVENT_NO;
                         var seq = await EXADVHelper.GetSeqNo(_context, pExadEvent_temp.EXPORT_ADVICE_NO);
 
