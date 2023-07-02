@@ -72,6 +72,113 @@ namespace ISPTF.API.Controllers.ExportLC
             return 0;
         }
 
+
+        //LC
+        public async static Task<string> SavePayment(ISPTFContext _context, pExlc lc, pPayment payment)
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    string RECEIPT_NO = "MOC REF NO";
+
+                    var existingPpayment = (from row in _context.pPayments
+                                       where row.RpReceiptNo == lc.RECEIVED_NO
+                                       select row).FirstOrDefault();
+
+                    if (existingPpayment == null)
+                    {
+                        //!RpReceiptNo = genRefno("PAYC")
+                        
+                        payment.RpReceiptNo = RECEIPT_NO;
+                        payment.RpDocNo = lc.EXPORT_LC_NO;
+                        payment.RpEvent = lc.EVENT_NO.ToString();
+                    }
+                    else
+                    {
+                        RECEIPT_NO = existingPpayment.RpReceiptNo;
+                    }
+
+                    payment.RpModule = "EXLC";
+                    payment.RpCustCode = lc.BENE_ID;
+                    payment.RpPayDate = DateTime.Now;
+                    payment.RpNote = "";
+                    payment.RpApplicant = payment.RpApplicant.ToUpper();
+                    payment.RpStatus = "A";
+                    payment.UserCode = lc.USER_ID;
+                    payment.UpdateDate = DateTime.Now;
+
+                    if (existingPpayment == null)
+                    {
+                        _context.pPayments.Add(payment);
+                    }
+                    else
+                    {
+                        _context.pPayments.Update(payment);
+
+                    }
+                    
+                    await _context.SaveChangesAsync();
+
+                    transaction.Complete();
+                    return RECEIPT_NO;
+
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return "ERROR";
+                }
+
+            }
+        }
+
+        public async static Task<bool> SavePaymentDetail(ISPTFContext _context, pExlc lc, pPayDetail[] payDetails)
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    var existingPpayment = (from row in _context.pPayments
+                                            where row.RpReceiptNo == lc.RECEIVED_NO
+                                            select row).FirstOrDefault();
+
+                    if (existingPpayment == null)
+                    {
+                        return false;
+                    }
+
+                    var existingPpayDetail = (from row in _context.pPayDetails
+                                              where row.DpReceiptNo == lc.RECEIVED_NO
+                                              select row).ToListAsync();
+
+                    foreach(var row in await existingPpayDetail)
+                    {
+                        _context.pPayDetails.Remove(row);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    // Save PayDetails[]
+
+                    foreach(var row in payDetails)
+                    {
+                        _context.pPayDetails.Add(row);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    transaction.Complete();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return false;
+                }
+
+            }
+        }
         public async static Task<bool> UpdateCustomerLiability(ISPTFContext _context, pExlc data)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -587,19 +694,19 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     var cCCY = "THB";
                     var existingBankLiabilityRows = (from row in _context.pBankLiabs
-                                       where row.Bank_Code == data.Wref_Bank_ID &&
-                                             row.Facility_No == approveFacility &&
-                                             row.Currency == cCCY
-                                                    select row).ToListAsync();
-                    foreach(var row in await existingBankLiabilityRows)
+                                                     where row.Bank_Code == data.Wref_Bank_ID &&
+                                                           row.Facility_No == approveFacility &&
+                                                           row.Currency == cCCY
+                                                     select row).ToListAsync();
+                    foreach (var row in await existingBankLiabilityRows)
                     {
-                        if(row.XLCP_Amt == null)
+                        if (row.XLCP_Amt == null)
                         {
                             row.XLCP_Amt = 0;
                         }
                         row.XLCP_Amt = row.XLCP_Amt - CCYAmt;
                         row.UpdateDate = DateTime.Now;
-                        
+
                     }
                     await _context.SaveChangesAsync();
 
@@ -661,9 +768,9 @@ namespace ISPTF.API.Controllers.ExportLC
                     double cRateEx2 = 0;
                     double cRateEx3 = 0;
                     var tmpCust = "";
-                    foreach(var row in revalueBankLiabilityRows)
+                    foreach (var row in revalueBankLiabilityRows)
                     {
-                        if(row.Currency == "THB" || row.Currency == "ODU")
+                        if (row.Currency == "THB" || row.Currency == "ODU")
                         {
                             cRateEx1 = 1;
                             cRateEx2 = 1;
@@ -675,13 +782,14 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // Delete First
-                        if(row.Bank_Code != tmpCust)
+                        if (row.Bank_Code != tmpCust)
                         {
                             var pBankLsumRow = (from row2 in _context.pBankLSums
                                                 where row2.Bank_Code == row.Bank_Code &&
                                                       row2.Facility_No == approveFacility
                                                 select row2).ToListAsync();
-                            foreach(var row3 in await pBankLsumRow) {
+                            foreach (var row3 in await pBankLsumRow)
+                            {
                                 _context.Remove(row3);
                             }
                             await _context.SaveChangesAsync();
@@ -692,7 +800,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                   where row2.Bank_Code == row.Bank_Code &&
                                                         row2.Facility_No == approveFacility
                                                   select row2).Count();
-                        if(isPBankLsumsExists == 0)
+                        if (isPBankLsumsExists == 0)
                         {
                             pBankLSum newRow = new();
                             newRow.Bank_Code = row.Bank_Code;
