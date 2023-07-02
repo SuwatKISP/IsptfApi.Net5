@@ -363,122 +363,20 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         pExPaymentRow.CenterID = USER_CENTER_ID;
                         pExPaymentRow.REC_STATUS = "P";
-                        pExPaymentRow.PAYMENT_DATE = data.PEXPAYMENT.PAYMENT_DATE;
-                        pExPaymentRow.EVENT_DATE = data.PEXPAYMENT.EVENT_DATE;
-                        pExPaymentRow.NEGO_AMT = data.PEXPAYMENT.NEGO_AMT;
-                        pExPaymentRow.LESS_AGENT = data.PEXPAYMENT.LESS_AGENT;
-                        pExPaymentRow.TOT_NEGO_AMOUNT = data.PEXPAYMENT.NEGO_AMT;
-                        pExPaymentRow.BANK_CHARGE_AMT = data.PEXPAYMENT.BANK_CHARGE_AMT;
-                        pExPaymentRow.NET_PROCEED_CLAIM = data.PEXPAYMENT.NET_PROCEED_CLAIM;
-                        pExPaymentRow.BASE_DAY = data.PEXPAYMENT.BASE_DAY;
-                        pExPaymentRow.CURRENT_DIS_RATE = data.PEXPAYMENT.CURRENT_DIS_RATE;
-                        pExPaymentRow.CURRENT_INT_RATE = data.PEXPAYMENT.CURRENT_INT_RATE;
-                        pExPaymentRow.PaymentType = data.PEXPAYMENT.PaymentType; // F, P
-
-                        pExPaymentRow.PAY_BY = data.PEXPAYMENT.PAY_BY;
-                        pExPaymentRow.AGENT_PAY_BY = data.PEXPAYMENT.AGENT_PAY_BY;
-                        pExPaymentRow.SETTLEMENT_CREDIT = data.PEXPAYMENT.SETTLEMENT_CREDIT;
-
-                        pExPaymentRow.PARTIAL_FULL_RATE = data.PEXPAYMENT.PARTIAL_FULL_RATE;
-                        pExPaymentRow.RECEIVE_PAY_AMT = data.PEXPAYMENT.RECEIVE_PAY_AMT;
-
-                        pExPaymentRow.SIGHT_PAID_AMT = data.PEXPAYMENT.SIGHT_PAID_AMT;
-                        pExPaymentRow.SIGHT_PAID_RATE = data.PEXPAYMENT.SIGHT_PAID_RATE;
-                        pExPaymentRow.SIGHT_PAID_THB = data.PEXPAYMENT.SIGHT_PAID_THB;
-                        pExPaymentRow.SIGHT_FORWARD = data.PEXPAYMENT.SIGHT_FORWARD;
-
-                        pExPaymentRow.TERM_PAID_AMT = data.PEXPAYMENT.TERM_PAID_AMT;
-                        pExPaymentRow.TERM_PAID_RATE = data.PEXPAYMENT.TERM_PAID_RATE;
-                        pExPaymentRow.TERM_PAID_THB = data.PEXPAYMENT.TERM_PAID_THB;
-                        pExPaymentRow.TERM_FORWARD = data.PEXPAYMENT.TERM_FORWARD;
-
-                        pExPaymentRow.ParTnor_Type1 = data.PEXPAYMENT.ParTnor_Type1;
-                        pExPaymentRow.ParTnor_Type2 = data.PEXPAYMENT.ParTnor_Type2;
-                        pExPaymentRow.ParTnor_Type3 = data.PEXPAYMENT.ParTnor_Type3;
-                        pExPaymentRow.ParTnor_Type4 = data.PEXPAYMENT.ParTnor_Type4;
-                        pExPaymentRow.ParTnor_Type5 = data.PEXPAYMENT.ParTnor_Type5;
-                        pExPaymentRow.ParTnor_Type6 = data.PEXPAYMENT.ParTnor_Type6;
-
-                        pExPaymentRow.PARTIAL_AMT1 = data.PEXPAYMENT.PARTIAL_AMT1;
-                        pExPaymentRow.PARTIAL_AMT2 = data.PEXPAYMENT.PARTIAL_AMT2;
-                        pExPaymentRow.PARTIAL_AMT3 = data.PEXPAYMENT.PARTIAL_AMT3;
-                        pExPaymentRow.PARTIAL_AMT4 = data.PEXPAYMENT.PARTIAL_AMT4;
-                        pExPaymentRow.PARTIAL_AMT5 = data.PEXPAYMENT.PARTIAL_AMT5;
-                        pExPaymentRow.PARTIAL_AMT6 = data.PEXPAYMENT.PARTIAL_AMT6;
-
-                        pExPaymentRow.PARTIAL_RATE1 = data.PEXPAYMENT.PARTIAL_RATE1;
-                        pExPaymentRow.PARTIAL_RATE2 = data.PEXPAYMENT.PARTIAL_RATE2;
-                        pExPaymentRow.PARTIAL_RATE3 = data.PEXPAYMENT.PARTIAL_RATE3;
-                        pExPaymentRow.PARTIAL_RATE4 = data.PEXPAYMENT.PARTIAL_RATE4;
-                        pExPaymentRow.PARTIAL_RATE5 = data.PEXPAYMENT.PARTIAL_RATE5;
-                        pExPaymentRow.PARTIAL_RATE6 = data.PEXPAYMENT.PARTIAL_RATE6;
-
-                        pExPaymentRow.FORWARD_CONRACT_NO1 = data.PEXPAYMENT.FORWARD_CONRACT_NO1;
-                        pExPaymentRow.FORWARD_CONRACT_NO2 = data.PEXPAYMENT.FORWARD_CONRACT_NO2;
-                        pExPaymentRow.FORWARD_CONRACT_NO3 = data.PEXPAYMENT.FORWARD_CONRACT_NO3;
-                        pExPaymentRow.FORWARD_CONRACT_NO4 = data.PEXPAYMENT.FORWARD_CONRACT_NO4;
-                        pExPaymentRow.FORWARD_CONRACT_NO5 = data.PEXPAYMENT.FORWARD_CONRACT_NO5;
-                        pExPaymentRow.FORWARD_CONRACT_NO6 = data.PEXPAYMENT.FORWARD_CONRACT_NO6;
-
-                        pExPaymentRow.fb_rate = data.PEXPAYMENT.fb_rate;
-                        pExPaymentRow.fb_amt = data.PEXPAYMENT.fb_amt;
-                        pExPaymentRow.fb_amt_thb = data.PEXPAYMENT.fb_amt_thb;
-
+                       
                         if (!string.IsNullOrEmpty(data.PEXPAYMENT.fb_ccy))
                         {
                             data.PEXPAYMENT.fb_ccy = data.PEXPAYMENT.fb_ccy;
                         }
-
-                        pExPaymentRow.int_paid_amt = data.PEXPAYMENT.int_paid_amt;
-                        pExPaymentRow.int_day = data.PEXPAYMENT.int_day;
-                        pExPaymentRow.int_paid_rate = data.PEXPAYMENT.int_paid_rate;
-                        pExPaymentRow.int_exch_rate = data.PEXPAYMENT.int_exch_rate;
-                        pExPaymentRow.int_paid_thb = data.PEXPAYMENT.int_paid_thb;
-
-                        pExPaymentRow.Agent_amt = data.PEXPAYMENT.Agent_amt;
-                        pExPaymentRow.Agent_rate = data.PEXPAYMENT.Agent_rate;
-                        pExPaymentRow.Agent_thb = data.PEXPAYMENT.Agent_thb;
-
-                        pExPaymentRow.over_paid_amt = data.PEXPAYMENT.over_paid_amt;
-                        pExPaymentRow.over_paid_rate = data.PEXPAYMENT.over_paid_rate;
-                        pExPaymentRow.over_paid_thb = data.PEXPAYMENT.over_paid_thb;
-
-                        pExPaymentRow.TOTAL_NEGO_BALANCE = data.PEXPAYMENT.TOTAL_NEGO_BALANCE;
-                        pExPaymentRow.TOTAL_NEGO_BAL_THB = data.PEXPAYMENT.TOTAL_NEGO_BAL_THB;
-
-                        // TAB2
-
-                        pExPaymentRow.Total_Charge = data.PEXPAYMENT.Total_Charge;
-                        pExPaymentRow.TOTAL_DUE_TO_CUS = data.PEXPAYMENT.TOTAL_DUE_TO_CUS;
-                        pExPaymentRow.TOTAL_AMOUNT = data.PEXPAYMENT.TOTAL_AMOUNT;
-
-                        pExPaymentRow.PAYMENT_INSTRU = data.PEXPAYMENT.PAYMENT_INSTRU;
-                        pExPaymentRow.Method = data.PEXPAYMENT.Method;
+                        else
+                        {
+                            data.PEXPAYMENT.fb_ccy = null;
+                        }
 
                         if (pExPaymentRow.PAYMENT_INSTRU == "UNPAID")
                         {
                             pExPaymentRow.Method = "";
                         }
-
-
-                        pExPaymentRow.AMT_DEBIT_AC1 = data.PEXPAYMENT.AMT_DEBIT_AC1;
-                        pExPaymentRow.AMT_DEBIT_AC2 = data.PEXPAYMENT.AMT_DEBIT_AC2;
-                        pExPaymentRow.AMT_DEBIT_AC3 = data.PEXPAYMENT.AMT_DEBIT_AC3;
-
-                        pExPaymentRow.AMT_CREDIT_AC1 = data.PEXPAYMENT.AMT_CREDIT_AC1;
-                        pExPaymentRow.AMT_CREDIT_AC2 = data.PEXPAYMENT.AMT_CREDIT_AC2;
-                        pExPaymentRow.AMT_CREDIT_AC3 = data.PEXPAYMENT.AMT_CREDIT_AC3;
-
-                        pExPaymentRow.ACCOUNT_NO1 = data.PEXPAYMENT.ACCOUNT_NO1;
-                        pExPaymentRow.ACCOUNT_NO2 = data.PEXPAYMENT.ACCOUNT_NO2;
-                        pExPaymentRow.ACCOUNT_NO3 = data.PEXPAYMENT.ACCOUNT_NO3;
-
-                        pExPaymentRow.CASH = data.PEXPAYMENT.CASH;
-                        pExPaymentRow.CHEQUE_AMT = data.PEXPAYMENT.CHEQUE_AMT;
-                        pExPaymentRow.CHEQUE_NO = data.PEXPAYMENT.CHEQUE_NO;
-                        pExPaymentRow.CHEQUE_BK_BRN = data.PEXPAYMENT.CHEQUE_BK_BRN;
-
-                        pExPaymentRow.PAY_TYPE = data.PEXPAYMENT.PAY_TYPE;
 
                         // GL
 
