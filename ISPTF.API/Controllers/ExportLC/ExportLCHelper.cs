@@ -237,7 +237,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pReferenceNos.Add(initialRunNo);
                             await _context.SaveChangesAsync();
                             transaction.Complete();
-                            return await GenRefNo(_context, USER_CENTER_ID, USER_ID, docType);
+                            return await GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, docType);
                         }
                         else
                         {
