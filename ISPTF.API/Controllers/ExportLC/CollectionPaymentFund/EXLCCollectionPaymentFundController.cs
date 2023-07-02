@@ -309,7 +309,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                     }
                                     else
                                     {
-                                        // receiptNo = genRefno("PAYC")
+                                        receiptNo = await ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
                                     }
                                 }
                                 else
@@ -320,7 +320,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                     }
                                     else
                                     {
-                                        // receiptNo = genRefno("PAYD")
+                                        receiptNo = await ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD");
                                     }
                                 }
                             }
@@ -341,9 +341,13 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = "RECEIVE_NO FROM DLL";
+                            eventRow.RECEIVED_NO = await ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
 
                             // Call Save PaymentDetail
+                            if (eventRow.RECEIVED_NO != "ERROR")
+                            {
+                                bool savePayDetailResult = await ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
+                            }
                         }
                         else if (eventRow.PAYMENT_INSTRU == "UNPAID")
                         {
