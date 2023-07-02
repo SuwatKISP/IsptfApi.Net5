@@ -66,9 +66,30 @@ namespace ISPTF.API.Controllers.ExportLC
                 }
             }
         }
-        public static double GetExchangeRate(ISPTFContext context, string CCY, int? cType = null)
+        public static double GetExchangeRate(ISPTFContext _context, string CCY, int? cType = null)
         {
 
+            var pExchange = (from row in _context.pExchanges
+                             where row.Exch_Date == DateTime.Today && 
+                                   row.Exch_Ccy == CCY
+                             orderby row.Exch_Time descending
+                             select row).FirstOrDefault();
+
+            if(pExchange.Exch_Time != null)
+            {
+                if (cType == 1)
+                {
+                    return (double)pExchange.Exch_TRate1;
+                }
+                else if (cType == 2)
+                {
+                    return (double)pExchange.Exch_TRate2;
+                }
+                else
+                {
+                    return (double)pExchange.Exch_TRate3;
+                }
+            }
             return 0;
         }
 
