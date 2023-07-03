@@ -865,6 +865,11 @@ namespace ISPTF.API.Controllers.ExportADV
 
         private void PaymentSave(pExad exad, pPayment pPaymentReq)
         {
+            if (exad.RECEIPT_NO == null)
+            {
+                exad.RECEIPT_NO = EXHelper.GetReceiptNo(_context,exad.USER_ID,exad.CenterID);
+            }
+
             var pPaymentEvent = (from row in _context.pPayments
                                  where row.RpReceiptNo == exad.RECEIPT_NO
                                  select row).AsNoTracking().FirstOrDefault();
