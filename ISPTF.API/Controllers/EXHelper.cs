@@ -167,8 +167,46 @@ namespace ISPTF.API.Controllers
                 {
                     return year + "00000001";
                 }
-                return "";
             }
+        }
+
+        public static double GetRateExChange(ISPTFContext _context, string ccy, int cType=0)
+        {
+            string time;
+            DateTime date;
+
+            var latestExch = (from row in _context.pExchanges
+                                     where row.Exch_Date == DateTime.Today &&
+                                           row.Exch_Ccy == ccy
+                                     orderby row.Exch_Time descending
+                                     select row).FirstOrDefault();
+
+            if (latestExch == null)
+            {
+                latestExch = (from row in _context.pExchanges
+                              where row.Exch_Ccy == ccy
+                              orderby row.Exch_Date descending
+                              orderby row.Exch_Time descending
+                              select row).FirstOrDefault();
+            }
+
+            if (latestExch != null)
+            {
+                if(cType == 1)
+                {
+                    return latestExch.Exch_TRate1.Value;
+                }
+                else if(cType == 2)
+                {
+                    return latestExch.Exch_TRate2.Value;
+                }
+                else
+                {
+                    return latestExch.Exch_TRate3.Value;
+                }
+            }
+
+            return 0.00;
         }
     }
 }

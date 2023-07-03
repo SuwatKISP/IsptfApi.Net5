@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ISPTF.API.Controllers.ExportADV
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXADVConfirmController : ControllerBase
