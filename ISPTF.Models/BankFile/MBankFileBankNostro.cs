@@ -16,6 +16,7 @@ namespace ISPTF.Models.BankFile
         public string Bank_Address { get; set; }
         public string Bank_Authen { get; set; }
         public string Nostro_GL { get; set; }
-        
+        public string Cnty_Code { get; set; }
+        public string Bank_City { get; set; }
     }
 }

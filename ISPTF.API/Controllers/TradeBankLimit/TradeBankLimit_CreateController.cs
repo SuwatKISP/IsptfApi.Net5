@@ -79,6 +79,7 @@ namespace ISPTF.API.Controllers.TradeBankLimit
         public async Task<ActionResult<PBankLimitRsp>> GetSelect(string? Bank_Code, string? Facility_No)
         {
             DynamicParameters param = new();
+
             param.Add("@Bank_Code", Bank_Code);
             param.Add("@Facility_No", Facility_No);
 
@@ -268,6 +269,49 @@ namespace ISPTF.API.Controllers.TradeBankLimit
             return results;
         }
 
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<string>> Delete([FromBody] PBankLimitDeleteeReq pBankLimitDeleteReq)
+        {
+            DynamicParameters param = new();
+            param.Add("@Bank_Code", pBankLimitDeleteReq.Bank_Code);
+            param.Add("@Facility_No", pBankLimitDeleteReq.Facility_No);
+
+            param.Add("@RespCount", dbType: DbType.Int32,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            param.Add("@RespError", dbType: DbType.String,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pBankLimit_Create_Delete", param);
+                var respcount = param.Get<int>("@RespCount");
+                var resperror = param.Get<string>("@RespError");
+
+                if (respcount == 1)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    response.Message = "Delete Bank Credit Limit Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error!! Not Found Bank Credit Limit for Delete";
+                    //response.Message = response.ToString();
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }   
 
 
 

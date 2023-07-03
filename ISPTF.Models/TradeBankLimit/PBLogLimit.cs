@@ -13,6 +13,7 @@ namespace ISPTF.Models.TradeBankLimit
         public string? LRecType { get; set; }
         public int? LLogSeq { get; set; }
         public string? LBank_Code { get; set; }
+        public string? LBank_Name { get; set; }
         public string? LFacility_No { get; set; }
         public string? LCCS_No { get; set; }
         public string? LLimit_Code { get; set; }
