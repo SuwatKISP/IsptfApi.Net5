@@ -535,12 +535,13 @@ namespace ISPTF.API.Controllers.ExportADV
                             _context.pExads.Update(pExadMaster);
                         }
 
+                        // Commit
+                        await _context.SaveChangesAsync();
+
                         // Update REC_STATUS
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO = {seq}");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER' AND EVENT_NO = {seq}");
 
-                        // Commit
-                        await _context.SaveChangesAsync();
 
                         transaction.Complete();
                     }
