@@ -472,7 +472,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         var seq = EVENT_NO;
                         var pExadEvent_temp = (from row in _context.pExads
                                           where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                row.EVENT_TYPE == "EVENT" &&
+                                                row.RECORD_TYPE == "EVENT" &&
                                                 row.EVENT_NO == EVENT_NO
                                           select row).AsNoTracking().FirstOrDefault();
 
@@ -489,7 +489,7 @@ namespace ISPTF.API.Controllers.ExportADV
                             //seq = 1;
                             var pExadEvent = (from row in _context.pExads
                                               where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                    row.EVENT_TYPE == "EVENT" &&
+                                                    row.RECORD_TYPE == "EVENT" &&
                                                     row.EVENT_NO == 1
                                               select row).AsNoTracking().FirstOrDefault();
                             pExadEvent.USER_ID = USER_ID;
@@ -499,7 +499,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                             var pExadMaster = (from row in _context.pExads
                                                where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                     row.EVENT_TYPE == "MASTER" &&
+                                                     row.RECORD_TYPE == "MASTER" &&
                                                      row.EVENT_NO == 1
                                                select row).AsNoTracking().FirstOrDefault();
                             pExadMaster.USER_ID = USER_ID;
@@ -516,7 +516,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                             var pExadEvent = (from row in _context.pExads
                                               where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                    row.EVENT_TYPE == "EVENT" &&
+                                                    row.RECORD_TYPE == "EVENT" &&
                                                     row.EVENT_NO == seq
                                               select row).AsNoTracking().FirstOrDefault();
                             pExadEvent.USER_ID = USER_ID;
@@ -526,7 +526,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                             var pExadMaster = (from row in _context.pExads
                                                where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                     row.EVENT_TYPE == "MASTER" &&
+                                                     row.RECORD_TYPE == "MASTER" &&
                                                      row.EVENT_NO == seq
                                                select row).AsNoTracking().FirstOrDefault();
                             pExadMaster.USER_ID = USER_ID;
@@ -541,6 +541,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         // Update REC_STATUS
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO = {seq}");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER' AND EVENT_NO = {seq}");
+
 
                         transaction.Complete();
                     }
@@ -792,13 +793,16 @@ namespace ISPTF.API.Controllers.ExportADV
             var exadswin = (from row in _context.pExadSWIns
                             where row.SwifInID == pExad.SwifInID
                             select row).FirstOrDefault();
-            exadswin.RecStatus = RecStatus;
+            if (exadswin!=null)
+            {
+                exadswin.RecStatus = RecStatus;
+            }
         }
 
         private void KeepDocRegister(pExad pExad, string Reg_Appv, string Reg_RecStat, string Reg_Status)
         {
             var FindCode = "EXAD";
-            var Reg_BhtAmt = pExad.LC_AMOUNT * pExad.EXCH_RATE;
+            var Reg_BhtAmt = pExad.LC_AMOUNT * EXHelper.GetRateExChange(_context,pExad.LC_CURRENCY);
             var pDocReg = (from row in _context.pDocRegisters
                                 where row.Reg_Login == FindCode &&
                                       row.Reg_Funct == FindCode &&
@@ -862,6 +866,11 @@ namespace ISPTF.API.Controllers.ExportADV
 
         private void PaymentSave(pExad exad, pPayment pPaymentReq)
         {
+            if (exad.RECEIPT_NO == null)
+            {
+                exad.RECEIPT_NO = EXHelper.GetReceiptNo(_context,exad.USER_ID,exad.CenterID);
+            }
+
             var pPaymentEvent = (from row in _context.pPayments
                                  where row.RpReceiptNo == exad.RECEIPT_NO
                                  select row).AsNoTracking().FirstOrDefault();

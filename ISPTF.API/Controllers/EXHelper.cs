@@ -37,7 +37,7 @@ namespace ISPTF.API.Controllers
             return pTransfer;
         }
 
-        public async static Task<String> GetReceiptNo(ISPTFContext _context, String USER_ID, String CENTER_ID, String cType = null)
+        public static String GetReceiptNo(ISPTFContext _context, String USER_ID, String CENTER_ID, String cType = null)
         {
             String refTran;
             String prefix;
@@ -49,14 +49,14 @@ namespace ISPTF.API.Controllers
             {
                 refTran = "PAYD";
             }
-            var mControl = await (
+            var mControl = (
                 from row in _context.mControls
                 where
                 row.CTL_Type == "FUNCT" &&
                 row.CTL_Code == "PAID" &&
                 row.CTL_ID == refTran
                 orderby row.CTL_ID
-                select row).FirstOrDefaultAsync();
+                select row).FirstOrDefault();
             if (mControl == null)
             {
                 prefix = "DDR";
@@ -65,14 +65,14 @@ namespace ISPTF.API.Controllers
             {
                 prefix = mControl.CTL_Note1;
             }
-            var pReferenceNO = await (
+            var pReferenceNO =  (
                 from row in _context.pReferenceNos
                 where
                 row.pRefTrans == refTran &&
                 row.pRefBran == CENTER_ID &&
                 row.pRefYear == DateTime.Now.Year.ToString() &&
                 row.pRefPrefix == prefix
-                select row).FirstOrDefaultAsync();
+                select row).FirstOrDefault();
             if (pReferenceNO == null)
             {
                 pReferenceNO = new();
@@ -167,8 +167,46 @@ namespace ISPTF.API.Controllers
                 {
                     return year + "00000001";
                 }
-                return "";
             }
+        }
+
+        public static double GetRateExChange(ISPTFContext _context, string ccy, int cType=0)
+        {
+            string time;
+            DateTime date;
+
+            var latestExch = (from row in _context.pExchanges
+                                     where row.Exch_Date == DateTime.Today &&
+                                           row.Exch_Ccy == ccy
+                                     orderby row.Exch_Time descending
+                                     select row).FirstOrDefault();
+
+            if (latestExch == null)
+            {
+                latestExch = (from row in _context.pExchanges
+                              where row.Exch_Ccy == ccy
+                              orderby row.Exch_Date descending
+                              orderby row.Exch_Time descending
+                              select row).FirstOrDefault();
+            }
+
+            if (latestExch != null)
+            {
+                if(cType == 1)
+                {
+                    return latestExch.Exch_TRate1.Value;
+                }
+                else if(cType == 2)
+                {
+                    return latestExch.Exch_TRate2.Value;
+                }
+                else
+                {
+                    return latestExch.Exch_TRate3.Value;
+                }
+            }
+
+            return 0.00;
         }
     }
 }
