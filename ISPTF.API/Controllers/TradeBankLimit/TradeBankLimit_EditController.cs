@@ -195,7 +195,7 @@ namespace ISPTF.API.Controllers.TradeBankLimit
                 var PBLogLimitRsp = param.Get<dynamic>("@PBLogLimitRsp");
 
                 var resp = param.Get<int>("@Resp");
-                if (resp > 1)
+                if (resp >= 1)
                 {
                     return Ok(PBLogLimitRsp);
                 }
