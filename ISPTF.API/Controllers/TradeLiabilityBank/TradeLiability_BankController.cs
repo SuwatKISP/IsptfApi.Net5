@@ -56,6 +56,71 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
             return results;
         }
 
+        [HttpGet("ReferenceNoSelect")]
+        public async Task<ActionResult<List<ReferenceNoSelectRsp>>> ReferenceSelect(string? CustCode, string? ReferDocNo)
+        {
+            try
+            {
+                //  ISPModule.modLiability.RevalueLiab(CustCode, "");
+                DynamicParameters param = new();
+                param.Add("@Cust_Code", CustCode);
+                param.Add("@Reg_Docno", ReferDocNo);
+
+
+
+                if (CustCode == null)
+                {
+                    param.Add("@CustCode", "");
+                }
+                if (ReferDocNo == null)
+                {
+                    param.Add("@Refer_DocNo", "");
+                }
+
+                param.Add("@ReferNoRsp", dbType: DbType.String,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 5215585);
+
+                var results = await _db.LoadData<ReferenceNoSelectRsp, dynamic>(
+                            storedProcedure: "usp_TradeLiability_Bank_RefNo_Select",
+                            param);
+
+                var resp = param.Get<dynamic>("@Resp");
+
+                var refernorsp = param.Get<dynamic>("@ReferNoRsp");
+
+                if (resp == 1)
+                {
+                    return Ok(refernorsp);
+                }
+                else if (resp == 9)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Reference No. is not USED !!!";
+                    return BadRequest(response);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error for Select Facility No";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+
         [HttpGet("InsGrdFacility")]
         public async Task<IEnumerable<InsGrdFacilityLiabilityBank_Rsp>> GetInsGrdFacility(string? Bank_Code)
         {
@@ -69,6 +134,89 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
             return results;
         }
 
+       [HttpGet("InsGrdFacilitySelect")]
+        public async Task<ActionResult<InsGrdFacilitySelectJSONBank_Rsp>> GetInsGrdFacility(string Login , string? BankCode, string? ReferDocNo,string? Facility_No, string? Facility_No_Old)
+        {
+            DynamicParameters param = new();
+            param.Add("@Reg_Login", Login);
+            param.Add("@Bank_Code", BankCode);
+            param.Add("@Reg_Docno", ReferDocNo);
+            param.Add("@Facility_No", Facility_No);
+            param.Add("@Facility_Old", Facility_No_Old);
+
+
+
+            if (BankCode == null)
+            {
+                param.Add("@Bank_Code", "");
+            }
+            if (Facility_No == null)
+            {
+                param.Add("@Facility_No", "");
+            }
+            if (ReferDocNo == null)
+            {
+                param.Add("@Refer_DocNo", "");
+            }
+
+            param.Add("@ReferNoRsp", dbType: DbType.String,
+           direction: System.Data.ParameterDirection.Output,
+           size: 5215585);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+            try
+            {
+                var results = await _db.LoadData<InsGrdFacilitySelectJSONBank_Rsp, dynamic>(
+                            storedProcedure: "usp_TradeLiability_Bank_InsGrdFac_Select",
+                            param);
+
+                var resp = param.Get<dynamic>("@Resp");
+
+                var refernorsp = param.Get<dynamic>("@ReferNoRsp");
+    
+                if (resp == 1)
+                {
+                    return Ok(refernorsp);
+                }
+                else if (resp == 2)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Can not use Auto Create Facility or One Time";
+                    return BadRequest(response);
+                }
+                else if (resp == 3)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Credit Line in used Please select new or wait and save again";
+                    return BadRequest(response);
+                }
+
+                else if (resp == 4)
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Selected Facility does not Support This Product";
+                    return BadRequest(response);
+                }
+                else
+                {
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "Error for Select Facility No";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
 
         [HttpGet("InsGrdAppvList")]
         public async Task<IEnumerable<InsGrdAppvBankRsp>> GetInsGrdAppvList(string? ListType,string? CenterID, string? UserCode,string? Bank_Code, string? CustCode, string? CustName, int? Page, int? PageSize)
@@ -103,21 +251,20 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
         }
 
         [HttpGet("InsGrdAppvSelect")]
-        public async Task<ActionResult<BankReleaseSelectRsp>> GetSelect(string? Bank_Code,string? Cust_Code,string? Credit_Ccy, string? Facility_No, string? Appv_No, string? Refer_DocNo)
+        //public async Task<IEnumerable<ReleaseCustLisPageRsp>> GetSelect(string? CustCode, string? FacilityNo)
+        public async Task<ActionResult<InsGrdAppvSelectRsp>> GetSelect(string? Bank_Code, string? Facility_No, string? Appv_No)
         {
             DynamicParameters param = new();
-            param.Add("@Bank_Code", Bank_Code);         
-            param.Add("@Cust_Code", Cust_Code);
-            param.Add("Credit_Ccy", Credit_Ccy);
+
+            param.Add("@Bank_Code", Bank_Code);
             param.Add("@Facility_No", Facility_No);
             param.Add("@Appv_No", Appv_No);
-            param.Add("@Refer_DocNo", Refer_DocNo);
 
             param.Add("@BankReleaseSelectRsp", dbType: DbType.String,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
 
-            var results = await _db.LoadData<BankReleaseSelectRsp, dynamic>(
+            var results = await _db.LoadData<InsGrdAppvSelectRsp, dynamic>(
                         storedProcedure: "usp_TradeLiability_Bank_InsGrdAppvSelect",
                         param);
             var CustReleaseSelectRsp = param.Get<dynamic>("@BankReleaseSelectRsp");

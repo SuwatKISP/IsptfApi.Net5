@@ -19,5 +19,7 @@ namespace ISPTF.Models.TradeLiabilityCust
         public double? Reg_Plus { get; set; }
         public string? Reg_RefNo { get; set; }
         public string? Reg_Login { get; set; }
+        public string? Bank_code { get; set; }
+        public string? Bank_Address { get; set; }
     }
 }
