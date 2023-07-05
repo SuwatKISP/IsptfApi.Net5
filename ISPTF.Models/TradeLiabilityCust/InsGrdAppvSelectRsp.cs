@@ -12,7 +12,7 @@ namespace ISPTF.Models.TradeLiabilityCust
     {
         public FacilityReq Facility { get; set; }
         public CustApproveReq CustApprove { get; set; }
-
+        public BankSelect? BankSelect { get; set; }
     }
 
     public class FacilityReq
@@ -77,5 +77,11 @@ namespace ISPTF.Models.TradeLiabilityCust
         public string? Edition_Number { get; set; }
         public string? NoteAppv { get; set; }
         public string? RecStatus { get; set; }
+    }
+
+    public class BankSelect
+    {
+        public string? Bank_Code { get; set; }
+        public string? Bank_Address { get; set; }
     }
 }

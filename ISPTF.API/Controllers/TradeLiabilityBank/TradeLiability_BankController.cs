@@ -273,6 +273,39 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
         }
 
 
+        [HttpGet("GetOriginalAmount")]
+        public async Task<IEnumerable<OrignalAmtRsp>> GetOriginalAmount(string Bank_Code, string Credit_Ccy)
+        {
+            DynamicParameters param = new();
+
+            param.Add("@Bank_Code", Bank_Code);
+            param.Add("@Credit_Ccy", Credit_Ccy);
+
+            var results = await _db.LoadData<OrignalAmtRsp, dynamic>(
+                        storedProcedure: "usp_TradeLiability_Bank_GetOriginalAmt",
+                        param);
+            return results;
+        }
+
+        [HttpGet("ChkOverDue")]
+        public async Task<IEnumerable<ChkOverDueBank_Rsp>> GetOveDue(string? Bank_Code)
+        {
+            DynamicParameters param = new();
+
+            param.Add("@Bank_Code", Bank_Code);
+
+            //param.Add("@CHK_OverDue", dbType: DbType.String,
+            //   direction: System.Data.ParameterDirection.Output,
+            //   size: 5215585);
+
+            var results = await _db.LoadData<ChkOverDueBank_Rsp, dynamic>(
+                        storedProcedure: "usp_TradeLiability_Bank_CHKOverDue",
+                        param);
+            return results;
+            //var chkoverdue = param.Get<dynamic>("@CHK_OverDue");
+            //return Ok(chkoverdue);
+        }
+
         [HttpPost("save")]
         public async Task<ActionResult<PCustAppvRsp>> Save([FromBody] PCustAppvReq pCustAppvReq)
         {
