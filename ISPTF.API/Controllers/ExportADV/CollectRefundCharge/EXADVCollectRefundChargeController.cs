@@ -155,5 +155,105 @@ namespace ISPTF.API.Controllers.ExportADV
             response.Code = Constants.RESPONSE_ERROR;
             return BadRequest(response);
         }
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<EXADVResultResponse>> Delete(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
+        {
+            EXADVResultResponse response = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
+                return BadRequest(response);
+            }
+
+            // Get USER_ID, CenterID
+            var USER_ID = User.Identity.Name;
+            var CenterID = HttpContext.User.FindFirst("UserBranch").Value.ToString();
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        var pExadEvent = (from row in _context.pExads
+                                          where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
+                                                row.RECORD_TYPE == RECORD_TYPE &&
+                                                row.EVENT_NO == EVENT_NO &&
+                                                row.REC_STATUS == REC_STATUS
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                        if (pExadEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export Advice no does not exist.";
+                            return BadRequest(response);
+                        }
+
+                        var seq = EVENT_NO;
+                        // 1 - Update pPayment
+                        if (pExadEvent.RECEIPT_NO != "")
+                        {
+                            var pPayment = (from row in _context.pPayments
+                                            where row.RpReceiptNo == pExadEvent.RECEIPT_NO
+                                            select row).FirstOrDefault();
+                            pPayment.RpStatus = "C";
+                        }
+                        // 2 - Delete pDailyGL
+                        var pDailyGL = (from row in _context.pDailyGLs
+                                        where row.VouchID == pExadEvent.VOUCH_ID &&
+                                              row.VouchDate == pExadEvent.EVENT_DATE
+                                        select row).ToList();
+                        foreach (var row in pDailyGL)
+                        {
+                            _context.pDailyGLs.Remove(row);
+                        }
+
+
+                        var pExadRelesed = (from row in _context.pExads
+                                            where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
+                                                    row.EVENT_NO == seq &&
+                                                    row.RECORD_TYPE == "R"
+                                            select row).AsNoTracking().FirstOrDefault();
+                        if (pExadRelesed == null)
+                        {
+                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'T' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='EVENT' and REC_STATUS in('P','W') AND EVENT_NO = {seq}");
+                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' AND EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='MASTER'");
+                        }
+                        else
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Can not delete MASTER of EVENT record is rec_status = R";
+                            return BadRequest(response);
+                        }
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        transaction.Dispose();
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export Advice Deleted";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = e.ToString();
+            }
+            response.Code = Constants.RESPONSE_ERROR;
+            return BadRequest(response);
+        }
     }
 }
