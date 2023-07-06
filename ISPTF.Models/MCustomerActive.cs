@@ -45,6 +45,7 @@ namespace ISPTF.Models
         public string Cust_AcCcy4 { get; set; }
         public string Cust_AcBran4 { get; set; }
         public string cust_AcRelation4 { get; set; }
+        public string Cust_Address { get; set; }
         public int RCount { get; set; }
     }
 }
