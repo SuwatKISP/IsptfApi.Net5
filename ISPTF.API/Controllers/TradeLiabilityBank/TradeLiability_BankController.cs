@@ -274,11 +274,12 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
 
 
         [HttpGet("GetOriginalAmount")]
-        public async Task<IEnumerable<OrignalAmtRsp>> GetOriginalAmount(string Bank_Code, string Credit_Ccy)
+        public async Task<IEnumerable<OrignalAmtRsp>> GetOriginalAmount(string Bank_Code, string Facility_no,string Credit_Ccy)
         {
             DynamicParameters param = new();
 
             param.Add("@Bank_Code", Bank_Code);
+            param.Add("@Facility_no", Facility_no);
             param.Add("@Credit_Ccy", Credit_Ccy);
 
             var results = await _db.LoadData<OrignalAmtRsp, dynamic>(
