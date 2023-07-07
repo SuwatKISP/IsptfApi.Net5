@@ -157,9 +157,75 @@ namespace ISPTF.API.Controllers.QueryReport
             return results;
         }
 
+        [HttpGet("TradeFinanceReport/OutCustAddTmpPending")]
+        public async Task<IEnumerable<OutCustReport>> OutCustTmpPending(string? CenterID, DateTime? TranDateFrom, DateTime? TranDateTo)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CenterID", CenterID);
+            param.Add("@TranDateFrom", TranDateFrom);
+            param.Add("@TranDateTo", TranDateTo);
 
+            //if (CustCode == null)
+            //{
+            //    param.Add("@CustCode", "");
+            //}
 
+            var results = await _db.LoadData<OutCustReport, dynamic>(
+                storedProcedure: "usp_QReport_Trade_OutCustAddTmpPending",
+                param);
+            return results;
+        }
 
+        [HttpGet("TradeFinanceReport/OutCustAddTmpINT")]
+        public async Task<IEnumerable<OutCustReport>> OutCustAddTmpINT(string? CenterID,int? AddDays, DateTime? TranDateFrom, DateTime? TranDateTo)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CenterID", CenterID);
+            param.Add("@AddDays", AddDays);
+            param.Add("@TranDateFrom", TranDateFrom);
+            param.Add("@TranDateTo", TranDateTo);
+
+            //if (CustCode == null)
+            //{
+            //    param.Add("@CustCode", "");
+            //}
+
+            var results = await _db.LoadData<OutCustReport, dynamic>(
+                storedProcedure: "usp_QReport_Trade_OutCustAddTmpInt",
+                param);
+            return results;
+        }
+
+        [HttpGet("TradeFinanceReport/OutCustNotAddTmpInt")]
+        public async Task<IEnumerable<OutCustNotAddTmpReport>> OutCustNotAddTmpINT(string? CenterID, int? AddDays,string? ExIm, DateTime? TranDateFrom, DateTime? TranDateTo)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CenterID", CenterID);
+            param.Add("@AddDays", AddDays);
+            param.Add("@ExIm", ExIm);
+            //param.Add("@Product", Product);
+            //param.Add("@CustCode", CustCode);
+            param.Add("@TranDateFrom", TranDateFrom);
+            param.Add("@TranDateTo", TranDateTo);
+
+            var results = await _db.LoadData<OutCustNotAddTmpReport, dynamic>(
+                storedProcedure: "usp_QReport_Trade_OutCustNotAddTmpInt",
+                param);
+            return results;
+        }
+
+        [HttpGet("MonthlyReport/AmortizeVolume")]
+        public async Task<IEnumerable<AmortizeVolumeReport>> AmortizeVolume(string? CenterID, string? modTran)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@CenterID", CenterID);
+            param.Add("@modTran", modTran);
+
+            var results = await _db.LoadData<AmortizeVolumeReport, dynamic>(
+                storedProcedure: "usp_QReport_Monthly_AmortizeVolume",
+                param);
+            return results;
+        }
 
 
     }
