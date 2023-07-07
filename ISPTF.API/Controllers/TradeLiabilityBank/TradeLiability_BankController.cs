@@ -367,10 +367,10 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
+            param.Add("@PCustAppvRsp", dbType: DbType.String,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
 
-            //param.Add("@PCustLimitRsp", dbType: DbType.String,
-            //   direction: System.Data.ParameterDirection.Output,
-            //   size: 5215585);
 
             try
             {
@@ -378,16 +378,14 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
                     storedProcedure: "usp_TradeLiability_Bank_Save",
                     param);
 
-                //var PCustLimitRsp = param.Get<dynamic>("@PCustLimitRsp");
-
+                var PCustAppvRsp = param.Get<dynamic>("@PCustAppvRsp");
                 var resp = param.Get<int>("@Resp");
                 if (resp == 1)
                 {
-                    //return Ok(PCustLimitRsp);
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message = "Save Bank Liability Complete";
-                    return Ok(response);
+                    //ReturnResponse response = new();
+                    //response.StatusCode = "200";
+                    //response.Message = "Save Bank Liability Complete";
+                    return Ok(PCustAppvRsp);
                 }
                 else
                 {
@@ -451,7 +449,52 @@ namespace ISPTF.API.Controllers.TradeLiabilityBank
 
         }
 
+        [HttpPost("AddTempReport")]
+        public async Task<ActionResult<string>> Add2Temp([FromBody] LiabAdd2TempBankReq LiabAdd2Tem)
+        {
+            DynamicParameters param = new();
+            param.Add("@AppvNo", LiabAdd2Tem.Appv_No);
+            param.Add("@Bank_Code", LiabAdd2Tem.Bank_Code);
+            param.Add("@Facility_No", LiabAdd2Tem.Facility_No);
+            param.Add("@Credit_Ccy", LiabAdd2Tem.Credit_Ccy);
+            param.Add("@TxStatus", LiabAdd2Tem.Status);
+            param.Add("@LbLogin", LiabAdd2Tem.Login);
+            param.Add("@TxCredit", LiabAdd2Tem.TxCredit);
 
+            param.Add("@Resp", dbType: DbType.Int32,
+            //param.Add("@Resp", dbType: DbType.String, 
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_TradeLiability_Bank_AddtmpLiab", param);
+                var resp = param.Get<int>("@Resp");
+                //var resp = param.Get<string>("@Resp");
+                if (resp > 0)
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    response.Message = "Add tmp_liability  Complete";
+                    return Ok(response);
+                }
+                else
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    //response.Message = "RELEASE Customer Liability Error";
+                    response.Message = resp.ToString();
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
 
 
 

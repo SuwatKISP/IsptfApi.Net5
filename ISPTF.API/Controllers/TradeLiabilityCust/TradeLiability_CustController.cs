@@ -518,13 +518,13 @@ namespace ISPTF.API.Controllers.TradeLiabilityCust
             param.Add("@TxCredit", LiabAdd2Tem.TxCredit);
 
             param.Add("@Resp", dbType: DbType.Int32,
-            //param.Add("@Resp", dbType: DbType.String,
+            //param.Add("@Resp", dbType: DbType.String, 
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
             try
             {
                 await _db.SaveData(
-                  storedProcedure: "usp_TradeLiability_Addtmp_liability", param);
+                  storedProcedure: "usp_TradeLiability_Cust_AddtmpLiab", param);
                 var resp = param.Get<int>("@Resp");
                 //var resp = param.Get<string>("@Resp");
                 if (resp > 0)
