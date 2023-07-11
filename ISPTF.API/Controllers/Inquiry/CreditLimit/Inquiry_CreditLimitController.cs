@@ -217,6 +217,61 @@ namespace ISPTF.API.Controllers.Inquiry
             return BadRequest(response);
         }
 
+        [HttpGet("TotalLiability")]
+        public async Task<ActionResult<INQ_CreditLimitTotalLiabilityResponse>> TotalLiability(string? CustCode)
+        {
+            INQ_CreditLimitTotalLiabilityResponse response = new INQ_CreditLimitTotalLiabilityResponse();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(CustCode))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CustCode is required";
+                response.Data = new List<Q_Inq_CreditLimit_TotalLiability_rsp>();
+                return BadRequest(response);
+            }
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@CustCode", CustCode);
+
+                var results = await _db.LoadData<Q_Inq_CreditLimit_TotalLiability_rsp, dynamic>(
+                            storedProcedure: "usp_q_Inquiry_CreditLimit_TotalLiability",
+                            param);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_Inq_CreditLimit_TotalLiability_rsp>)results;
+
+                try
+                {
+                    response.Page = 1; //int.Parse(Page);
+                    response.Total = 1; //response.Data[0].RCount;
+                    response.TotalPage = 1; // Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_Inq_CreditLimit_TotalLiability_rsp>();
+            }
+            return BadRequest(response);
+        }
+
+
+
+
 
         //[HttpGet("test")]
         //public async Task<ActionResult<PEXADResponse>> Test()
