@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models.Inquiry
 {
-    public class Q_Inq_CreditLimit_GetDetailbyFac_DetailAndTotal_rsp
+    public class Q_Inq_CreditLimit_DetailNoneLine_DetailAndTotal_rsp
     {
-        public Q_Inq_CreditLimit_GetDetailbyFac_rsp SumByProduct { get; set; }
-        public Q_Inq_CreditLimit_GetDetailbyFac_Total_rsp TOTImportExport { get; set; }
-        public Q_Inq_CreditLimit_GetDetailbyFac_TotalLiability_rsp TOTLiability { get; set; }
+        public Q_Inq_CreditLimit_DetailNoneLine_rsp SumByProduct { get; set; }
+        public Q_Inq_CreditLimit_DetailNoneLine_Total_rsp TOTImportExport { get; set; }
     }
 }
