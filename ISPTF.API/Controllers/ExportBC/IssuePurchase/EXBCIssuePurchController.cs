@@ -612,6 +612,54 @@ namespace ISPTF.API.Controllers.ExportBC
                     // DLL
                     //response.Data.PEXBC.VOUCH_ID = "VHC";
 
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU != "UNPAID")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            response.Data.PEXBC.EVENT_TYPE);
+
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssPurchase(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, response.Data.PEXBC.EVENT_NO, resReceiptNo);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+
                     return Ok(response);
                 }
                 else
@@ -951,6 +999,56 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU != "UNPAID")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            response.Data.PEXBC.EVENT_TYPE);
+
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssPurchase(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, response.Data.PEXBC.EVENT_NO, resReceiptNo);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+
+
                     return Ok(response);
                 }
                 else
