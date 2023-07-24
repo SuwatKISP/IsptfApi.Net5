@@ -156,7 +156,7 @@ namespace ISPTF.API.Controllers.ExportADV
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXADPPaymentResponse>> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
+        public ActionResult<PEXADPPaymentResponse> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
         {
             PEXADPPaymentResponse response = new();
             response.Data = new();
@@ -185,7 +185,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq, "EVENT", "Confirm L/C", "P");
 
                         // Commit
-                        await _context.SaveChangesAsync();
+                        _context.SaveChanges();
                         transaction.Complete();
                     }
                     catch (Exception e)
@@ -277,8 +277,8 @@ namespace ISPTF.API.Controllers.ExportADV
                                             select row).AsNoTracking().FirstOrDefault();
                         if (pExadRelesed == null)
                         {
-                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'T' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='EVENT' and REC_STATUS in('P','W') AND EVENT_NO = {seq}");
-                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' AND EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='MASTER'");
+                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'T' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE ='EVENT' AND REC_STATUS IN ('P','W') AND EVENT_NO = {seq}");
+                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' AND EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE ='MASTER'");
                         }
                         else
                         {
@@ -359,21 +359,26 @@ namespace ISPTF.API.Controllers.ExportADV
                                               row.EVENT_TYPE == "EVENT" &&
                                               row.EVENT_NO == seq
                                           select row).AsNoTracking().FirstOrDefault();
-                        pExadEvent.USER_ID = USER_ID;
-                        pExadEvent.CenterID = CenterID;
-                        pExadEvent = SaveSup(pExadEvent);
-                        _context.pExads.Update(pExadEvent);
+                        if(pExadEvent!=null)
+                        {
+                            pExadEvent.USER_ID = USER_ID;
+                            pExadEvent.CenterID = CenterID;
+                            pExadEvent = SaveSup(pExadEvent);
+                            _context.pExads.Update(pExadEvent);
+                        }
 
                         var pExadMaster = (from row in _context.pExads
                                            where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
                                                    row.EVENT_TYPE == "MASTER" &&
                                                    row.EVENT_NO == seq
                                            select row).AsNoTracking().FirstOrDefault();
-                        pExadMaster.USER_ID = USER_ID;
-                        pExadMaster.CenterID = CenterID;
-                        pExadMaster = SaveMaster(pExadMaster, pExadEvent);
-                        _context.pExads.Update(pExadMaster);
-
+                        if(pExadMaster!=null)
+                        {
+                            pExadMaster.USER_ID = USER_ID;
+                            pExadMaster.CenterID = CenterID;
+                            pExadMaster = SaveMaster(pExadMaster, pExadEvent, "Confirm L/C");
+                            _context.pExads.Update(pExadMaster);
+                        }
 
                         // Commit
                         await _context.SaveChangesAsync();
@@ -427,8 +432,10 @@ namespace ISPTF.API.Controllers.ExportADV
             }
             else
             {
-                pExad.EVENT_MODE = "E";
-                _context.Update(pExad);
+                pExadEvent = pExad;
+                pExadEvent.EVENT_MODE = "E";
+                _context.Update(pExadEvent);
+                _context.SaveChanges();
             }
             if (pExadEvent.PAYMENT_INSTRU == "1")
             {
@@ -463,7 +470,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 }
 
                 // Update Master
-                _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'P' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
+                _context.Database.ExecuteSqlRaw($"UPDATE pExad SET REC_STATUS = 'P' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
             }
             return pExadEvent;
         }
@@ -643,9 +650,11 @@ namespace ISPTF.API.Controllers.ExportADV
             return pExadEvent;
         }
 
-        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp)
+        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE)
         {
             var vch = pExadTemp.VOUCH_ID; // ???????
+            pExadMaster.AUTH_CODE = pExadTemp.AUTH_CODE;
+            pExadMaster.EVENT_TYPE = EVENT_TYPE;
             pExadMaster.LC_TYPE = "1";
             pExadMaster.GENACC_FLAG = "Y";
             pExadMaster.GENACC_DATE = DateTime.Now;

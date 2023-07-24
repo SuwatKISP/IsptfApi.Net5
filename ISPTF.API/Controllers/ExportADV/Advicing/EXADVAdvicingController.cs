@@ -397,6 +397,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         {
                             UpdateExadSWIn(pExadEvent, "");
                             KeepDocRegister(pExadEvent, "N", "P", "D");
+                            await _context.Database.ExecuteSqlRawAsync($"DELETE pExad WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE IN ('EVENT','MASTER') AND REC_STATUS in('P','W') AND EVENT_NO = {seq}");
                         }
                         else if (pExadEvent.EVENT_TYPE == "Amend" || pExadEvent.EVENT_TYPE == "Advice Mail")
                         {
@@ -407,8 +408,8 @@ namespace ISPTF.API.Controllers.ExportADV
                                           select row).AsNoTracking().FirstOrDefault();
                             if (pExadRelesed==null)
                             {
-                                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'T' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='EVENT' and REC_STATUS in('P','W') AND EVENT_NO = {seq}");
-                                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' AND EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND and RECORD_TYPE ='MASTER'");
+                                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'T' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE ='EVENT' AND REC_STATUS IN ('P','W') AND EVENT_NO = {seq}");
+                                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' AND EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE ='MASTER'");
                             }
                             else
                             {
@@ -591,7 +592,6 @@ namespace ISPTF.API.Controllers.ExportADV
                 pExadEvent.EVENT_MODE = "E";
                 _context.Update(pExadEvent);
                 _context.SaveChanges();
-                //pExadEvent = pExad;
             }
             if(pExadEvent.PAYMENT_INSTRU == "1")
             {
