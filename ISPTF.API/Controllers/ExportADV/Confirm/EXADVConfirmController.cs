@@ -622,9 +622,13 @@ namespace ISPTF.API.Controllers.ExportADV
             var pPayment = (from row in _context.pPayments
                             where row.RpReceiptNo == pExadEvent.RECEIPT_NO
                             select row).FirstOrDefault();
-            pPayment.RpRecStatus = "R";
-            pPayment.AuthDate = DateTime.Now;
-            pPayment.AuthCode = pExadEvent.USER_ID;
+            if(pPayment!=null)
+            {
+                pPayment.RpRecStatus = "R";
+                pPayment.AuthDate = DateTime.Now;
+                pPayment.AuthCode = pExadEvent.USER_ID;
+            }
+            
 
             // Update pDailyGL
             var pDailyGL = (from row in _context.pDailyGLs

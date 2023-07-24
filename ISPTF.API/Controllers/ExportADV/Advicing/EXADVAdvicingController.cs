@@ -542,7 +542,6 @@ namespace ISPTF.API.Controllers.ExportADV
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO = {seq}");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER' AND EVENT_NO = {seq}");
 
-
                         transaction.Complete();
                     }
                     catch (Exception e)
@@ -669,8 +668,8 @@ namespace ISPTF.API.Controllers.ExportADV
         {
             var pExadMaster = (from row in _context.pExads
                                where row.EXPORT_ADVICE_NO == pExadEvent.EXPORT_ADVICE_NO &&
-                                     row.EVENT_TYPE == "MASTER"
-                               select row).FirstOrDefault();
+                                     row.RECORD_TYPE == "MASTER"
+                               select row).AsNoTracking().FirstOrDefault();
             _context.pExads.Remove(pExadMaster);
             pExadMaster = new();
             pExadMaster = pExadEvent;
@@ -707,9 +706,12 @@ namespace ISPTF.API.Controllers.ExportADV
             var pPayment = (from row in _context.pPayments
                             where row.RpReceiptNo == pExadEvent.RECEIPT_NO
                             select row).FirstOrDefault();
-            pPayment.RpRecStatus = "R";
-            pPayment.AuthDate = DateTime.Now;
-            pPayment.AuthCode = pExadEvent.USER_ID;
+            if(pPayment!=null)
+            {
+                pPayment.RpRecStatus = "R";
+                pPayment.AuthDate = DateTime.Now;
+                pPayment.AuthCode = pExadEvent.USER_ID;
+            }
 
             // Update pDailyGL
             var pDailyGL = (from row in _context.pDailyGLs
