@@ -181,7 +181,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     try
                     {
                         // Get Requirement
-                        var seq = await EXADVHelper.GetSeqNo(_context, pexadppaymentrequest.pExad.EXPORT_ADVICE_NO);
+                        var seq = EXADVHelper.GetSeqNo(_context, pexadppaymentrequest.pExad.EXPORT_ADVICE_NO);
                         var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq, "EVENT", "Confirm L/C", "P");
 
                         // Commit
@@ -352,7 +352,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         }
 
                         // var seq = EVENT_NO;
-                        var seq = await EXADVHelper.GetSeqNo(_context, pExadEvent_temp.EXPORT_ADVICE_NO);
+                        var seq = EXADVHelper.GetSeqNo(_context, pExadEvent_temp.EXPORT_ADVICE_NO);
 
                         var pExadEvent = (from row in _context.pExads
                                           where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&

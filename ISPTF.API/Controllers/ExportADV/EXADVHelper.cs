@@ -70,15 +70,15 @@ namespace ISPTF.API.Controllers.ExportADV
             return exad;
         }
 
-        public async static Task<int> GetSeqNo(ISPTFContext _context, string EXPORT_ADVICE_NO)
+        public static int GetSeqNo(ISPTFContext _context, string EXPORT_ADVICE_NO)
         {
-            var exad = await (
+            var exad = (
                 from row in _context.pExads
                 where
                 row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
                 row.RECORD_TYPE == "MASTER"
                 orderby row.EVENT_NO descending
-                select row).AsNoTracking().FirstOrDefaultAsync();
+                select row).AsNoTracking().FirstOrDefault();
             if(exad != null)
             {
                 return exad.EVENT_NO + 1;
