@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
- 
+using Newtonsoft.Json;
+
 namespace ISPTF.API.Controllers.ExportBC
 {
     [ApiController]
@@ -468,12 +469,99 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
-
+                var resSeqNo = param.Get<int>("@ResSeqNo");
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
+                var resReceiptNo = param.Get<string>("@ResReceiptNo");
                 if (PExBcRsp == 1)
                 {
-                    return Ok(pexbcpexpaymentrsp);
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+                    PEXBCPPaymentRspGL resultJson = new();
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "PAID")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Payment Collect",true);
+
+                    }
+                    else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "BAHTNET")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Payment Collect", true);
+
+                    }
+                    else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "FCD")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT COLL-FCD", true);
+
+                    }
+                    else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "MT202")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT MT202", true);
+
+                    }
+                    else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "UNPAID")
+                    {
+                        if (pexbcppaymentreq.PEXPayment.Debit_credit_flag == "R")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT-REVCOLL", true);
+
+                        }
+                        else
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, pexbcppaymentreq.PEXBC.EVENT_TYPE, false, "U");
+
+                        }
+
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_CollectPay(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, pexbcppaymentreq.PEXBC.EVENT_NO, resReceiptNo);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+                    if (resGL == true && resPayD == true)
+                    {
+                        resultJson.VoucherID = resVoucherID;
+                        resultJson.PEXBC = JsonConvert.DeserializeObject<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
+                        return Ok(resultJson);
+                        //return Ok(pexbcpexpaymentrsp);
+                    }
+                    else
+                    {
+                        ReturnResponse response = new();
+                        response.StatusCode = "400";
+                        response.Message = "EXPORT_BC_NO Update G/L or Payment Error";
+                        return BadRequest(response);
+                    }
+                    //return Ok(pexbcpexpaymentrsp);
                 }
                 else
                 {
@@ -535,14 +623,55 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<string>> PEXBCPurchasePaymentReleaseReq([FromBody] PEXBCPurchasePaymentReleaseReq PEXBCPurchasePaymentRelease)
+        public async Task<ActionResult<string>> PEXBCCollectionPaymentReleaseReq([FromBody] PEXBCCollectionPaymentReleaseReq PEXBCCollectionPaymentReleaseReq)
         {
             DynamicParameters param = new();
-            param.Add("@CenterID", PEXBCPurchasePaymentRelease.CenterID);
-            param.Add("@EXPORT_BC_NO", PEXBCPurchasePaymentRelease.EXPORT_BC_NO);
-            param.Add("@EVENT_NO", PEXBCPurchasePaymentRelease.EVENT_NO);
-            param.Add("@USER_ID", PEXBCPurchasePaymentRelease.USER_ID);
-
+            param.Add("@EVENT_DATE", PEXBCCollectionPaymentReleaseReq.EVENT_DATE);
+            param.Add("@CenterID", PEXBCCollectionPaymentReleaseReq.CenterID);
+            param.Add("@EXPORT_BC_NO", PEXBCCollectionPaymentReleaseReq.EXPORT_BC_NO);
+            param.Add("@EVENT_NO", PEXBCCollectionPaymentReleaseReq.EVENT_NO);
+            param.Add("@USER_ID", PEXBCCollectionPaymentReleaseReq.USER_ID);
+            param.Add("@BENE_ID", PEXBCCollectionPaymentReleaseReq.BENE_ID);
+            param.Add("@TENOR_OF_COLL", PEXBCCollectionPaymentReleaseReq.TENOR_OF_COLL);
+            param.Add("@PARTIAL_FULL_RATE", PEXBCCollectionPaymentReleaseReq.PARTIAL_FULL_RATE);
+            param.Add("@SETTLEMENT_CREDIT", PEXBCCollectionPaymentReleaseReq.SETTLEMENT_CREDIT);
+            param.Add("@Debit_Credit_Flag", PEXBCCollectionPaymentReleaseReq.Debit_Credit_Flag);
+            param.Add("@DRAFT_CCY", PEXBCCollectionPaymentReleaseReq.DRAFT_CCY);
+            param.Add("@SIGHT_PAID_AMT", PEXBCCollectionPaymentReleaseReq.SIGHT_PAID_AMT);
+            param.Add("@TERM_PAID_AMT", PEXBCCollectionPaymentReleaseReq.TERM_PAID_AMT);
+            param.Add("@SIGHT_PAID_THB", PEXBCCollectionPaymentReleaseReq.SIGHT_PAID_THB);
+            param.Add("@TERM_PAID_THB", PEXBCCollectionPaymentReleaseReq.TERM_PAID_THB);
+            param.Add("@TOT_NEGO_AMOUNT", PEXBCCollectionPaymentReleaseReq.TOT_NEGO_AMOUNT);
+            param.Add("@TOTAL_NEGO_BALANCE", PEXBCCollectionPaymentReleaseReq.TOTAL_NEGO_BALANCE);
+            param.Add("@TOTAL_NEGO_BAL_THB", PEXBCCollectionPaymentReleaseReq.TOTAL_NEGO_BAL_THB);
+            param.Add("@VOUCH_ID", PEXBCCollectionPaymentReleaseReq.VOUCH_ID);
+            param.Add("@PARTIAL_AMT1", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT1);
+            param.Add("@PARTIAL_AMT2", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT2);
+            param.Add("@PARTIAL_AMT3", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT3);
+            param.Add("@PARTIAL_AMT4", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT4);
+            param.Add("@PARTIAL_AMT5", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT5);
+            param.Add("@PARTIAL_AMT6", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT6);
+            param.Add("@PARTIAL_AMT1_THB", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT1_THB);
+            param.Add("@PARTIAL_AMT2_THB", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT2_THB);
+            param.Add("@PARTIAL_AMT3_THB", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT3_THB);
+            param.Add("@PARTIAL_AMT4_THB", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT4_THB);
+            param.Add("@PARTIAL_AMT5_THB", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT5_THB);
+            param.Add("@PARTIAL_AMT6_THB", PEXBCCollectionPaymentReleaseReq.PARTIAL_AMT6_THB);
+            param.Add("@INVOICE", PEXBCCollectionPaymentReleaseReq.INVOICE);
+            param.Add("@RELETE_PACK", PEXBCCollectionPaymentReleaseReq.RELETE_PACK);
+            param.Add("@PAYMENTTYPE", PEXBCCollectionPaymentReleaseReq.PAYMENTTYPE);
+            param.Add("@NEGO_COMM", PEXBCCollectionPaymentReleaseReq.NEGO_COMM);
+            param.Add("@TELEX_SWIFT", PEXBCCollectionPaymentReleaseReq.TELEX_SWIFT);
+            param.Add("@COURIER_POSTAGE", PEXBCCollectionPaymentReleaseReq.COURIER_POSTAGE);
+            param.Add("@STAMP_FEE", PEXBCCollectionPaymentReleaseReq.STAMP_FEE);
+            param.Add("@BE_STAMP", PEXBCCollectionPaymentReleaseReq.BE_STAMP);
+            param.Add("@COMM_OTHER", PEXBCCollectionPaymentReleaseReq.COMM_OTHER);
+            param.Add("@HANDING_FEE", PEXBCCollectionPaymentReleaseReq.HANDING_FEE);
+            param.Add("@DRAFTCOMM", PEXBCCollectionPaymentReleaseReq.DRAFTCOMM);
+            param.Add("@TOTAL_CHARGE", PEXBCCollectionPaymentReleaseReq.TOTAL_CHARGE);
+            param.Add("@REFUND_TAX_YN", PEXBCCollectionPaymentReleaseReq.REFUND_TAX_YN);
+            param.Add("@REFUND_TAX_AMT", PEXBCCollectionPaymentReleaseReq.REFUND_TAX_AMT);
+            param.Add("@TOTAL_AMOUNT", PEXBCCollectionPaymentReleaseReq.TOTAL_AMOUNT);
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
                 direction: System.Data.ParameterDirection.Output,
@@ -550,16 +679,44 @@ namespace ISPTF.API.Controllers.ExportBC
             try
             {
                 await _db.SaveData(
-                  storedProcedure: "usp_pEXBC_PurchasePayment_Release", param);
+                  storedProcedure: "usp_pEXBC_CollectionPayment_Release", param);
                 //var resp = param.Get<int>("@Resp");
                 var resp = param.Get<string>("@Resp");
                 if (resp == "1")
                 {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message = "Export B/C NO Release Complete";
-                    return Ok(response);
+                    string eventDate;
+                    string resCustLiab;
+                    eventDate = PEXBCCollectionPaymentReleaseReq.EVENT_DATE.ToString("dd/MM/yyyy");
+                    resCustLiab = ISPModule.CustLiabEXBC.EXBC_CollectPay(eventDate, "ISSUE", "SAVE",
+                    PEXBCCollectionPaymentReleaseReq.EXPORT_BC_NO, PEXBCCollectionPaymentReleaseReq.BENE_ID,
+                    PEXBCCollectionPaymentReleaseReq.TENOR_OF_COLL.ToString(), PEXBCCollectionPaymentReleaseReq.PARTIAL_FULL_RATE.ToString(),
+                    PEXBCCollectionPaymentReleaseReq.SETTLEMENT_CREDIT.ToString(),
+                    PEXBCCollectionPaymentReleaseReq.Debit_Credit_Flag,
+                    PEXBCCollectionPaymentReleaseReq.DRAFT_CCY,
+                    PEXBCCollectionPaymentReleaseReq.SIGHT_PAID_AMT.ToString(), PEXBCCollectionPaymentReleaseReq.TERM_PAID_AMT.ToString(),
+                    PEXBCCollectionPaymentReleaseReq.SIGHT_PAID_THB.ToString(), PEXBCCollectionPaymentReleaseReq.TERM_PAID_THB.ToString(),
+                    PEXBCCollectionPaymentReleaseReq.TOT_NEGO_AMT.ToString(),
+                    PEXBCCollectionPaymentReleaseReq.TOTAL_NEGO_BALANCE,
+                    PEXBCCollectionPaymentReleaseReq.TOTAL_NEGO_BAL_THB
+                        );
+                    if (resCustLiab != "ERROR")
+                    {
+                        ReturnResponse response = new();
+                        response.StatusCode = "200";
+                        response.Message = "Export B/C NO Release Complete";
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        ReturnResponse response = new();
+                        response.StatusCode = "400";
+                        response.Message = "Export BC Error for Update Liability";
+                        return BadRequest(response);
+                    }
+                    //ReturnResponse response = new();
+                    //response.StatusCode = "200";
+                    //response.Message = "Export B/C NO Release Complete";
+                    //return Ok(response);
                 }
                 else
                 {
