@@ -463,7 +463,7 @@ namespace ISPTF.API.Controllers.ExportBC
             try
             {
                 var results = await _db.LoadData<PEXBCPEXPaymentRsp, dynamic>(
-                            storedProcedure: "usp_pEXBC_PurchasePayment_Save",
+                            storedProcedure: "usp_pEXBC_CollectionPayment_Save",
                             param);
 
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
