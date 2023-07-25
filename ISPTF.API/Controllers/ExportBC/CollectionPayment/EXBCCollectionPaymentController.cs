@@ -484,12 +484,12 @@ namespace ISPTF.API.Controllers.ExportBC
                     eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
                     if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "PAID")
                     {
-                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Payment Collect",true);
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, "Payment Collect", resSeqNo, "Payment Collect",true);
 
                     }
                     else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "BAHTNET")
                     {
-                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "Payment Collect", true);
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, "Payment Collect", resSeqNo, "Payment Collect", true);
 
                     }
                     else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "FCD")
