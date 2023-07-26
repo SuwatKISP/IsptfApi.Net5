@@ -184,6 +184,73 @@ namespace ISPTF.API.Controllers.ImportTR
         }
 
 
+        [HttpGet("newSelect")]
+        public async Task<ActionResult<Q_IMTR_Issue_NewSelect_Response>> NewSelect(string? Reg_Docno, string? Reg_CustCode, string? Reg_RefNo, string? Reg_RefType, string? Reg_AppvNo)
+        {
+            Q_IMTR_Issue_NewSelect_Response response = new Q_IMTR_Issue_NewSelect_Response();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(Reg_Docno) || string.IsNullOrEmpty(Reg_CustCode) )
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "Reg_Docno, Reg_CustCode is required";
+                response.Data = new Q_IMTR_IssueNewSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@RegDocno", Reg_Docno);
+                param.Add("@RegCustCode", Reg_CustCode);
+                param.Add("@RegRefNo", Reg_RefNo);
+                param.Add("@RegRefType", Reg_RefType);
+                param.Add("@RegAppvNo", Reg_AppvNo);
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 12800);
+
+                param.Add("@IssueNewResp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
+
+
+                var results = await _db.LoadData<Q_IMTR_IssueNewSelect_JSON_rsp, dynamic>(
+                            storedProcedure: "usp_Q_IMTR_IssueTRNewSelect",
+                            param);
+
+                var Resp = param.Get<dynamic>("@Resp");
+                var IssueNewResp = param.Get<dynamic>("@IssueNewResp");
+
+                if (Resp == 1)
+                {
+                    Q_IMTR_IssueNewSelect_JSON_rsp jsonResponse = JsonSerializer.Deserialize<Q_IMTR_IssueNewSelect_JSON_rsp>(IssueNewResp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
+                    return Ok(response);
+                }
+                else
+                {
+
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "No Data";
+                    response.Data = new Q_IMTR_IssueNewSelect_JSON_rsp();
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new Q_IMTR_IssueNewSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+        }
 
 
 
