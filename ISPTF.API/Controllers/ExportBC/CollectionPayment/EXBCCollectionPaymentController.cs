@@ -695,7 +695,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     PEXBCCollectionPaymentReleaseReq.DRAFT_CCY,
                     PEXBCCollectionPaymentReleaseReq.SIGHT_PAID_AMT.ToString(), PEXBCCollectionPaymentReleaseReq.TERM_PAID_AMT.ToString(),
                     PEXBCCollectionPaymentReleaseReq.SIGHT_PAID_THB.ToString(), PEXBCCollectionPaymentReleaseReq.TERM_PAID_THB.ToString(),
-                    PEXBCCollectionPaymentReleaseReq.TOT_NEGO_AMT.ToString(),
+                    PEXBCCollectionPaymentReleaseReq.TOT_NEGO_AMOUNT.ToString(),
                     PEXBCCollectionPaymentReleaseReq.TOTAL_NEGO_BALANCE,
                     PEXBCCollectionPaymentReleaseReq.TOTAL_NEGO_BAL_THB
                         );

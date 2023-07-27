@@ -109,323 +109,74 @@ namespace ISPTF.API.Controllers.ImportTR
             return BadRequest(response);
         }
 
-        ////[HttpGet("getTotSum")]
-        ////public async Task<ActionResult<INQ_CreditLimitGetTotSumResponse>> GetTotSum(string? CustCode)
-        ////{
-        ////    INQ_CreditLimitGetTotSumResponse response = new INQ_CreditLimitGetTotSumResponse();
-        ////    var USER_ID = User.Identity.Name;
-        ////    //var USER_ID = "API";
-        ////    // Validate
-        ////    if (string.IsNullOrEmpty(CustCode))
-        ////    {
-        ////        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-        ////        response.Message = "CustCode is required";
-        ////        response.Data = new List<Q_Inq_CreditLimit_GetTotSum_rsp>();
-        ////        return BadRequest(response);
-        ////    }
-        ////    //if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
-        ////    //{
-        ////    //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-        ////    //    response.Message = "USER_ID is required";
-        ////    //    response.Data = new List<Q_AdvisingListPageRsp>();
-        ////    //    return BadRequest(response);
-        ////    //}
+        [HttpGet("Select")]
+        public async Task<ActionResult<Q_IMTR_ChangeIntRateSelect_Response>> Select(string? CustCode, string? RefNumber, string? TRSeqno, string? RecType, string? Event)
+        {
+            Q_IMTR_ChangeIntRateSelect_Response response = new Q_IMTR_ChangeIntRateSelect_Response();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(CustCode) || string.IsNullOrEmpty(RefNumber) || string.IsNullOrEmpty(TRSeqno) ||
+                string.IsNullOrEmpty(RecType) || string.IsNullOrEmpty(Event))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CustCode, RefNumber, TRSeqno, RecType, Event are required";
+                response.Data = new Q_IMTR_ChangeIntRateSelect_JSON_rsp();
+                return BadRequest(response);
+            }
 
-        ////    // Call Store Procedure
-        ////    try
-        ////    {
-        ////        DynamicParameters param = new();
-        ////        param.Add("@CustCode", CustCode);
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@CustCode", CustCode);
+                param.Add("@RefNumber", RefNumber);
+                param.Add("@TRSeqno", TRSeqno);
+                param.Add("@RecType", RecType);
+                param.Add("@Event", Event);
 
-        ////        var results = await _db.LoadData<Q_Inq_CreditLimit_GetTotSum_rsp, dynamic>(
-        ////                    storedProcedure: "usp_q_Inquiry_CreditLimit_GetTotSum",
-        ////                    param);
+                param.Add("@Resp", dbType: DbType.Int32,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 12800);
 
-        ////        response.Code = Constants.RESPONSE_OK;
-        ////        response.Message = "Success";
-        ////        response.Data = (List<Q_Inq_CreditLimit_GetTotSum_rsp>)results;
-
-        ////        try
-        ////        {
-        ////            response.Page = 1; //int.Parse(Page);
-        ////            response.Total = 1; //response.Data[0].RCount;
-        ////            response.TotalPage = 1; // Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
-        ////        }
-        ////        catch (Exception)
-        ////        {
-        ////            response.Page = 0;
-        ////            response.Total = 0;
-        ////            response.TotalPage = 0;
-        ////        }
-        ////        return Ok(response);
-        ////    }
-        ////    catch (Exception e)
-        ////    {
-        ////        response.Code = Constants.RESPONSE_ERROR;
-        ////        response.Message = e.ToString();
-        ////        response.Data = new List<Q_Inq_CreditLimit_GetTotSum_rsp>();
-        ////    }
-        ////    return BadRequest(response);
-        ////}
-
-        //[HttpGet("getDetailbyFac")]
-        //public async Task<ActionResult<INQ_CreditLimitGetDetailbyFacSumAndTotalResponse>> GetDetailbyFac(string? CustCode, string? FacilityNo)
-        //{
-        //    INQ_CreditLimitGetDetailbyFacSumAndTotalResponse response = new INQ_CreditLimitGetDetailbyFacSumAndTotalResponse();
-        //    var USER_ID = User.Identity.Name;
-        //    //var USER_ID = "API";
-        //    // Validate
-        //    if (string.IsNullOrEmpty(CustCode))
-        //    {
-        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-        //        response.Message = "CustCode is required";
-        //        response.Data = new Q_Inq_CreditLimit_GetDetailbyFac_DetailAndTotal_rsp();
-        //        return BadRequest(response);
-        //    }
-
-        //    // Call Store Procedure
-        //    try
-        //    {
-        //        DynamicParameters param = new();
-        //        param.Add("@CustCode", CustCode);
-        //        param.Add("@FacilityNo", FacilityNo);
-
-        //        param.Add("@Resp", dbType: DbType.Int32,
-        //           direction: System.Data.ParameterDirection.Output,
-        //           size: 12800);
-
-        //        param.Add("@GetDetailbyFacRsp", dbType: DbType.String,
-        //                   direction: System.Data.ParameterDirection.Output,
-        //                   size: 5215585);
+                param.Add("@ChangeIntRateResp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
 
 
-        //        var results = await _db.LoadData<Q_Inq_CreditLimit_GetDetailbyFac_DetailAndTotal_rsp, dynamic>(
-        //                    storedProcedure: "usp_q_Inquiry_CreditLimit_GetDetailbyFac",
-        //                    param);
+                var results = await _db.LoadData<Q_IMTR_ChangeIntRateSelect_JSON_rsp, dynamic>(
+                            storedProcedure: "usp_Q_IMTR_ChangeIntRateListSelect",
+                            param);
 
-        //        var Resp = param.Get<dynamic>("@Resp");
-        //        var GetDetailbyFacRsp = param.Get<dynamic>("@GetDetailbyFacRsp");
+                var Resp = param.Get<dynamic>("@Resp");
+                var ChangeIntRateResp = param.Get<dynamic>("@ChangeIntRateResp");
 
-        //        if (Resp == 1)
-        //        {
-        //            Q_Inq_CreditLimit_GetDetailbyFac_DetailAndTotal_rsp jsonResponse = JsonSerializer.Deserialize<Q_Inq_CreditLimit_GetDetailbyFac_DetailAndTotal_rsp>(GetDetailbyFacRsp);
-        //            response.Code = Constants.RESPONSE_OK;
-        //            response.Message = "Success";
-        //            response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
-        //            return Ok(response);
-        //        }
-        //        else
-        //        {
+                if (Resp == 1)
+                {
+                    Q_IMTR_ChangeIntRateSelect_JSON_rsp jsonResponse = JsonSerializer.Deserialize<Q_IMTR_ChangeIntRateSelect_JSON_rsp>(ChangeIntRateResp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
+                    return Ok(response);
+                }
+                else
+                {
 
-        //            response.Code = Constants.RESPONSE_ERROR;
-        //            response.Message = "No Data";
-        //            response.Data = new Q_Inq_CreditLimit_GetDetailbyFac_DetailAndTotal_rsp();
-        //            return BadRequest(response);
-        //        }
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "No Data";
+                    response.Data = new Q_IMTR_ChangeIntRateSelect_JSON_rsp();
+                    return BadRequest(response);
+                }
 
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        response.Code = Constants.RESPONSE_ERROR;
-        //        response.Message = e.ToString();
-        //        response.Data = new Q_Inq_CreditLimit_GetDetailbyFac_DetailAndTotal_rsp();
-        //        return BadRequest(response);
-        //    }
-        //}
-
-
-        //[HttpGet("Detail")]
-        //public async Task<ActionResult<INQ_CreditLimitDetailResponse>> Detail(string? cType, string? CustCode, string? FacilityNo)
-        //{
-        //    INQ_CreditLimitDetailResponse response = new INQ_CreditLimitDetailResponse();
-        //    var USER_ID = User.Identity.Name;
-        //    //var USER_ID = "API";
-        //    // Validate
-        //    if (string.IsNullOrEmpty(CustCode) || (string.IsNullOrEmpty(cType)))
-        //    {
-        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-        //        response.Message = "cType and CustCode is required";
-        //        response.Data = new List<Q_Inq_CreditLimit_Detail_rsp>();
-        //        return BadRequest(response);
-        //    }
-
-        //    if (cType == "CD" && (string.IsNullOrEmpty(FacilityNo)))
-        //    {
-        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-        //        response.Message = "cType = CD. FacilityNO is required";
-        //        response.Data = new List<Q_Inq_CreditLimit_Detail_rsp>();
-        //        return BadRequest(response);
-        //    }
-
-        //    // Call Store Procedure
-        //    try
-        //    {
-        //        DynamicParameters param = new();
-        //        param.Add("@cType", cType);
-        //        param.Add("@CustCode", CustCode);
-        //        param.Add("@FacilityNo", FacilityNo);
-
-        //        var results = await _db.LoadData<Q_Inq_CreditLimit_Detail_rsp, dynamic>(
-        //                    storedProcedure: "usp_q_Inquiry_CreditLimit_Detail",
-        //                    param);
-
-        //        response.Code = Constants.RESPONSE_OK;
-        //        response.Message = "Success";
-        //        response.Data = (List<Q_Inq_CreditLimit_Detail_rsp>)results;
-
-        //        try
-        //        {
-        //            response.Page = 1; //int.Parse(Page);
-        //            response.Total = 1; //response.Data[0].RCount;
-        //            response.TotalPage = 1; // Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
-        //        }
-        //        catch (Exception)
-        //        {
-        //            response.Page = 0;
-        //            response.Total = 0;
-        //            response.TotalPage = 0;
-        //        }
-        //        return Ok(response);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        response.Code = Constants.RESPONSE_ERROR;
-        //        response.Message = e.ToString();
-        //        response.Data = new List<Q_Inq_CreditLimit_Detail_rsp>();
-        //    }
-        //    return BadRequest(response);
-        //}
-
-        //[HttpGet("DetailNoneLine")]
-        //public async Task<ActionResult<INQ_CreditLimitDetailNoneLineResponse>> DetailNoneLine(string? CustCode)
-        //{
-        //    INQ_CreditLimitDetailNoneLineResponse response = new INQ_CreditLimitDetailNoneLineResponse();
-        //    var USER_ID = User.Identity.Name;
-        //    //var USER_ID = "API";
-        //    // Validate
-        //    if (string.IsNullOrEmpty(CustCode))
-        //    {
-        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-        //        response.Message = "CustCode is required";
-        //        response.Data = new Q_Inq_CreditLimit_DetailNoneLine_DetailAndTotal_rsp();
-        //        return BadRequest(response);
-        //    }
-
-        //    // Call Store Procedure
-        //    try
-        //    {
-        //        DynamicParameters param = new();
-        //        param.Add("@CustCode", CustCode);
-
-        //        param.Add("@Resp", dbType: DbType.Int32,
-        //           direction: System.Data.ParameterDirection.Output,
-        //           size: 12800);
-
-        //        param.Add("@DetailNoneLineRsp", dbType: DbType.String,
-        //                   direction: System.Data.ParameterDirection.Output,
-        //                   size: 5215585);
-
-
-        //        var results = await _db.LoadData<Q_Inq_CreditLimit_DetailNoneLine_DetailAndTotal_rsp, dynamic>(
-        //                    storedProcedure: "usp_q_Inquiry_CreditLimit_DetailNoneLine",
-        //                    param);
-
-        //        var Resp = param.Get<dynamic>("@Resp");
-        //        var DetailNoneLineRsp = param.Get<dynamic>("@DetailNoneLineRsp");
-
-        //        if (Resp == 1)
-        //        {
-        //            Q_Inq_CreditLimit_DetailNoneLine_DetailAndTotal_rsp jsonResponse = JsonSerializer.Deserialize<Q_Inq_CreditLimit_DetailNoneLine_DetailAndTotal_rsp>(DetailNoneLineRsp);
-        //            response.Code = Constants.RESPONSE_OK;
-        //            response.Message = "Success";
-        //            response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
-        //            return Ok(response);
-        //        }
-        //        else
-        //        {
-
-        //            response.Code = Constants.RESPONSE_ERROR;
-        //            response.Message = "No Data";
-        //            response.Data = new Q_Inq_CreditLimit_DetailNoneLine_DetailAndTotal_rsp();
-        //            return BadRequest(response);
-        //        }
-
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        response.Code = Constants.RESPONSE_ERROR;
-        //        response.Message = e.ToString();
-        //        response.Data = new Q_Inq_CreditLimit_DetailNoneLine_DetailAndTotal_rsp();
-        //        return BadRequest(response);
-        //    }
-        //}
-
-
-        //[HttpGet("SumAndTotal")]
-        //public async Task<ActionResult<INQ_CreditLimitSumAndTotalResponse>> SumAndTotal(string? CustCode)
-        //{
-        //    INQ_CreditLimitSumAndTotalResponse response = new INQ_CreditLimitSumAndTotalResponse();
-        //    var USER_ID = User.Identity.Name;
-        //    //var USER_ID = "API";
-        //    // Validate
-        //    if (string.IsNullOrEmpty(CustCode))
-        //    {
-        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-        //        response.Message = "CustCode is required";
-        //        response.Data = new Q_Inq_CreditLimit_SumAndTotal_rsp();
-        //        return BadRequest(response);
-        //    }
-
-        //    // Call Store Procedure
-        //    try
-        //    {
-        //        DynamicParameters param = new();
-        //        param.Add("@CustCode", CustCode);
-
-        //        param.Add("@Resp", dbType: DbType.Int32,
-        //           direction: System.Data.ParameterDirection.Output,
-        //           size: 12800);
-
-        //        param.Add("@TOTSumTOTLiabiRsp", dbType: DbType.String,
-        //                   direction: System.Data.ParameterDirection.Output,
-        //                   size: 5215585);
-
-
-        //        var results = await _db.LoadData<Q_Inq_CreditLimit_SumAndTotal_rsp, dynamic>(
-        //                    storedProcedure: "usp_q_Inquiry_CreditLimit_GetTotSum_TotLiability",
-        //                    param);
-
-        //        var Resp = param.Get<dynamic>("@Resp");
-        //        var TOTSumTOTLiabiRsp = param.Get<dynamic>("@TOTSumTOTLiabiRsp");
-
-        //        if (Resp == 1)
-        //        {
-        //            Q_Inq_CreditLimit_SumAndTotal_rsp jsonResponse = JsonSerializer.Deserialize<Q_Inq_CreditLimit_SumAndTotal_rsp>(TOTSumTOTLiabiRsp);
-        //            response.Code = Constants.RESPONSE_OK;
-        //            response.Message = "Success";
-        //            response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
-        //            return Ok(response);
-        //        }
-        //        else
-        //        {
-
-        //            response.Code = Constants.RESPONSE_ERROR;
-        //            response.Message = "No Data";
-        //            response.Data = new Q_Inq_CreditLimit_SumAndTotal_rsp();
-        //            return BadRequest(response);
-        //        }
-
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        response.Code = Constants.RESPONSE_ERROR;
-        //        response.Message = e.ToString();
-        //        response.Data = new Q_Inq_CreditLimit_SumAndTotal_rsp();
-        //        return BadRequest(response);
-        //    }
-        //}
-
-
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new Q_IMTR_ChangeIntRateSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+        }
 
 
 

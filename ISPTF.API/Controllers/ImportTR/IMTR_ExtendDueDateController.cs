@@ -109,7 +109,75 @@ namespace ISPTF.API.Controllers.ImportTR
             return BadRequest(response);
         }
 
- 
+        [HttpGet("Select")]
+        public async Task<ActionResult<Q_IMTR_ExtendDueDateSelect_Response>> Select(string? CustCode, string? RefNumber, string? TRSeqno, string? RecType, string? Event)
+        {
+            Q_IMTR_ExtendDueDateSelect_Response response = new Q_IMTR_ExtendDueDateSelect_Response();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(CustCode) || string.IsNullOrEmpty(RefNumber) || string.IsNullOrEmpty(TRSeqno) ||
+                string.IsNullOrEmpty(RecType) || string.IsNullOrEmpty(Event))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CustCode, RefNumber, TRSeqno, RecType, Event are required";
+                response.Data = new Q_IMTR_ExtendDueDateSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@CustCode", CustCode);
+                param.Add("@RefNumber", RefNumber);
+                param.Add("@TRSeqno", TRSeqno);
+                param.Add("@RecType", RecType);
+                param.Add("@Event", Event);
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 12800);
+
+                param.Add("@ExtendedDueDateResp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
+
+
+                var results = await _db.LoadData<Q_IMTR_ExtendDueDateSelect_JSON_rsp, dynamic>(
+                            storedProcedure: "usp_Q_IMTR_ExtendedDueDateListSelect",
+                            param);
+
+                var Resp = param.Get<dynamic>("@Resp");
+                var ExtendedDueDateResp = param.Get<dynamic>("@ExtendedDueDateResp");
+
+                if (Resp == 1)
+                {
+                    Q_IMTR_ExtendDueDateSelect_JSON_rsp jsonResponse = JsonSerializer.Deserialize<Q_IMTR_ExtendDueDateSelect_JSON_rsp>(ExtendedDueDateResp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
+                    return Ok(response);
+                }
+                else
+                {
+
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "No Data";
+                    response.Data = new Q_IMTR_ExtendDueDateSelect_JSON_rsp();
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new Q_IMTR_ExtendDueDateSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+        }
+
 
 
 
