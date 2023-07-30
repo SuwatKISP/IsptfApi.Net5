@@ -329,7 +329,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXLCPPaymentPPayDetailsSaveResponse>> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
+        public ActionResult<PEXLCPPaymentPPayDetailsSaveResponse> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
         {
             PEXLCPPaymentPPayDetailsSaveResponse response = new();
             // Class validate
@@ -409,11 +409,11 @@ namespace ISPTF.API.Controllers.ExportLC
                             eventRow.METHOD = data.PEXLC.METHOD;
 
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = await ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
                             
                             // Call Save PaymentDetail
                             if (eventRow.RECEIVED_NO != "ERROR") {
-                                bool savePayDetailResult = await ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
+                                bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
                             }
                         }
                         else
@@ -423,16 +423,16 @@ namespace ISPTF.API.Controllers.ExportLC
 
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
-                                                       select row).ToListAsync();
-                            foreach (var row in await existingPaymentRows)
+                                                       select row).ToList();
+                            foreach (var row in existingPaymentRows)
                             {
                                 _context.pPayments.Remove(row);
                             }
 
                             var existingPPayDetailRows = (from row in _context.pPayDetails
                                                           where row.DpReceiptNo == eventRow.RECEIVED_NO
-                                                          select row).ToListAsync();
-                            foreach (var row in await existingPPayDetailRows)
+                                                          select row).ToList();
+                            foreach (var row in existingPPayDetailRows)
                             {
                                 _context.pPayDetails.Remove(row);
                             }
@@ -440,7 +440,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // Commit
                         _context.pExlcs.Add(eventRow);
-                        await _context.SaveChangesAsync();
+                        _context.SaveChanges();
                         transaction.Complete();
 
                         response.Code = Constants.RESPONSE_OK;

@@ -93,7 +93,7 @@ namespace ISPTF.API.Controllers.ExportLC
             return 0;
         }
 
-        public async static Task<string> GenRefNo(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
+        public static string GenRefNo(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -114,7 +114,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             pRefNo.InUse = true;
                             _context.pReferenceNos.Update(pRefNo);
-                            await _context.SaveChangesAsync();
+                            _context.SaveChanges();
 
                             var currentRunNo = 0;
                             if (pRefNo.pRefSeq != null)
@@ -131,7 +131,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             pRefNo.UserCode = USER_ID;
 
                             _context.pReferenceNos.Update(pRefNo);
-                            await _context.SaveChangesAsync();
+                            _context.SaveChanges();
 
                             transaction.Complete();
                             return genRefNo;
@@ -162,9 +162,9 @@ namespace ISPTF.API.Controllers.ExportLC
                             initialRunNo.pRefBran = USER_CENTER_ID;
                             initialRunNo.InUse = false;
                             _context.pReferenceNos.Add(initialRunNo);
-                            await _context.SaveChangesAsync();
+                            _context.SaveChanges();
                             transaction.Complete();
-                            return await GenRefNo(_context, USER_CENTER_ID, USER_ID, docType);
+                            return GenRefNo(_context, USER_CENTER_ID, USER_ID, docType);
                         }
                         else
                         {
@@ -182,7 +182,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
 
-        public async static Task<string> GetReceiptFCD(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
+        public static string GetReceiptFCD(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -203,7 +203,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             pRefNo.InUse = true;
                             _context.pReferenceNos.Update(pRefNo);
-                            await _context.SaveChangesAsync();
+                            _context.SaveChanges();
 
                             var currentRunNo = 0;
                             if (pRefNo.pRefSeq != null)
@@ -220,7 +220,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             pRefNo.UserCode = USER_ID;
 
                             _context.pReferenceNos.Update(pRefNo);
-                            await _context.SaveChangesAsync();
+                            _context.SaveChanges();
 
                             transaction.Complete();
                             return genRefNo;
@@ -256,9 +256,9 @@ namespace ISPTF.API.Controllers.ExportLC
                             initialRunNo.pRefBran = USER_CENTER_ID;
                             initialRunNo.InUse = false;
                             _context.pReferenceNos.Add(initialRunNo);
-                            await _context.SaveChangesAsync();
+                            _context.SaveChanges();
                             transaction.Complete();
-                            return await GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, docType);
+                            return GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, docType);
                         }
                         else
                         {
@@ -276,13 +276,13 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         //LC
-        public async static Task<string> SavePayment(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment)
+        public static string SavePayment(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
-                    string RECEIPT_NO = await GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
+                    string RECEIPT_NO = GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
 
                     var existingPPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == lc.RECEIVED_NO
@@ -319,7 +319,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     transaction.Complete();
                     return RECEIPT_NO;
@@ -334,7 +334,7 @@ namespace ISPTF.API.Controllers.ExportLC
             }
         }
 
-        public async static Task<bool> SavePaymentDetail(ISPTFContext _context, pExlc lc, pPayDetail[] payDetails)
+        public static bool SavePaymentDetail(ISPTFContext _context, pExlc lc, pPayDetail[] payDetails)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -351,14 +351,14 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     var existingPPayDetail = (from row in _context.pPayDetails
                                               where row.DpReceiptNo == lc.RECEIVED_NO
-                                              select row).ToListAsync();
+                                              select row).ToList();
 
-                    foreach (var row in await existingPPayDetail)
+                    foreach (var row in existingPPayDetail)
                     {
                         _context.pPayDetails.Remove(row);
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     // Save PayDetails[]
 
@@ -367,7 +367,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         _context.pPayDetails.Add(row);
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     transaction.Complete();
                     return true;
@@ -380,7 +380,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
             }
         }
-        public async static Task<bool> UpdateCustomerLiability(ISPTFContext _context, pExlc data)
+        public static bool UpdateCustomerLiability(ISPTFContext _context, pExlc data)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -410,11 +410,11 @@ namespace ISPTF.API.Controllers.ExportLC
                     var CCYAmt = data.PRNBALANCE;
                     var BHTAmt = CCYAmt * exchangeRate;
 
-                    var pCustLiabODU = await (from row in _context.pCustLiabs
+                    var pCustLiabODU = (from row in _context.pCustLiabs
                                               where row.Cust_Code == data.BENE_ID &&
                                                     row.Facility_No == approveFacility &&
                                                     row.Currency == cCCY
-                                              select row).FirstOrDefaultAsync();
+                                              select row).FirstOrDefault();
 
                     if (pCustLiabODU != null)
                     {
@@ -429,11 +429,11 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     // 3 - Update PCustLiability THB
                     cCCY = "THB";
-                    var pCustLiabTHB = await (from row in _context.pCustLiabs
+                    var pCustLiabTHB = (from row in _context.pCustLiabs
                                               where row.Cust_Code == data.BENE_ID &&
                                                     row.Facility_No == approveFacility &&
                                                     row.Currency == cCCY
-                                              select row).FirstOrDefaultAsync();
+                                              select row).FirstOrDefault();
                     if (pCustLiabTHB == null)
                     {
                         pCustLiab row = new();
@@ -454,16 +454,16 @@ namespace ISPTF.API.Controllers.ExportLC
                         pCustLiabTHB.UpdateDate = DateTime.Now; // With Time
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
 
                     if (approveFacility.Contains("MX"))
                     {
-                        await UpdateGroupWork(data.BENE_ID, approveFacility, true, _context);
+                        UpdateGroupWork(data.BENE_ID, approveFacility, true, _context);
                     }
                     else
                     {
-                        await UpdateGroupWork(data.BENE_ID, approveFacility, false, _context);
+                        UpdateGroupWork(data.BENE_ID, approveFacility, false, _context);
                     }
 
 
@@ -478,7 +478,7 @@ namespace ISPTF.API.Controllers.ExportLC
             }
         }
 
-        public async static Task<bool> UpdateGroupWork(string customerCode, string facilityNo, bool isGroup, ISPTFContext _context)
+        public static bool UpdateGroupWork(string customerCode, string facilityNo, bool isGroup, ISPTFContext _context)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -500,10 +500,10 @@ namespace ISPTF.API.Controllers.ExportLC
                     // 1 - Select Parent Code, Facility
                     if (isGroup == true)
                     {
-                        var custLimit = await (from row in _context.pCustLimits
+                        var custLimit = (from row in _context.pCustLimits
                                                where row.Cust_Code == customerCode &&
                                                      row.Facility_No == facilityNo
-                                               select row).FirstOrDefaultAsync();
+                                               select row).FirstOrDefault();
                         if (custLimit != null)
                         {
                             parentCode = custLimit.Cust_Code;
@@ -517,10 +517,10 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
 
                     // 2 - Select Share Type / Flag
-                    var custLimitChild = await (from row in _context.pCustLimits
+                    var custLimitChild = (from row in _context.pCustLimits
                                                 where row.Cust_Code == parentCode &&
                                                       row.Facility_No == parentFacility
-                                                select row).FirstOrDefaultAsync();
+                                                select row).FirstOrDefault();
 
                     if (custLimitChild != null)
                     {
@@ -540,18 +540,18 @@ namespace ISPTF.API.Controllers.ExportLC
                     // Call RevalueLiab(ParentCode)
 
                     // 3 - Update Credit_Amount,Origin_Amount (child)
-                    var custShareChilds = await (from row in _context.pCustShares
+                    var custShareChilds = (from row in _context.pCustShares
                                                  where row.Cust_Code == parentCode &&
                                                        row.Facility_No == parentFacility
-                                                 select row).ToListAsync();
+                                                 select row).ToList();
 
                     foreach (var row in custShareChilds)
                     {
-                        var custLimitChilds = await (from row2 in _context.pCustLimits
+                        var custLimitChilds = (from row2 in _context.pCustLimits
                                                      where row2.Cust_Code == row.Share_Cust &&
                                                            row2.Refer_Cust == row.Cust_Code &&
                                                            row2.Facility_No == row.Facility_No
-                                                     select row2).ToListAsync();
+                                                     select row2).ToList();
                         foreach (var row2 in custLimitChilds)
                         {
                             row2.Ear_Amount = 0;
@@ -560,31 +560,31 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     // 4 - UPDATE Share_Amount =0 ,Share_Used =0 (parent)
-                    var custLimitParents = await (from row in _context.pCustLimits
+                    var custLimitParents = (from row in _context.pCustLimits
                                                   where row.Refer_Cust == parentCode &&
                                                         row.Refer_Facility == parentFacility &&
                                                         !string.IsNullOrEmpty(row.Refer_Cust) &&
                                                         !string.IsNullOrEmpty(row.Refer_Facility)
-                                                  select row).Distinct().ToListAsync();
+                                                  select row).Distinct().ToList();
                     foreach (var row3 in custLimitParents)
                     {
-                        var subCustLimits = await (from row in _context.pCustLimits
+                        var subCustLimits = (from row in _context.pCustLimits
                                                    where row.Cust_Code == row3.Refer_Cust &&
                                                          row.Facility_No == row3.Refer_Facility
-                                                   select row).ToListAsync();
+                                                   select row).ToList();
 
                         foreach (var row in subCustLimits)
                         {
                             row.Share_Amount = 0;
                         }
 
-                        var subCustShares = await (from row in _context.pCustShares
+                        var subCustShares = (from row in _context.pCustShares
                                                    where row.Cust_Code == row3.Refer_Cust &&
                                                          row.Facility_No == row3.Refer_Facility
-                                                   select row).ToListAsync();
+                                                   select row).ToList();
 
                         foreach (var row in subCustShares)
                         {
@@ -592,15 +592,15 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     // 5 - Revaluate Liability
-                    var custLimits = await (from row in _context.pCustLimits
+                    var custLimits = (from row in _context.pCustLimits
                                             where row.Facility_No.Substring(0, 2) == "MX" &&
                                                   (row.Status == "A" || row.Status == "U") &&
                                                     row.Refer_Cust == parentCode &&
                                                     row.Refer_Facility == parentFacility
-                                            select row).ToListAsync();
+                                            select row).ToList();
 
                     // Call RevalueLiab(rs!cust_code)
                     foreach (var row in custLimits)
@@ -624,10 +624,10 @@ namespace ISPTF.API.Controllers.ExportLC
                         row.Susp_Amount = liabilityAmount;
 
                         // 6 - Update selected Facility No. mother
-                        var custLimitMothers = await (from rowMother in _context.pCustLimits
+                        var custLimitMothers = (from rowMother in _context.pCustLimits
                                                       where rowMother.Refer_Cust == parentCode &&
                                                             rowMother.Refer_Facility == parentFacility
-                                                      select rowMother).ToListAsync();
+                                                      select rowMother).ToList();
                         foreach (var row2 in custLimitMothers)
                         {
                             if (row2.Share_Amount == null)
@@ -650,11 +650,11 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // 7 - CustShares
-                        var custShares = await (from row3 in _context.pCustShares
+                        var custShares = (from row3 in _context.pCustShares
                                                 where row3.Cust_Code == row.Refer_Cust &&
                                                       row3.Share_Cust == row.Cust_Code &&
                                                       row3.Facility_No == row.Facility_No
-                                                select row3).ToListAsync();
+                                                select row3).ToList();
 
                         foreach (var row3 in custShares)
                         {
@@ -669,16 +669,16 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     // 8 - For none fix
-                    var custLimitNones = await (from row in _context.pCustLimits
+                    var custLimitNones = (from row in _context.pCustLimits
                                                 where row.Share_Flag == "Y" &&
                                                       row.Share_Type == "N" &&
                                                       row.Status != "D" &&
                                                       row.Cust_Code == parentCode &&
                                                       row.Facility_No == parentFacility
-                                                select row).ToListAsync();
+                                                select row).ToList();
 
                     // No Use as of
                     //'        ParentCode = rsTmp!Cust_Code
@@ -687,11 +687,11 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     // 9 - Update Share Group Child (Liability Child)
 
-                    var viewCustLiabilities = await (from row in _context.ViewCustLiabs
+                    var viewCustLiabilities = (from row in _context.ViewCustLiabs
                                                      where row.Facility_No.StartsWith("MX") &&
                                                            row.Refer_Cust == parentCode &&
                                                            row.Refer_Facility == parentFacility
-                                                     select row).ToListAsync();
+                                                     select row).ToList();
 
                     foreach (var row in viewCustLiabilities)
                     {
@@ -714,12 +714,12 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
 
 
-                    var custLimitChilds2 = await (from row in _context.pCustLimits
+                    var custLimitChilds2 = (from row in _context.pCustLimits
                                                   where row.Refer_Cust == parentCode &&
                                                         row.Status != "I" &&
                                                         row.Cust_Code != childCode &&
                                                         row.Facility_No == parentFacility
-                                                  select row).ToListAsync();
+                                                  select row).ToList();
 
                     foreach (var row in custLimitChilds2)
                     {
@@ -738,10 +738,10 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     // 10 - Update Share Group Parent
 
-                    var viewCustLiabilityParents = await (from row in _context.ViewCustLiabs
+                    var viewCustLiabilityParents = (from row in _context.ViewCustLiabs
                                                           where row.Cust_Code == parentCode &&
                                                                 row.Facility_No == parentFacility
-                                                          select row).ToListAsync();
+                                                          select row).ToList();
                     foreach (var row in viewCustLiabilityParents)
                     {
                         childCode = row.Cust_Code;
@@ -762,12 +762,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                     }
 
-                    var custLimitParents2 = await (from row in _context.pCustLimits
+                    var custLimitParents2 = (from row in _context.pCustLimits
                                                    where row.Refer_Cust == parentCode &&
                                                          row.Status != "I" &&
                                                          row.Cust_Code != childCode &&
                                                          row.Facility_No == parentFacility
-                                                   select row).ToListAsync();
+                                                   select row).ToList();
 
                     foreach (var row in custLimitParents2)
                     {
@@ -783,17 +783,17 @@ namespace ISPTF.API.Controllers.ExportLC
                         row.Share_Amount = 0;
                     }
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     // 11 - Update Group Amount
 
-                    var groupCustLimits = await (from row in _context.pCustLimits
+                    var groupCustLimits = (from row in _context.pCustLimits
                                                  where !row.Facility_No.StartsWith("MX") &&
                                                        row.Share_Flag == "Y" &&
                                                        row.Share_Type == "F" &&
                                                        row.Cust_Code != childCode &&
                                                        row.Facility_No == parentFacility
-                                                 select row).ToListAsync();
+                                                 select row).ToList();
 
                     foreach (var row in groupCustLimits)
                     {
@@ -809,11 +809,11 @@ namespace ISPTF.API.Controllers.ExportLC
                         partialAvailableAmount = result.Available_Amt;
                     }
 
-                    var groupCustLimitPartials = await (from row in _context.pCustLimits
+                    var groupCustLimitPartials = (from row in _context.pCustLimits
                                                         where row.Status != "I" &&
                                                               row.Refer_Cust != parentCode &&
                                                               row.Refer_Facility == parentFacility
-                                                        select row).ToListAsync();
+                                                        select row).ToList();
 
                     foreach (var row in groupCustLimitPartials)
                     {

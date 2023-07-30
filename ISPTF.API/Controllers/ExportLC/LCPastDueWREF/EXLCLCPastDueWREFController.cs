@@ -298,7 +298,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        public ActionResult<EXLCResultResponse> Release([FromBody] PEXLCSaveRequest data)
         {
             EXLCResultResponse response = new();
             // Class validate
@@ -342,7 +342,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
-                        var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+                        var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
 
                         response.Code = Constants.RESPONSE_ERROR;
                         response.Message = "Export L/C Released";
