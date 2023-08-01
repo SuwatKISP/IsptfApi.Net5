@@ -18,16 +18,15 @@ using System.Reflection;
 
 namespace ISPTF.API.Controllers.PackingCredit
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXPCIssuePackingCreditController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
-
-        //private const string BUSINESS_TYPE = "4";
-        //private const string EVENT_TYPE = "Accept Due";
+        private const string BUSINESS_TYPE = "1";
+        private const string EVENT_TYPE = "ISSUE";
 
         public EXPCIssuePackingCreditController(ISqlDataAccess db, ISPTFContext context)
         {
@@ -191,7 +190,66 @@ namespace ISPTF.API.Controllers.PackingCredit
             return BadRequest(response);
         }
 
+        [HttpGet("newselect")]
+        public async Task<ActionResult<PEXPCPPaymentResponse>> GetNewSelect(string? RegDocNo)
+        {
+            PEXPCPPaymentResponse response = new();
+            // Validate
+            if (string.IsNullOrEmpty(RegDocNo))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, CenterID, Page, PageSize is required";
+                response.Data = new();
+                return BadRequest(response);
+            }
 
+            try
+            {
+                var pDocReg = (from row in _context.pDocRegisters
+                               where row.Reg_Docno == RegDocNo
+                               select row).AsNoTracking().FirstOrDefault();
+                pExpc pExpc = new();
+                pExpc.PACKING_NO = pDocReg.Reg_Docno;
+                pExpc.cust_id = pDocReg.Reg_CustCode;
+                var mCustomer = (from row in _context.mCustomers
+                                 where row.Cust_Code == pDocReg.Reg_CustCode
+                                 select row).AsNoTracking().FirstOrDefault();
+                if (mCustomer!=null)
+                {
+                    string cus_info = "";
+                    if (mCustomer.Cust_Add1_Line1 != null)
+                        cus_info = mCustomer.Cust_Add1_Line1;
+                    if (mCustomer.Cust_Add1_Line2 != null)
+                        cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line2;
+                    if (mCustomer.Cust_Add1_Line3 != null)
+                        cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line3;
+                    if (mCustomer.Cust_Add1_Line4 != null)
+                        cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line4;
+                    pExpc.cust_info = cus_info;
+                }
+                pExpc.refer_lcno = pDocReg.Reg_RefNo;
+                pExpc.packing_for = pDocReg.Reg_DocType;
+                pExpc.doc_amount = pDocReg.Reg_CcyAmt;
+                pExpc.pack_ccy = pDocReg.Reg_CcyBal;
+                pExpc.rate = pDocReg.Reg_Plus;
+                pExpc.exch_rate = pDocReg.Reg_ExchRate;
+                pExpc.pack_thb = pDocReg.Reg_BhtAmt;
+                pExpc.pn_no = pDocReg.Reg_RefNo2;
+                pExpc.total_credit_ac = pDocReg.Reg_BhtAmt;
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Data = new();
+                response.Data.PEXPC = pExpc;
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new();
+            }
+            return BadRequest(response);
+        }
 
 
 
