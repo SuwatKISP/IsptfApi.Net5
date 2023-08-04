@@ -1143,8 +1143,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO) || 
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION) ||
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.PAYMENT_INSTRU) || 
-                string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE) || 
-                string.IsNullOrEmpty(pExBcIssuePurchRelease.REFER_BC_NO)
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE) 
                )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
