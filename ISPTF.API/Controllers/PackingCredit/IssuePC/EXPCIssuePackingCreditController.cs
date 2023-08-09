@@ -491,7 +491,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcMaster.total_amount = pExpc.total_amount;
                         pExpcMaster.AutoOverdue = "N";
                         pExpcMaster.genacc_flag = "Y";
-                        pExpcMaster.genacc_date = DateTime.Now;
+                        pExpcMaster.genacc_date = DateTime.Today;
                         pExpcMaster.LastPayDate = pExpc.LastPayDate;
                         pExpcMaster.CalIntDate = pExpc.CalIntDate;
                         pExpcMaster.AppvNo = appvNo;
@@ -631,7 +631,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcEvent.total_amount = pExpc.total_amount;
                         pExpcEvent.AutoOverdue = "N";
                         pExpcEvent.genacc_flag = "Y";
-                        pExpcEvent.genacc_date = DateTime.Now;
+                        pExpcEvent.genacc_date = DateTime.Today;
                         pExpcEvent.LastPayDate = pExpc.LastPayDate;
                         pExpcEvent.CalIntDate = pExpc.CalIntDate;
                         pExpcEvent.AppvNo = appvNo;
