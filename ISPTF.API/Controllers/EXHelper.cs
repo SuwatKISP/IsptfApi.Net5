@@ -208,5 +208,88 @@ namespace ISPTF.API.Controllers
 
             return 0.00;
         }
+
+        public static double CompDiscRate(ISPTFContext _context, string cust, string mod, string exp, string ccy)
+        {
+            var custRate="";
+            DateTime maxDate = DateTime.Today;
+            bool isHasMaxDate = false;
+
+            var mCustRate = (from row in _context.mCustRates
+                             where row.Def_Cust == cust &&
+                                   row.Def_Mod == mod &&
+                                   row.Def_Exp == exp
+                             select row).AsNoTracking().FirstOrDefault();
+            if (mCustRate != null)
+            {
+                return mCustRate.Def_Rate.Value;
+            }
+
+            var mCustomer = (from row in _context.mCustomers
+                             where row.Cust_Code == cust
+                             select row).AsNoTracking().FirstOrDefault();
+            if (mCustomer != null)
+            {
+                if (ccy == "THB")
+                    custRate = mCustomer.IRateTHB;
+                else
+                    custRate = mCustomer.IRateCcy;
+            }
+            if (custRate != "")
+                return 0.00;
+
+            var pIntRate = (from row in _context.pIntRates
+                            where row.IRate_Code == custRate
+                            orderby row.IRate_EffDate descending
+                            select row).AsNoTracking().FirstOrDefault();
+            if (pIntRate!=null)
+            {
+                maxDate = pIntRate.IRate_EffDate;
+                isHasMaxDate = true;
+            }
+            if(isHasMaxDate)
+            {
+                pIntRate = (from row in _context.pIntRates
+                            where row.IRate_Code == custRate &&
+                                  row.IRate_EffDate == maxDate
+                            orderby row.IRate_EffTime descending
+                            select row).AsNoTracking().FirstOrDefault();
+                if (pIntRate != null)
+                {
+                    return pIntRate.IRate_Rate.Value;
+                }
+            }
+            return 0.00;
+        }
+
+        public static double CompSpreadRate(ISPTFContext _context, string cust, string mod, string exp)
+        {
+            var mCustRate = (from row in _context.mCustRates
+                             where row.Def_Cust == cust &&
+                                   row.Def_Mod == mod &&
+                                   row.Def_Exp == exp
+                             select row).AsNoTracking().FirstOrDefault();
+            if(mCustRate != null)
+            {
+                return mCustRate.Def_Rate.Value;
+            }
+            return 0.00;
+        }
+
+        public static string GenRefNo(ISPTFContext _context, string docTyp, string UserId, string CenterID, string cusNo="")
+        {
+            var refNo = "";
+            var pRefNo = (from row in _context.pReferenceNos
+                          where row.pRefTrans == docTyp.ToUpper() &&
+                                row.pRefYear == DateTime.Now.ToString("yy") &&
+                                row.pRefBran == CenterID
+                          select row).AsNoTracking().FirstOrDefault();
+            if(pRefNo!=null)
+            {
+                var xRun = pRefNo.pRefSeq + 1;
+                refNo = CenterID + pRefNo.pRefPrefix + DateTime.Now.ToString("yy") + xRun.Value.ToString("000000");
+            }
+            return refNo;
+        }
     }
 }
