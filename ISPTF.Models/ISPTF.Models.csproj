@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <Folder Include="GetFiles\" />
-    <Folder Include="LINQ\PackingCredit\" />
   </ItemGroup>
 
 </Project>
