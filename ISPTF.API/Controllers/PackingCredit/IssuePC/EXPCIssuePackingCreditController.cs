@@ -621,8 +621,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         {
                             if (pExpcEvent.received_no == "" || isNew)
                             {
-                                pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYC", user_id, CenterID);
-                                genPay = pExpcMaster.received_no;
+                                pExpcEvent.received_no = genPay;
                                 pExpcEvent.AcBahtnet = pExpc.AcBahtnet;
                                 pExpcEvent.BahtNet = pExpc.BahtNet;
                             }
@@ -859,7 +858,7 @@ namespace ISPTF.API.Controllers.PackingCredit
             pPayment.UserCode = pExpcMaster.user_id;
             pPayment.UpdateDate = DateTime.Now;
 
-            _context.Database.ExecuteSqlRaw($"DELETE FROM pPayDetail WHERE dpReceiptNo = '{pExpcMaster.received_no}'");
+            _context.Database.ExecuteSqlRaw($"DELETE FROM pPayDetail WHERE DpReceiptNo = '{pExpcMaster.received_no}'");
 
             int li_seq = 0;
             if(pExpcMaster.partial_full_rate == "0")

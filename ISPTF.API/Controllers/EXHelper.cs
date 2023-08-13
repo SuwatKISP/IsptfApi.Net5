@@ -279,17 +279,30 @@ namespace ISPTF.API.Controllers
         public static string GenRefNo(ISPTFContext _context, string docTyp, string UserId, string CenterID, string cusNo="")
         {
             var refNo = "";
+            var year = DateTime.Today.ToString("yy");
             var pRefNo = (from row in _context.pReferenceNos
                           where row.pRefTrans == docTyp.ToUpper() &&
-                                row.pRefYear == DateTime.Now.ToString("yy") &&
+                                row.pRefYear == year &&
                                 row.pRefBran == CenterID
                           select row).AsNoTracking().FirstOrDefault();
             if(pRefNo!=null)
             {
                 var xRun = pRefNo.pRefSeq + 1;
-                refNo = CenterID + pRefNo.pRefPrefix + DateTime.Now.ToString("yy") + xRun.Value.ToString("000000");
+                refNo = CenterID + pRefNo.pRefPrefix + DateTime.Today.ToString("yy") + xRun.Value.ToString("000000");
             }
             return refNo;
+        }
+
+        public static string GetReceivedNo(ISPTFContext _context, string RpDocNo, string RpEvent)
+        {
+            var pPayment = (from row in _context.pPayments
+                            where row.RpDocNo == RpDocNo &&
+                                  row.RpEvent == RpEvent
+                            select row).AsNoTracking().FirstOrDefault();
+            if (pPayment != null)
+                return pPayment.RpReceiptNo;
+            else
+                return "";
         }
     }
 }
