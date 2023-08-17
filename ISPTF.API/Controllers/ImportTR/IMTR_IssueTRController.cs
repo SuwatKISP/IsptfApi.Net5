@@ -609,6 +609,126 @@ namespace ISPTF.API.Controllers.ImportTR
 
         }
 
+        [HttpPost("release")]
+        public async Task<ActionResult<IMTRResultResponse>> Release([FromBody] IMTR_ReleaseIssue_pIMTR_req releaseissue)
+        {
+            IMTRResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMTR_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
+            DynamicParameters param = new DynamicParameters();
+
+            param.Add("@CustCode", releaseissue.CustCode);
+            param.Add("@RefNumber", releaseissue.RefNumber);
+            param.Add("@TRNumber", releaseissue.TRNumber);
+            param.Add("@RecType", releaseissue.RecType);
+            param.Add("@TRSeqno", releaseissue.TRSeqno);
+            param.Add("@PayFlag", releaseissue.PayFlag);
+            param.Add("@BLInterest", releaseissue.BLInterest);
+            param.Add("@BLIntAmt", releaseissue.BLIntAmt); ;
+            param.Add("@IntBalance", releaseissue.IntBalance);
+            param.Add("@AccruPending", releaseissue.AccruPending);
+            param.Add("@FBCharge", releaseissue.FBCharge);
+            param.Add("@PayMethod", releaseissue.PayMethod);
+            param.Add("@FBInterest", releaseissue.FBInterest);
+            param.Add("@EventMode", releaseissue.EventMode);
+            param.Add("@SGNumber", releaseissue.SGNumber);
+            param.Add("@LCNumber", releaseissue.LCNumber);
+            param.Add("@DocCcy", releaseissue.DocCcy);
+            param.Add("@CenterID", releaseissue.CenterID);
+            param.Add("@UserCode", USER_ID);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_pIMTR_IssueTR_Release", param);
+                var Resp = param.Get<int>("@Resp");
+
+                if (Resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "ISSUE T/R Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = Resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "ISSUE T/R Release Error";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //        var results = await _db.LoadData<IMTRResultResponse, dynamic>(
+        //            storedProcedure: "usp_pIMTR_IssueTR_Release",
+        //            param);
+
+        //        var Resp = param.Get<int>("@Resp");
+        //        //var IssueTRSaveResp = param.Get<dynamic>("@IssueTRSaveResp");
+
+        //        //var Resp = param.Get<int>("@Resp");
+        //        if (Resp > 0)
+        //        {
+        //            IMTRResultResponse jsonResponse = JsonSerializer.Deserialize<IMTRResultResponse>(IssueTRSaveResp);
+        //            response.Code = Constants.RESPONSE_OK;
+        //            response.Message = "Success";
+        //            //response.Data = jsonResponse;
+        //            return Ok(response);
+        //        }
+        //        else
+        //        {
+        //            response.Code = Constants.RESPONSE_ERROR;
+        //            response.Message = "EXPORT_LC_NO Insert Error";
+        //            //response.Data = new IMTR_SaveIssue_JSON_rsp();
+        //            return BadRequest(response);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        response.Code = Constants.RESPONSE_ERROR;
+        //        response.Message = e.ToString();
+        //        //response.Data = new IMTR_SaveIssue_JSON_rsp();
+        //        return BadRequest(response);
+        //    }
+
+        //}
+    
 
 
 
