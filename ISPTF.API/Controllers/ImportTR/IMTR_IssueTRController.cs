@@ -652,8 +652,9 @@ namespace ISPTF.API.Controllers.ImportTR
             try
             {
                 await _db.SaveData(
-                  storedProcedure: "usp_pIMTR_IssueTR_Release", param);
-                var Resp = param.Get<int>("@Resp");
+                    storedProcedure: "usp_pIMTR_IssueTR_Release", param);
+                
+                    var Resp = param.Get<int>("@Resp");
 
                 if (Resp > 0)
                 {
@@ -683,6 +684,66 @@ namespace ISPTF.API.Controllers.ImportTR
             }
         }
 
+        [HttpPost("delete")]
+        public async Task<ActionResult<IMTRResultResponse>> Delete([FromBody] IMTR_DeleteIssue_pIMTR_req deleteissue)
+        {
+            IMTRResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMTR_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
+            DynamicParameters param = new DynamicParameters();
+
+            param.Add("@RefNumber", deleteissue.RefNumber);
+            param.Add("@TRNumber", deleteissue.TRNumber);
+            param.Add("@TRSeqno", deleteissue.TRSeqno);
+            param.Add("@EventMode", deleteissue.EventMode);
+            param.Add("@UserCode", USER_ID);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+
+            try
+            {
+                await _db.SaveData(
+                    storedProcedure: "usp_pIMTR_IssueTR_Delete", param);
+
+                var Resp = param.Get<int>("@Resp");
+
+                if (Resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Delete Pending Data Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = "Delete Pending Data Does not Exists";
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = Resp.ToString(); 
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
 
 
 
@@ -728,7 +789,7 @@ namespace ISPTF.API.Controllers.ImportTR
         //    }
 
         //}
-    
+
 
 
 
