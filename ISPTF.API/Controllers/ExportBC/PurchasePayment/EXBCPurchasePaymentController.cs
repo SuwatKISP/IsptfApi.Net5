@@ -247,13 +247,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
-            if (pexbcppaymentreq.PEXPayment == null)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "PEXPayment is required.";
-                response.Data = new PEXBCPEXPaymentRsp();
-                return BadRequest(response);
-            }
+            //if (pexbcppaymentreq.PEXPayment == null)
+            //{
+            //    response.Code = Constants.RESPONSE_ERROR;
+            //    response.Message = "PEXPayment is required.";
+            //    response.Data = new PEXBCPEXPaymentRsp();
+            //    return BadRequest(response);
+            //}
             try
             {
               
@@ -631,7 +631,7 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCResultResponse response = new EXBCResultResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(pExBcPurchasePaymentDelete.EXPORTT_BC_NO))
+            if (string.IsNullOrEmpty(pExBcPurchasePaymentDelete.EXPORT_BC_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO is required";
@@ -639,7 +639,7 @@ namespace ISPTF.API.Controllers.ExportBC
             }
 
             DynamicParameters param = new();
-            param.Add("@EXPORT_BC_NO", pExBcPurchasePaymentDelete.EXPORTT_BC_NO);
+            param.Add("@EXPORT_BC_NO", pExBcPurchasePaymentDelete.EXPORT_BC_NO);
             param.Add("@VOUCH_ID", pExBcPurchasePaymentDelete.VOUCH_ID);
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
@@ -687,7 +687,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export B/C: " + pExBcPurchasePaymentDelete.EXPORTT_BC_NO + " Not Found.";
+                    response.Message = "Export B/C: " + pExBcPurchasePaymentDelete.EXPORT_BC_NO + " Not Found.";
                     return BadRequest(response);
                 }
             }

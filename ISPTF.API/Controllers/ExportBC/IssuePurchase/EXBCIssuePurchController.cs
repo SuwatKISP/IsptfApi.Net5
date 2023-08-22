@@ -297,13 +297,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPPaymentRsp();
                 return BadRequest(response);
             }
-            if (pexbcppaymentreq.PPayment == null)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "Payment is required.";
-                response.Data = new PEXBCPPaymentRsp();
-                return BadRequest(response);
-            }
+            //if (pexbcppaymentreq.PPayment == null)
+            //{
+            //    response.Code = Constants.RESPONSE_ERROR;
+            //    response.Message = "Payment is required.";
+            //    response.Data = new PEXBCPPaymentRsp();
+            //    return BadRequest(response);
+            //}
 
             try
             {
@@ -560,20 +560,23 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@Campaign_EffDate", pexbcppaymentreq.PEXBC.Campaign_EffDate);
                 param.Add("@PurposeCode", pexbcppaymentreq.PEXBC.PurposeCode);
                 //PPayment
-                param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
-                param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
-                param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
-                param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
-                param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
-                param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
-                param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
-                param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
-                param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
-                param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
-                param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
-                param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
-                param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
-                param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+                if (pexbcppaymentreq.PPayment != null)
+                {
+                    param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
+                    param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
+                    param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
+                    param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
+                    param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
+                    param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
+                    param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
+                    param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
+                    param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
+                    param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
+                    param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
+                    param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
+                    param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
+                    param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+                }
                 param.Add("@PExBcRsp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);
@@ -696,13 +699,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPPaymentRsp();
                 return BadRequest(response);
             }
-            if (pexbcppaymentreq.PPayment == null)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "Payment is required.";
-                response.Data = new PEXBCPPaymentRsp();
-                return BadRequest(response);
-            }
+            //if (pexbcppaymentreq.PPayment == null)
+            //{
+            //    response.Code = Constants.RESPONSE_ERROR;
+            //    response.Message = "Payment is required.";
+            //    response.Data = new PEXBCPPaymentRsp();
+            //    return BadRequest(response);
+            //}
             try
             {
                 DynamicParameters param = new DynamicParameters();
