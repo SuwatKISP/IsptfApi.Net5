@@ -392,6 +392,9 @@ namespace ISPTF.API.Controllers.ImportTR
                 param.Add("@Campaign_EffDate", save.pIMTR.Campaign_EffDate);
                 param.Add("@PurposeCode", save.pIMTR.PurposeCode);
 
+                //pIMInterest
+                param.Add("@IntDay", save.pIMInterest.IntDay);
+
                 param.Add("@Resp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);
