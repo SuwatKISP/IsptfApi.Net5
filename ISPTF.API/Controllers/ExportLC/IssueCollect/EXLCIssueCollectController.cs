@@ -349,6 +349,9 @@ namespace ISPTF.API.Controllers.ExportLC
             try
             {
                 DynamicParameters param = new DynamicParameters();
+                var USER_ID = User.Identity.Name;
+                var claimsPrincipal = HttpContext.User;
+                var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
                 //PEXLC
                 param.Add("@EVENT_MODE", pexlcppaymentreq.PEXLC.EVENT_MODE);
@@ -552,7 +555,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 param.Add("@FB_RATE", pexlcppaymentreq.PEXLC.FB_RATE);
                 param.Add("@FB_AMT_THB", pexlcppaymentreq.PEXLC.FB_AMT_THB);
                 param.Add("@COLLECT_REFUND", pexlcppaymentreq.PEXLC.COLLECT_REFUND);
-                param.Add("@USER_ID", pexlcppaymentreq.PEXLC.USER_ID);
+                param.Add("@USER_ID", USER_ID);
                 param.Add("@IN_USE", pexlcppaymentreq.PEXLC.IN_USE);
                 //param.Add("@UPDATE_DATE", pexlcppaymentreq.PEXLC.UPDATE_DATE);
                 param.Add("@AUTH_CODE", pexlcppaymentreq.PEXLC.AUTH_CODE);
@@ -595,7 +598,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 param.Add("@TOTALSUSPBHT", pexlcppaymentreq.PEXLC.TOTALSUSPBHT);
                 param.Add("@SUSPAMT", pexlcppaymentreq.PEXLC.SUSPAMT);
                 param.Add("@SUSPBHT", pexlcppaymentreq.PEXLC.SUSPBHT);
-                param.Add("@CenterID", pexlcppaymentreq.PEXLC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@LCPastDue", pexlcppaymentreq.PEXLC.LCPastDue);
                 param.Add("@DateStartAccru", pexlcppaymentreq.PEXLC.DateStartAccru);
                 param.Add("@DateToStop", pexlcppaymentreq.PEXLC.DateToStop);

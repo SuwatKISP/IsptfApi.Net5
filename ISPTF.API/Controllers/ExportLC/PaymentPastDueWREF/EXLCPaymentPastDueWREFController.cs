@@ -405,7 +405,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        public ActionResult<EXLCResultResponse> Release([FromBody] PEXLCSaveRequest data)
         {
             EXLCResultResponse response = new();
             // Class validate
@@ -496,19 +496,19 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
 
-                        await _context.SaveChangesAsync();
+                        _context.SaveChanges();
 
                         // 5 - Update Master/Event PK to Release
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
 
                         // 6 - Update GL Flag
                         var gls = (from row in _context.pDailyGLs
                                    where row.VouchID == data.PEXLC.VOUCH_ID &&
                                             row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
-                                   select row).ToListAsync();
+                                   select row).ToList();
 
-                        foreach (var row in await gls)
+                        foreach (var row in gls)
                         {
                             row.SendFlag = "R";
                         }
@@ -516,7 +516,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         if (data.PEXLC.WithOutFlag == "N")
                         {
-                            var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+                            var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
                         }
                         else if (data.PEXLC.WithOutFlag == "Y")
                         {
