@@ -15,7 +15,7 @@ namespace ISPTF.Models.ExportLC
         public string? BUSINESS_TYPE { get; set; }
         public string EXPORT_LC_NO { get; set; }
         public string? EVENT_TYPE { get; set; }
-        public DateTime? EVENT_DATE { get; set; }
+        public DateTime EVENT_DATE { get; set; }
         public int? TENOR_OF_COLL { get; set; }
         public int? TENOR_TYPE { get; set; }
         public string? INVOICE { get; set; }
@@ -257,7 +257,7 @@ namespace ISPTF.Models.ExportLC
         public double? RevAccru { get; set; }
         public string? ObjectType { get; set; }
         public string? UnderlyName { get; set; }
-        public string? applicant_info { get; set; }
+        public string? APPLICANT_INFO { get; set; }
         public string? BPOFlag { get; set; }
         public string? Campaign_Code { get; set; }
         public DateTime? Campaign_EffDate { get; set; }
