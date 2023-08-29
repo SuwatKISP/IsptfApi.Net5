@@ -260,7 +260,7 @@ namespace ISPTF.Models
         public double? RevAccru { get; set; }
         public string? ObjectType { get; set; }
         public string? UnderlyName { get; set; }
-        public string? applicant_info { get; set; }
+        public string? APPLICANT_INFO { get; set; }
         public string? BPOFlag { get; set; }
         public string? Campaign_Code { get; set; }
         public DateTime? Campaign_EffDate { get; set; }

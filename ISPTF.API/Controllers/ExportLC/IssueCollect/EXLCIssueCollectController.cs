@@ -627,7 +627,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 param.Add("@RevAccru", pexlcppaymentreq.PEXLC.RevAccru);
                 param.Add("@ObjectType", pexlcppaymentreq.PEXLC.ObjectType);
                 param.Add("@UnderlyName", pexlcppaymentreq.PEXLC.UnderlyName);
-                param.Add("@applicant_info", pexlcppaymentreq.PEXLC.applicant_info);
+                param.Add("@applicant_info", pexlcppaymentreq.PEXLC.APPLICANT_INFO);
                 param.Add("@BPOFlag", pexlcppaymentreq.PEXLC.BPOFlag);
                 param.Add("@Campaign_Code", pexlcppaymentreq.PEXLC.Campaign_Code);
                 param.Add("@Campaign_EffDate", pexlcppaymentreq.PEXLC.Campaign_EffDate);
