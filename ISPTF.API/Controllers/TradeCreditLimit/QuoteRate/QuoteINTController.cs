@@ -35,6 +35,15 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
 
+            if (Status == null)
+            {
+                param.Add("@Status", "");
+            }
+            if (RefNo == null)
+            {
+                param.Add("@RefNo", "");
+            }
+
             var results = await _db.LoadData<QuoteINTListRsp, dynamic>(
                         storedProcedure: "usp_AQuote_QuoteINTList",
                         param);
