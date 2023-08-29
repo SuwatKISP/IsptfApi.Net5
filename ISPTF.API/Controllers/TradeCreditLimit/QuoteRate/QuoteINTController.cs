@@ -27,10 +27,11 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
 
         [HttpGet("listpage")]
         // Listpage  add parameter  ,int? Page, int? PageSize
-        public async Task<IEnumerable<QuoteINTListRsp>> GetAll(string Status,int? Page, int? PageSize)
+        public async Task<IEnumerable<QuoteINTListRsp>> GetAll(string Status, string RefNo,int? Page, int? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@Status", Status);
+            param.Add("@RefNo", RefNo);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
 
