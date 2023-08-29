@@ -26,10 +26,12 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
         }
 
         [HttpGet("listpage")]
-        public async Task<IEnumerable<QuoteINTListRsp>> GetAll(string Status)
+        public async Task<IEnumerable<QuoteINTListRsp>> GetAll(string Status,int? Page, int? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@Status", Status);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
 
             var results = await _db.LoadData<QuoteINTListRsp, dynamic>(
                         storedProcedure: "usp_AQuote_QuoteINTList",
@@ -68,6 +70,9 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
             param.Add("@EditApprove_UID", Quote.EditApprove_UID);
             param.Add("@EditApprove_Seq", Quote.EditApprove_Seq);
             param.Add("@ReBOT", Quote.ReBOT);
+            param.Add("@LOGIN, Quote.Login);
+            param.Add("@DocNumber", Quote.DocNumber);
+            param.Add("@DocSeq", Quote.DocSeq);
             param.Add("@Resp", dbType: DbType.Int32,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);

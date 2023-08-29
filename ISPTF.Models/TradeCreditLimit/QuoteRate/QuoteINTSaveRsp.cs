@@ -26,6 +26,9 @@ namespace ISPTF.Models.TradeCreditLimit.QuoteRate
         public string? EditApprove_Date { get; set; }
         public int? EditApprove_Seq { get; set; }
         public string? ReBOT { get; set; }
+        public string? Login { get; set; }
+        public string? DocNumber { get; set; }
+        public int? DocSeq { get; set; }
 
     }
 }
