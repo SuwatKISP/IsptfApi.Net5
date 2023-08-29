@@ -26,6 +26,7 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
         }
 
         [HttpGet("listpage")]
+        // Listpage  add parameter  ,int? Page, int? PageSize
         public async Task<IEnumerable<QuoteINTListRsp>> GetAll(string Status,int? Page, int? PageSize)
         {
             DynamicParameters param = new();
@@ -70,7 +71,7 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
             param.Add("@EditApprove_UID", Quote.EditApprove_UID);
             param.Add("@EditApprove_Seq", Quote.EditApprove_Seq);
             param.Add("@ReBOT", Quote.ReBOT);
-            param.Add("@LOGIN, Quote.Login);
+            param.Add("@LOGIN", Quote.Login);
             param.Add("@DocNumber", Quote.DocNumber);
             param.Add("@DocSeq", Quote.DocSeq);
             param.Add("@Resp", dbType: DbType.Int32,

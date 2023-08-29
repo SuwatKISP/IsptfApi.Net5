@@ -21,7 +21,9 @@ namespace ISPTF.Models.TradeCreditLimit.QuoteRate
         //public int? Tenor { get; set; }
         public string? Status { get; set; }
         public string? Txndate { get; set; }
-        public int rCount { get; set; }
+        // for count Record
+        public int rCount { get; set; }   
+     
 
     }
 }
