@@ -680,7 +680,93 @@ namespace ISPTF.API.Controllers.ExportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return Ok(response);
+                    //return Ok(response);
+
+
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+                    string resEventType;
+                    int resSeqNo;
+                    resEventType = response.Data.PEXLC.EVENT_TYPE;
+                    resSeqNo = response.Data.PEXLC.EVENT_NO;
+
+                    eventDate = pexlcppaymentreq.PEXLC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexlcppaymentreq.PEXLC.PAYMENT_INSTRU == "PAID")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(pexlcppaymentreq.PEXLC.EXPORT_LC_NO,
+                            eventDate,
+                            resEventType,
+                            resSeqNo,
+                            "Issue Collect");
+
+                    }
+                    else
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(pexlcppaymentreq.PEXLC.EXPORT_LC_NO,
+                            eventDate,
+                           resEventType,
+                            resSeqNo,
+                            "Issue Collect",
+                            false,
+                            "U");
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    string resReceiptNo;
+                    resReceiptNo = response.Data.PEXLC.RECEIVED_NO;
+                    //if (pexlcppaymentreq.PPAYMENT != null)
+                    //{
+                    //    resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssCollect(pexlcppaymentreq.PEXLC.EXPORT_LC_NO, resSeqNo, resReceiptNo);
+                    //    if (resPayDetail != "ERROR")
+                    //    {
+                    //        resPayD = true;
+                    //    }
+                    //    else
+                    //    {
+                    //        resPayD = false;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    resPayD = true;
+                    //}
+                    resPayD = true;
+                    if (resGL == true && resPayD == true)
+                    {
+                        response.Data.PEXLC.VOUCH_ID = resVoucherID;
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "EXPORT_LC_NO Update G/L or Payment Error";
+                        response.Data = new PEXLCPPaymentDataContainer();
+                        return BadRequest(response);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
                 }
                 else
                 {
