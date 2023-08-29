@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class DRateController : ControllerBase
