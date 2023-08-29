@@ -121,41 +121,41 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
             }
 
         }//delete
-        [HttpPost("LOADRATE")]
-        public async Task<ActionResult<List<string>>> LoadExch([FromBody] PExchangeLoadReq exchange)
-        {
-            DynamicParameters param = new DynamicParameters();
-            var USER_ID = User.Identity.Name;
-            param.Add("@ExchDate", exchange.exch_Date);
-            param.Add("@UserCode", USER_ID);
-            param.Add("@Resp", dbType: DbType.Int32,
-                direction: System.Data.ParameterDirection.Output,
-                size: 5215585);
-            try
-            {
-                await _db.SaveData(
-                  storedProcedure: "usp_LOADRATE", param);
-                var resp = param.Get<int>("@Resp");
-                if (resp == 1)
-                {
-                    ReturnResponse response = new();
-                    response.StatusCode = "200";
-                    response.Message = "Load Rate Rate";
-                    return Ok(response);
-                }
-                else
-                {
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = "Eror for Load Rate Rate ";
-                    return BadRequest(response);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }//LOADRATE
+        //[HttpPost("LOADRATE")]
+        //public async Task<ActionResult<List<string>>> LoadExch([FromBody] PExchangeLoadReq exchange)
+        //{
+        //    DynamicParameters param = new DynamicParameters();
+        //    var USER_ID = User.Identity.Name;
+        //    param.Add("@ExchDate", exchange.exch_Date);
+        //    param.Add("@UserCode", USER_ID);
+        //    param.Add("@Resp", dbType: DbType.Int32,
+        //        direction: System.Data.ParameterDirection.Output,
+        //        size: 5215585);
+        //    try
+        //    {
+        //        await _db.SaveData(
+        //          storedProcedure: "usp_LOADRATE", param);
+        //        var resp = param.Get<int>("@Resp");
+        //        if (resp == 1)
+        //        {
+        //            ReturnResponse response = new();
+        //            response.StatusCode = "200";
+        //            response.Message = "Load Rate Rate";
+        //            return Ok(response);
+        //        }
+        //        else
+        //        {
+        //            ReturnResponse response = new();
+        //            response.StatusCode = "400";
+        //            response.Message = "Eror for Load Rate Rate ";
+        //            return BadRequest(response);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}//LOADRATE
     }//main
 }
 
