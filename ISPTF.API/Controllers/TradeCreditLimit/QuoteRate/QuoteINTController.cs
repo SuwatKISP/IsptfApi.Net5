@@ -67,6 +67,17 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
         {
             DynamicParameters param = new DynamicParameters();
             param.Add("@Txn_ID", Quote.Txn_ID);
+            param.Add("@Customer", Quote.Customer);
+            param.Add("@Name", Quote.Name);
+            param.Add("@BD", Quote.BD);
+            param.Add("@Reference", Quote.Reference);
+            param.Add("@Type", Quote.Type);
+            param.Add("@curr", Quote.curr);
+            param.Add("@Against", Quote.Against);
+            param.Add("@amount", Quote.amount); 
+            param.Add("@value_Date", Quote.value_Date);
+            param.Add("@Expiry_Date", Quote.Expiry_Date);
+            param.Add("@Tenor", Quote.Tenor);
             param.Add("@CFR_1", Quote.CFR_1);
             param.Add("@CFR_2", Quote.CFR_2);
             param.Add("@CFR_3", Quote.CFR_3);
@@ -74,16 +85,33 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
             param.Add("@Quote_Rate", Quote.CFR_Rate);
             param.Add("@TPR", Quote.CFR_Rate);
             param.Add("@Status", Quote.Status);
-            param.Add("@TF_Sale", Quote.TF_Sale);
+            param.Add("@Txndate", Quote.Txndate);
+            param.Add("@TF_inputer", Quote.TF_inputer);
+            param.Add("@TF_Inputer_Date", Quote.TF_Inputer_Date);
+            param.Add("@TF_Sale", Quote.Status);
+            param.Add("@TF_Sale_Date", Quote.TF_Sale);
+            param.Add("@Delete_Flag", Quote.Delete_Flag);
+            param.Add("@Time_stamp", Quote.Time_stamp);
+            param.Add("@Use_Tx", Quote.Use_Tx);
+            param.Add("@Delete_user", Quote.Delete_user);
+            param.Add("@use_Tx_user", Quote.use_Tx_user);
             param.Add("@RM1", Quote.RM1);
             param.Add("@RM2", Quote.RM2);
+            param.Add("@Cust_AoCode", Quote.Cust_AoCode);
+            param.Add("@Cust_AoLev1", Quote.Cust_AoLev1);
+            param.Add("@Cust_AoLev2", Quote.Cust_AoLev2);
+            param.Add("@Cust_AoLev3", Quote.Cust_AoLev3);
+            param.Add("@ZZUser", Quote.ZZUser);
             param.Add("@EditApprove_Flag", Quote.EditApprove_Flag);
             param.Add("@EditApprove_UID", Quote.EditApprove_UID);
             param.Add("@EditApprove_Seq", Quote.EditApprove_Seq);
+            param.Add("@ZZStrdate", Quote.ZZStrdate);
+            param.Add("@ZZDate", Quote.ZZDate);
+            param.Add("@Facility_No", Quote.Facility_No);
             param.Add("@ReBOT", Quote.ReBOT);
-            param.Add("@LOGIN", Quote.Login);
-            param.Add("@DocNumber", Quote.DocNumber);
-            param.Add("@DocSeq", Quote.DocSeq);
+            param.Add("@APPV_NO", Quote.APPV_NO);
+            param.Add("@AUTOISP", Quote.AUTOISP);
+            param.Add("@TranSEQ", Quote.TranSEQ);
             param.Add("@Resp", dbType: DbType.Int32,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
