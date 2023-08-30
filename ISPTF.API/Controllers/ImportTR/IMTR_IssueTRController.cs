@@ -327,7 +327,7 @@ namespace ISPTF.API.Controllers.ImportTR
             IMTR_SaveIssue_Response response = new();
             var USER_ID = User.Identity.Name;
             // Class validate
-            if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
+            if (saveissue.ListType.ListType != "NEW" && saveissue.ListType.ListType != "EDIT")
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType should be NEW or EDIT";
@@ -337,9 +337,9 @@ namespace ISPTF.API.Controllers.ImportTR
             try
             {
                 DynamicParameters param = new DynamicParameters();
-
+                //ListType
+                param.Add("@ListType", saveissue.ListType.ListType);
                 //pIMTR
-                param.Add("@ListType", saveissue.pIMTR.ListType);
                 param.Add("@CenterID", saveissue.pIMTR.CenterID);
                 param.Add("@TRNumber", saveissue.pIMTR.TRNumber);
                 param.Add("@RefNumber", saveissue.pIMTR.RefNumber);

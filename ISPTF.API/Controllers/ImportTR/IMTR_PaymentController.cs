@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.Inquiry;
 using ISPTF.Models.ImportTR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,182 +20,40 @@ namespace ISPTF.API.Controllers.ImportTR
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class IMTR_TRPastDueController : ControllerBase
+    public class IMTR_PaymentController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
-        public IMTR_TRPastDueController(ISqlDataAccess db, ISPTFContext context)
+        public IMTR_PaymentController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
             _context = context;
         }
 
-        [HttpGet("listpage")]
-        public async Task<ActionResult<Q_IMTR_ListPage_Response>> ListPage(string? ListType, string CustCode,string? CustName,string? TRNumber ,string? CenterID, string? Page, string? PageSize)
-        {
-            Q_IMTR_ListPage_Response response = new Q_IMTR_ListPage_Response();
-            var USER_ID = User.Identity.Name;
-            // Validate
-            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
-            {
-                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "ListType,CenterID, Page, PageSize is required";
-                response.Data = new List<Q_IMTR_ListPage_rsp>();
-                return BadRequest(response);
-            }
-            if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
-            {
-                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "USER_ID is required";
-                response.Data = new List<Q_IMTR_ListPage_rsp>();
-                return BadRequest(response);
-            }
-
-            // Call Store Procedure
-            try
-            {
-                DynamicParameters param = new();
-                param.Add("@ListType", ListType);
-                param.Add("@CustCode", CustCode);
-                param.Add("@CustName", CustName);
-                param.Add("@TRNumber", TRNumber);
-                param.Add("@CenterID", CenterID);
-                param.Add("@UserCode", USER_ID);
-                param.Add("@Page", Page);
-                param.Add("@PageSize", PageSize);
-
-                if (CustCode == null)
-                {
-                    param.Add("@CustCode", "");
-                }
-                if (CustName == null)
-                {
-                    param.Add("@CustName", "");
-                }
-                if (TRNumber == null)
-                {
-                    param.Add("@TRNumber", "");
-                }
-
-                var results = await _db.LoadData<Q_IMTR_ListPage_rsp, dynamic>(
-                            storedProcedure: "usp_q_IMTR_TRPastDueListPage",
-                            param);
-
-                response.Code = Constants.RESPONSE_OK;
-                response.Message = "Success";
-                response.Data = (List<Q_IMTR_ListPage_rsp>)results;
-
-                try
-                {
-                    response.Page = int.Parse(Page);
-                    response.Total = response.Data[0].RCount;
-                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
-                }
-                catch (Exception)
-                {
-                    response.Page = 0;
-                    response.Total = 0;
-                    response.TotalPage = 0;
-                }
-                return Ok(response);
-            }
-            catch (Exception e)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = e.ToString();
-                response.Data = new List<Q_IMTR_ListPage_rsp>();
-            }
-            return BadRequest(response);
-        }
-
-        [HttpGet("Select")]
-        public async Task<ActionResult<Q_IMTR_TRPastDueSelect_Response>> Select(string? CustCode, string? RefNumber, string? TRSeqno, string? RecType, string? Event)
-        {
-            Q_IMTR_TRPastDueSelect_Response response = new Q_IMTR_TRPastDueSelect_Response();
-            var USER_ID = User.Identity.Name;
-            //var USER_ID = "API";
-            // Validate
-            if (string.IsNullOrEmpty(CustCode) || string.IsNullOrEmpty(RefNumber) || string.IsNullOrEmpty(TRSeqno) ||
-                string.IsNullOrEmpty(RecType) || string.IsNullOrEmpty(Event))
-            {
-                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "CustCode, RefNumber, TRSeqno, RecType, Event are required";
-                response.Data = new Q_IMTR_TRPastDueSelect_JSON_rsp();
-                return BadRequest(response);
-            }
-
-            // Call Store Procedure
-            try
-            {
-                DynamicParameters param = new();
-                param.Add("@CustCode", CustCode);
-                param.Add("@RefNumber", RefNumber);
-                param.Add("@TRSeqno", TRSeqno);
-                param.Add("@RecType", RecType);
-                param.Add("@Event", Event);
-
-                param.Add("@Resp", dbType: DbType.Int32,
-                   direction: System.Data.ParameterDirection.Output,
-                   size: 12800);
-
-                param.Add("@TRPastDueResp", dbType: DbType.String,
-                           direction: System.Data.ParameterDirection.Output,
-                           size: 5215585);
-
-
-                var results = await _db.LoadData<Q_IMTR_TRPastDueSelect_JSON_rsp, dynamic>(
-                            storedProcedure: "usp_Q_IMTR_TRPastDueListSelect",
-                            param);
-
-                var Resp = param.Get<dynamic>("@Resp");
-                var TRPastDueResp = param.Get<dynamic>("@TRPastDueResp");
-
-                if (Resp == 1)
-                {
-                    Q_IMTR_TRPastDueSelect_JSON_rsp jsonResponse = JsonSerializer.Deserialize<Q_IMTR_TRPastDueSelect_JSON_rsp>(TRPastDueResp);
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Success";
-                    response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
-                    return Ok(response);
-                }
-                else
-                {
-
-                    response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "No Data";
-                    response.Data = new Q_IMTR_TRPastDueSelect_JSON_rsp();
-                    return BadRequest(response);
-                }
-
-            }
-            catch (Exception e)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = e.ToString();
-                response.Data = new Q_IMTR_TRPastDueSelect_JSON_rsp();
-                return BadRequest(response);
-            }
-        }
-
         [HttpPost("save")]
-        public async Task<ActionResult<IMTR_SaveTRPastDue_Response>> Save([FromBody] IMTR_SaveTRPastDue_JSON_req save)
+        public async Task<ActionResult<IMTR_SavePayment_Response>> Save([FromBody] IMTR_SavePayment_JSON_req save)
         {
-            IMTR_SaveTRPastDue_Response response = new();
+            IMTR_SavePayment_Response response = new();
             var USER_ID = User.Identity.Name;
             // Class validate
-            if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
+            if (save.ListTypePay.ListType != "NEW" && save.ListTypePay.ListType != "EDIT")
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType should be NEW or EDIT";
-                response.Data = new IMTR_SaveTRPastDue_JSON_rsp();
+                response.Data = new IMTR_SavePayment_JSON_rsp();
                 return BadRequest(response);
             }
             try
             {
                 DynamicParameters param = new DynamicParameters();
-
-                //ListType
-                param.Add("@ListType", save.ListType.ListType);
+                //ListTypePay
+                param.Add("@ListType", save.ListTypePay.ListType);
+                param.Add("@LoadPay", save.ListTypePay.LoadPay);
+                param.Add("@TxBhtIntTot", save.ListTypePay.TxBhtIntTot);
+                param.Add("@TxCCyIntTot", save.ListTypePay.TxCCyIntTot);
+                param.Add("@TxCalDay", save.ListTypePay.TxCalDay);
+                param.Add("@TxNewInt", save.ListTypePay.TxNewInt);
+         
                 //pIMTR
                 param.Add("@CenterID", save.pIMTR.CenterID);
                 param.Add("@TRNumber", save.pIMTR.TRNumber);
@@ -393,10 +250,108 @@ namespace ISPTF.API.Controllers.ImportTR
                 param.Add("@Campaign_EffDate", save.pIMTR.Campaign_EffDate);
                 param.Add("@PurposeCode", save.pIMTR.PurposeCode);
 
+                //pPayment
+                param.Add("@RpReceiptNo", save.pPayment.RpReceiptNo);
+                param.Add("@RpModule", save.pPayment.RpModule);
+                param.Add("@RpEvent", save.pPayment.RpEvent);
+                param.Add("@RpDocNo", save.pPayment.RpDocNo);
+                param.Add("@RpCustCode", save.pPayment.RpCustCode);
+                param.Add("@RpPayDate", save.pPayment.RpPayDate);
+                param.Add("@RpPayBy", save.pPayment.RpPayBy);
+                param.Add("@RpNote", save.pPayment.RpNote);
+                param.Add("@RpCashAmt", save.pPayment.RpCashAmt);
+                param.Add("@RpChqAmt", save.pPayment.RpChqAmt);
+                param.Add("@RpChqNo", save.pPayment.RpChqNo);
+                param.Add("@RpChqBank", save.pPayment.RpChqBank);
+                param.Add("@RpChqBranch", save.pPayment.RpChqBranch);
+                param.Add("@RpCustAc1", save.pPayment.RpCustAc1);
+                param.Add("@RpCustAmt1", save.pPayment.RpCustAmt1);
+                param.Add("@RpCustAc2", save.pPayment.RpCustAc2);
+                param.Add("@RpCustAmt2", save.pPayment.RpCustAmt2);
+                param.Add("@RpCustAc3", save.pPayment.RpCustAc3);
+                param.Add("@RpCustAmt3", save.pPayment.RpCustAmt3);
+                param.Add("@RpRefer1", save.pPayment.RpRefer1);
+                param.Add("@RpRefer2", save.pPayment.RpRefer2);
+                param.Add("@RpApplicant", save.pPayment.RpApplicant);
+                param.Add("@RpIssBank", save.pPayment.RpIssBank);
+                param.Add("@RpStatus", save.pPayment.RpStatus);
+                param.Add("@RpRecStatus", save.pPayment.RpRecStatus);
+                param.Add("@RpPrint", save.pPayment.RpPrint);
+                //param.Add("@UserCode", save.pPayment.UserCode);
+                //param.Add("@UpdateDate", save.pPayment.UpdateDate);
+                //param.Add("@AuthCode", save.pPayment.AuthCode);
+                //param.Add("@AuthDate", save.pPayment.AuthDate);
+
+                //pIMPayment
+                param.Add("@DocNumber", save.pIMPayment.DocNumber);
+                param.Add("@DocSeqno", save.pIMPayment.DocSeqno);
+                //param.Add("@RecStatus", save.pIMPayment.RecStatus);
+                param.Add("@PayMode", save.pIMPayment.PayMode);
+                //param.Add("@PayFlag", save.pIMPayment.PayFlag);
+                param.Add("@BalanceAmt", save.pIMPayment.BalanceAmt);
+                param.Add("@InterestAmt", save.pIMPayment.InterestAmt);
+                param.Add("@InterestBL", save.pIMPayment.InterestBL);
+                param.Add("@PaymentDate", save.pIMPayment.PaymentDate);
+                param.Add("@PayCcyAmt", save.pIMPayment.PayCcyAmt);
+                param.Add("@PayCcyInt", save.pIMPayment.PayCcyInt);
+                param.Add("@PayFCD", save.pIMPayment.PayFCD);
+                param.Add("@PayAmtBht1", save.pIMPayment.PayAmtBht1);
+                param.Add("@PayExch1", save.pIMPayment.PayExch1);
+                param.Add("@PayBaht1", save.pIMPayment.PayBaht1);
+                param.Add("@FwdCont", save.pIMPayment.FwdCont);
+                param.Add("@PayAmtBht2", save.pIMPayment.PayAmtBht2);
+                param.Add("@PayExch2", save.pIMPayment.PayExch2);
+                param.Add("@PayBaht2", save.pIMPayment.PayBaht2);
+                param.Add("@FwdCont2", save.pIMPayment.FwdCont2);
+                param.Add("@PayAmtBht3", save.pIMPayment.PayAmtBht3);
+                param.Add("@PayExch3", save.pIMPayment.PayExch3);
+                param.Add("@PayBaht3", save.pIMPayment.PayBaht3);
+                param.Add("@FwdCont3", save.pIMPayment.FwdCont3);
+                param.Add("@PayAmtBht4", save.pIMPayment.PayAmtBht4);
+                param.Add("@PayExch4", save.pIMPayment.PayExch4);
+                param.Add("@PayBaht4", save.pIMPayment.PayBaht4);
+                param.Add("@FwdCont4", save.pIMPayment.FwdCont4);
+                param.Add("@PayAmtBht5", save.pIMPayment.PayAmtBht5);
+                param.Add("@PayExch5", save.pIMPayment.PayExch5);
+                param.Add("@PayBaht5", save.pIMPayment.PayBaht5);
+                param.Add("@FwdCont5", save.pIMPayment.FwdCont5);
+                param.Add("@PayAmtBht6", save.pIMPayment.PayAmtBht6);
+                param.Add("@PayExch6", save.pIMPayment.PayExch6);
+                param.Add("@PayBaht6", save.pIMPayment.PayBaht6);
+                param.Add("@FwdCont6", save.pIMPayment.FwdCont6);
+                param.Add("@PayIntBht1", save.pIMPayment.PayIntBht1);
+                param.Add("@PayIntExch1", save.pIMPayment.PayIntExch1);
+                param.Add("@PayIntBaht1", save.pIMPayment.PayIntBaht1);
+                param.Add("@FwdContInt1", save.pIMPayment.FwdContInt1);
+                param.Add("@PayIntBht2", save.pIMPayment.PayIntBht2);
+                param.Add("@PayIntExch2", save.pIMPayment.PayIntExch2);
+                param.Add("@PayIntBaht2", save.pIMPayment.PayIntBaht2);
+                param.Add("@FwdContInt2", save.pIMPayment.FwdContInt2);
+                //param.Add("@CenterID", save.pIMPayment.CenterID);
+                //param.Add("@TRDueStatus", save.pIMPayment.TRDueStatus);
+                //param.Add("@OverDueDate", save.pIMPayment.OverDueDate);
+                //param.Add("@PastdueDate", save.pIMPayment.PastdueDate);
+                //param.Add("@DateStartAccru", save.pIMPayment.DateStartAccru);
+                //param.Add("@DateLastAccru", save.pIMPayment.DateLastAccru);
+                //param.Add("@DateToStop", save.pIMPayment.DateToStop);
+                //param.Add("@LastAccruCcy", save.pIMPayment.LastAccruCcy);
+                //param.Add("@LastAccruAmt", save.pIMPayment.LastAccruAmt);
+                param.Add("@LastAccruBht", save.pIMPayment.LastAccruBht);
+                //param.Add("@NewAccruCcy", save.pIMPayment.NewAccruCcy);
+                //param.Add("@NewAccruAmt", save.pIMPayment.NewAccruAmt);
+                param.Add("@NewAccruBht", save.pIMPayment.NewAccruBht);
+                //param.Add("@AccruCCy", save.pIMPayment.AccruCCy);
+                //param.Add("@AccruAmt", save.pIMPayment.AccruAmt);
+                //param.Add("@AccruBht", save.pIMPayment.AccruBht);
+                //param.Add("@DAccruAmt", save.pIMPayment.DAccruAmt);
+                //param.Add("@PAccruAmt", save.pIMPayment.PAccruAmt);
+                //param.Add("@AccruPending", save.pIMPayment.AccruPending);
+                //param.Add("@RevAccru", save.pIMPayment.RevAccru);
+
                 //pIMInterest
-                param.Add("@IntDay", save.pIMInterest.IntDay);
-                param.Add("@IntExchRate", save.pIMInterest.IntExchRate);
-                param.Add("@IntCCy", save.pIMInterest.IntCCy);
+                //param.Add("@IntDay", save.pIMInterest.IntDay);
+                //param.Add("@IntExchRate", save.pIMInterest.IntExchRate);
+                //param.Add("@IntCCy", save.pIMInterest.IntCCy);
 
                 param.Add("@Resp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
@@ -406,8 +361,8 @@ namespace ISPTF.API.Controllers.ImportTR
                            direction: System.Data.ParameterDirection.Output,
                            size: 5215585);
 
-                var results = await _db.LoadData<IMTR_SaveTRPastDue_JSON_rsp, dynamic>(
-                    storedProcedure: "usp_pIMTR_TRPastDue_Save",
+                var results = await _db.LoadData<IMTR_SavePayment_JSON_rsp, dynamic>(
+                    storedProcedure: "usp_pIMTR_Payment_Save",
                     param);
 
                 var Resp = param.Get<int>("@Resp");
@@ -416,7 +371,7 @@ namespace ISPTF.API.Controllers.ImportTR
                 //var Resp = param.Get<int>("@Resp");
                 if (Resp > 0)
                 {
-                    IMTR_SaveTRPastDue_JSON_rsp jsonResponse = JsonSerializer.Deserialize<IMTR_SaveTRPastDue_JSON_rsp>(SaveResp);
+                    IMTR_SavePayment_JSON_rsp jsonResponse = JsonSerializer.Deserialize<IMTR_SavePayment_JSON_rsp>(SaveResp);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
@@ -425,8 +380,8 @@ namespace ISPTF.API.Controllers.ImportTR
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "T/R PastDue Save Error";
-                    response.Data = new IMTR_SaveTRPastDue_JSON_rsp();
+                    response.Message = "Save Payment Error";
+                    response.Data = new IMTR_SavePayment_JSON_rsp();
                     return BadRequest(response);
                 }
             }
@@ -434,14 +389,14 @@ namespace ISPTF.API.Controllers.ImportTR
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new IMTR_SaveTRPastDue_JSON_rsp();
+                response.Data = new IMTR_SavePayment_JSON_rsp();
                 return BadRequest(response);
             }
 
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<IMTRResultResponse>> Release([FromBody] IMTR_ReleaseTRPaseDue_req release)
+        public async Task<ActionResult<IMTRResultResponse>> Release([FromBody] IMTR_ReleasePayment_JSON_req release)
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
@@ -455,18 +410,42 @@ namespace ISPTF.API.Controllers.ImportTR
             //}
 
             DynamicParameters param = new DynamicParameters();
+            //ListTypePay
+            param.Add("@LoadPay", release.ListTypePay.LoadPay);
+            param.Add("@TxNewInt", release.ListTypePay.TxNewInt);
 
-            param.Add("@RefNumber", release.RefNumber);
-            param.Add("@RecType", release.RecType);
-            param.Add("@TRSeqno", release.TRSeqno);
-            param.Add("@UserCode", USER_ID);
-            param.Add("@PastDueDate", release.PastDueDate);
-            param.Add("@TRBalance", release.TRBalance); ;
-            param.Add("@LastIntAmt", release.LastIntAmt);
-            param.Add("@IntFlag", release.IntFlag);
-            param.Add("@IntRateCode", release.IntRateCode);
-            param.Add("@IntRate", release.IntRate);
-            param.Add("@IntSpread", release.IntSpread);
+            //pIMTR
+            param.Add("@RefNumber", release.pIMTR.RefNumber); 
+            param.Add("@RecType", release.pIMTR.RecType);
+            param.Add("@TRSeqno", release.pIMTR.TRSeqno);
+            param.Add("@TRNumber", release.pIMTR.TRNumber);
+            param.Add("@RecStatus", release.pIMTR.RecStatus);
+            param.Add("@PayFlag", release.pIMTR.PayFlag);
+            param.Add("@UserCode", release.pIMTR.UserCode);
+            param.Add("@TRCcy", release.pIMTR.TRCcy);
+            param.Add("@ExchBefore", release.pIMTR.ExchBefore);
+            param.Add("@PaymentDate", release.pIMTR.PaymentDate);
+            param.Add("@PayInterest", release.pIMTR.PayInterest);
+            param.Add("@PayAmount", release.pIMTR.PayAmount);
+            param.Add("@RevAccru", release.pIMTR.RevAccru);
+            param.Add("@TaxAmt", release.pIMTR.TaxAmt);
+            param.Add("@OverDrawComm", release.pIMTR.OverDrawComm);
+            param.Add("@EngageComm", release.pIMTR.EngageComm);
+            param.Add("@OpenAmt", release.pIMTR.OpenAmt);
+            param.Add("@CableAmt", release.pIMTR.CableAmt);
+            param.Add("@DutyAmt", release.pIMTR.DutyAmt);
+            param.Add("@PayableAmt", release.pIMTR.PayableAmt);
+            param.Add("@IBCComm", release.pIMTR.IBCComm);
+            param.Add("@CommLieu", release.pIMTR.CommLieu);
+            param.Add("@CommTran", release.pIMTR.CommTran);
+            param.Add("@CommExch", release.pIMTR.CommExch);
+            param.Add("@CommCertify", release.pIMTR.CommCertify);
+            param.Add("@DiscFee", release.pIMTR.DiscFee);
+            param.Add("@CommOther", release.pIMTR.CommOther);
+            param.Add("@FBCharge", release.pIMTR.FBCharge);
+            param.Add("@FBInterest", release.pIMTR.FBInterest);
+            param.Add("@DateToStop", release.pIMTR.DateToStop);
+            //param.Add("", release.pIMTR.);
 
             param.Add("@Resp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
@@ -475,14 +454,14 @@ namespace ISPTF.API.Controllers.ImportTR
             try
             {
                 await _db.SaveData(
-                    storedProcedure: "usp_pIMTR_TRPastDue_Release", param);
+                    storedProcedure: "usp_pIMTR_Payment_Release", param);
 
                 var Resp = param.Get<int>("@Resp");
 
                 if (Resp > 0)
                 {
                     response.Code = Constants.RESPONSE_OK;
-                    response.Message = "T/R PastDue Release Complete";
+                    response.Message = "Payment Release Complete";
                     return Ok(response);
                 }
                 else
@@ -494,7 +473,7 @@ namespace ISPTF.API.Controllers.ImportTR
                     }
                     catch (Exception)
                     {
-                        response.Message = "T/R PastDue Release Error";
+                        response.Message = "Payment Release Error";
                     }
                     return BadRequest(response);
                 }
@@ -508,7 +487,7 @@ namespace ISPTF.API.Controllers.ImportTR
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<IMTRResultResponse>> Delete([FromBody] IMTR_DeleteTRPastDue_req delete)
+        public async Task<ActionResult<IMTRResultResponse>> Delete([FromBody] IMTR_DeletePayment_JSON_req delete)
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
@@ -523,10 +502,13 @@ namespace ISPTF.API.Controllers.ImportTR
 
             DynamicParameters param = new DynamicParameters();
 
-            param.Add("@RefNumber", delete.RefNumber);
-            param.Add("@TRNumber", delete.TRNumber);
-            param.Add("@TRSeqno", delete.TRSeqno);
-            param.Add("@EventDate", delete.EventDate);
+            //ListTypePay
+            param.Add("@LoadPay", delete.ListTypePay.LoadPay);
+            //pIMTR
+            param.Add("@RefNumber", delete.pIMTR.RefNumber);
+            param.Add("@TRNumber", delete.pIMTR.TRNumber);
+            param.Add("@TRSeqno", delete.pIMTR.TRSeqno);
+            param.Add("@EventDate", delete.pIMTR.EventDate);
 
             param.Add("@Resp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
@@ -535,14 +517,14 @@ namespace ISPTF.API.Controllers.ImportTR
             try
             {
                 await _db.SaveData(
-                    storedProcedure: "usp_pIMTR_TRPastDue_Delete", param);
+                    storedProcedure: "usp_pIMTR_Payment_Delete", param);
 
                 var Resp = param.Get<int>("@Resp");
 
                 if (Resp > 0)
                 {
                     response.Code = Constants.RESPONSE_OK;
-                    response.Message = "T/R PastDue Delete Complete";
+                    response.Message = "Payment Delete Complete";
                     return Ok(response);
                 }
                 else
@@ -554,7 +536,7 @@ namespace ISPTF.API.Controllers.ImportTR
                     }
                     catch (Exception)
                     {
-                        response.Message = "T/R PastDue Delete Error";
+                        response.Message = "Payment Delete Error";
                     }
                     return BadRequest(response);
                 }
@@ -566,6 +548,10 @@ namespace ISPTF.API.Controllers.ImportTR
                 return BadRequest(response);
             }
         }
+
+
+
+
 
 
 
