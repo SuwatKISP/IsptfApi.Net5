@@ -258,7 +258,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
                         eventRow.UPDATE_DATE = DateTime.Now; // With Time
-                        eventRow.IN_USE = 1;
+                        eventRow.IN_USE = 0;
 
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = DateTime.Today; // Without Time
