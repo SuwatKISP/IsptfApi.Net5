@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
-using ISPTF.Models.TradeCreditLimit.QuoteRate;
+using ISPTF.Models.QuoteRate;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
+namespace ISPTF.API.Controllers.QuoteRate
 {
    // [Authorize]
     [Route("api/[controller]")]
@@ -112,6 +112,7 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
             param.Add("@APPV_NO", Quote.APPV_NO);
             param.Add("@AUTOISP", Quote.AUTOISP);
             param.Add("@TranSEQ", Quote.TranSEQ);
+            param.Add("@CFRRemark", Quote.CFRRemark);
             param.Add("@Resp", dbType: DbType.Int32,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
@@ -175,6 +176,26 @@ namespace ISPTF.API.Controllers.TradeCreditLimit.QuoteRate
                 return BadRequest(ex.Message);
             }
         }//delete
+        [HttpGet("listpageCFR")]
+        public async Task<IEnumerable<QuoteCFRListRsp>> GetCFR(string CustCode, string CurCode, int? Page, int? PageSize)
+        {
+            DynamicParameters param = new();
+            param.Add("@CustCode", CustCode);
+            param.Add("@CurCode", CurCode);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (CurCode == null)
+            {
+                param.Add("@CurCode", "");
+            }
+
+            var results = await _db.LoadData<QuoteCFRListRsp, dynamic>(
+                        storedProcedure: "usp_AQuote_QuoteCFRList",
+                        param);
+            return results;
+        }
+        // ListCFRpage
     }//main
 }
 

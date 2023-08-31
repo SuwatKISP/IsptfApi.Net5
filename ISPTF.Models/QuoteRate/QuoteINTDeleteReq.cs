@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISPTF.Models.TradeCreditLimit.QuoteRate
+namespace ISPTF.Models.QuoteRate
 {
     public class QuoteINTDeleteReq
     {

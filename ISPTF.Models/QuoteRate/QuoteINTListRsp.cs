@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISPTF.Models.TradeCreditLimit.QuoteRate
+namespace ISPTF.Models.QuoteRate
 {
     public class QuoteINTListRsp
     {
@@ -16,9 +16,6 @@ namespace ISPTF.Models.TradeCreditLimit.QuoteRate
         public string? curr { get; set; }
         public string? Against { get; set; }
         public string? amount { get; set; }
-        //public string? value_Date { get; set; }
-        //public string? Expiry_Date { get; set; }
-        //public int? Tenor { get; set; }
         public string? Status { get; set; }
         public string? Txndate { get; set; }
         // for count Record

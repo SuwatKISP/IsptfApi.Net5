@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISPTF.Models.TradeCreditLimit.QuoteRate
+namespace ISPTF.Models.QuoteRate
 {
     public class QuoteINTSelect
     {
@@ -55,6 +55,7 @@ namespace ISPTF.Models.TradeCreditLimit.QuoteRate
         public string? APPV_NO { get; set; }
         public string? AUTOISP { get; set; }
         public int? TranSEQ { get; set; }
+        public string? CFRRemark { get; set; }
 
     }
 }
