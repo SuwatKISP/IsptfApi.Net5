@@ -1070,5 +1070,43 @@ namespace ISPTF.API.Controllers.ExportLC
                 }
             }
         }
+        public static bool SaveExDoc(ISPTFContext _context, pExlc lc, pExdoc[] pExdocs)
+        {
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+    
+                    var existingPExDoc = (from row in _context.pExdocs
+                                          where row.EXLC_NO == lc.EXPORT_LC_NO && row.EVENT_NO ==lc.EVENT_NO
+                                              select row).ToList();
+
+                    foreach (var row in existingPExDoc)
+                    {
+                        _context.pExdocs.Remove(row);
+                    }
+
+                    _context.SaveChanges();
+
+                    // Save pExdocs[]
+
+                    foreach (var row in pExdocs)
+                    {
+                        _context.pExdocs.Add(row);
+                    }
+
+                    _context.SaveChanges();
+
+                    transaction.Complete();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return false;
+                }
+
+            }
+        }//exdoc
     }
 }

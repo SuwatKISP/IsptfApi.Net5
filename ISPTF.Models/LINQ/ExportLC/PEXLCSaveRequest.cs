@@ -10,8 +10,5 @@ namespace ISPTF.Models
     public class PEXLCSaveRequest
     {
         public pExlc PEXLC { get; set; }
-        public PSWExportCoveringReq PSWEXPORT { get; set; }
-        public PEXDOCReq[] PEXDOC { get; set; }
-
     }
 }

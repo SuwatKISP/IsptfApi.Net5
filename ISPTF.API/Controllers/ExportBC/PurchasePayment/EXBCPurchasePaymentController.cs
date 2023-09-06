@@ -844,7 +844,7 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@BASE_DAY", PEXBCPurchasePaymentRelease.BASE_DAY);
             param.Add("@SIGHT_START_DATE", PEXBCPurchasePaymentRelease.SIGHT_START_DATE);
             param.Add("@TERM_DUE_DATE", PEXBCPurchasePaymentRelease.TERM_DUE_DATE);
-            param.Add("@SIGHT_PAID_AMT", PEXBCPurchasePaymentRelease.SIGHT_START_DATE);
+            param.Add("@SIGHT_PAID_AMT", PEXBCPurchasePaymentRelease.SIGHT_PAID_AMT);
             param.Add("@TERM_PAID_AMT", PEXBCPurchasePaymentRelease.TERM_PAID_AMT);
             param.Add("@SETTLEMENT_CREDIT", PEXBCPurchasePaymentRelease.SETTLEMENT_CREDIT);
             param.Add("@SIGHT_PAID_THB", PEXBCPurchasePaymentRelease.SIGHT_PAID_THB);
