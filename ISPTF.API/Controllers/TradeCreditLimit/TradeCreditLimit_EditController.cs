@@ -320,6 +320,47 @@ namespace ISPTF.API.Controllers.TradeCreditLimit
             }
             param.Add("@CLogCCS", dtCust.AsTableValuedParameter("Type_pCLogLmCCS"));
 
+            //-----CFR_RateLog
+            dtCust = new DataTable();
+            dtCust.Columns.Add("LCustCode", typeof(string));
+            dtCust.Columns.Add("LCurCode", typeof(string));
+            dtCust.Columns.Add("Lprdcode", typeof(string));
+            dtCust.Columns.Add("Lrate_type", typeof(string));
+            dtCust.Columns.Add("Lsign", typeof(string));
+            dtCust.Columns.Add("Lspread", typeof(double));
+            dtCust.Columns.Add("LFacility_No", typeof(string));
+            dtCust.Columns.Add("Lremark", typeof(string));
+            dtCust.Columns.Add("LApproveDate", typeof(DateTime));
+            dtCust.Columns.Add("LInputDate", typeof(DateTime));
+            dtCust.Columns.Add("LExpiryDate", typeof(DateTime));
+            dtCust.Columns.Add("LDelete_Flag", typeof(string));
+            dtCust.Columns.Add("LZZUser", typeof(string));
+            dtCust.Columns.Add("LZZStrdate", typeof(DateTime));
+            dtCust.Columns.Add("LZZDate", typeof(DateTime));
+            if (pCLogLimitReq.cfrratelog != null)
+            {
+                for (int i = 0; i < pCLogLimitReq.cfrratelog.Length; i++)
+                {
+                    dtCust.Rows.Add(
+                            pCLogLimitReq.cfrratelog[i].LCustCode
+                          , pCLogLimitReq.cfrratelog[i].LCurCode
+                          , pCLogLimitReq.cfrratelog[i].Lprdcode
+                          , pCLogLimitReq.cfrratelog[i].Lrate_type
+                          , pCLogLimitReq.cfrratelog[i].Lsign
+                          , pCLogLimitReq.cfrratelog[i].Lspread
+                          , pCLogLimitReq.cfrratelog[i].LFacility_No
+                          , pCLogLimitReq.cfrratelog[i].Lremark
+                          , pCLogLimitReq.cfrratelog[i].LApproveDate
+                          , pCLogLimitReq.cfrratelog[i].LInputDate
+                          , pCLogLimitReq.cfrratelog[i].LExpiryDate
+                          , pCLogLimitReq.cfrratelog[i].LDelete_Flag
+                          , pCLogLimitReq.cfrratelog[i].LZZUser
+                          , pCLogLimitReq.cfrratelog[i].LZZStrdate
+                          , pCLogLimitReq.cfrratelog[i].LZZDate
+                        );
+                }
+            }
+            param.Add("@CFR_RateLog", dtCust.AsTableValuedParameter("Type_CFR_RateLog"));
 
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.Int32,

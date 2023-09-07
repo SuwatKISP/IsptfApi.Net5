@@ -195,12 +195,25 @@ namespace ISPTF.API.Controllers.ExportLC
             return BadRequest(response);
         }
 
+        [HttpGet("GetBeneCovering")]
+        public async Task<IEnumerable<PEXLCGetBeneCovering>> GetAddr(string? as_bene )
+        {
+            DynamicParameters param = new();
+            EXLCCoveringLetterSelectResponse response = new EXLCCoveringLetterSelectResponse();
+            param.Add("@as_bene", as_bene);
+
+            var results = await _db.LoadData<PEXLCGetBeneCovering, dynamic>(
+                           storedProcedure: "usp_pEXBC_CoveringLetter_GetBeneCovering",
+                           param);
+            return results;
+        }
         [HttpPost("save")]
         public async Task<ActionResult<PEXLCSaveCoveringResponse>> Save([FromBody] PEXLCSaveCoveringRequest data)
         {
             PEXLCSaveCoveringResponse response = new();
             // Class validate
-
+            var UpdateDate1 = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDate2 = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -255,16 +268,17 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.EVENT_DATE = UpdateDate1; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE = UpdateDate2; // With Time
                         eventRow.IN_USE = 0;
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDate1; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
 
-                        // Call Save PaymentDetail
+                        // Call Save pExDoc
+                        
 
                         bool savepEXDocResult = ExportLCHelper.SaveExDoc(_context, eventRow, data.PEXDOC);
 
@@ -295,6 +309,15 @@ namespace ISPTF.API.Controllers.ExportLC
                                 pSWExportEvent.F57A = eventRow.AGENT_BANK_ID;
                                 pSWExportEvent.F57D = eventRow.AGENT_BANK_INFO;
                             }
+                            pSWExportEvent.RemitCcy = data.PSWEXPORT.RemitCcy;
+                            pSWExportEvent.RemitAmt = data.PSWEXPORT.RemitAmt;
+                            pSWExportEvent.ValueDate = data.PSWEXPORT.ValueDate;
+                            pSWExportEvent.F20 = data.PSWEXPORT.F20;
+                            pSWExportEvent.BankID = data.PSWEXPORT.BankID;
+                            pSWExportEvent.BankInFo = data.PSWEXPORT.BankInFo;
+                            pSWExportEvent.NBankID = data.PSWEXPORT.NBankID;
+                            pSWExportEvent.NBankInfo = data.PSWEXPORT.NBankInfo;
+
                             pSWExportEvent.F31 = eventRow.EVENT_DATE.Value.ToString("yyMMdd");
                             pSWExportEvent.MT742 = "N";
                             pSWExportEvent.MT499 = "N";
@@ -542,18 +565,29 @@ namespace ISPTF.API.Controllers.ExportLC
                         var targetEventNo = pExlc.EVENT_NO + 1;
                         if (data.IS_AUTO == false)
                         {
+                            //var pExlcNotInUse = (from row in _context.pExlcs
+                            //                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                            //                           row.RECORD_TYPE == "MASTER" &&
+                            //                           row.IN_USE == 0
+                            //                     select row).FirstOrDefault();
+                            //pExlcNotInUse.REC_STATUS = "R";
+                            // 3 - Update PDOCRegister
                             var pExlcNotInUse = (from row in _context.pExlcs
                                                  where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
                                                        row.RECORD_TYPE == "MASTER" &&
                                                        row.IN_USE == 0
-                                                 select row).FirstOrDefault();
-                            pExlcNotInUse.REC_STATUS = "R";
+                                                 select row).ToListAsync();
+
+                            foreach (var row in await pExlcNotInUse)
+                            {
+                                row.REC_STATUS = "R";
+                            }
                         }
                         else if (data.IS_AUTO == true)
                         {
                             pExlc.DMS = null;
                         }
-
+   //                     int targetEventNo2 = targetEventNo;
                         // 3 - Delete pSWExport
                         var pSWExports = (from row in _context.pSWExports
                                           where row.DocNo == data.EXPORT_LC_NO &&
@@ -565,8 +599,20 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pSWExports.Remove(row);
                         }
 
+                        // 4 - Delete pExdoc
+                        var pExDocs = (from row in _context.pExdocs
+                                      where row.EXLC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_NO == targetEventNo
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExDocs)
+                        {
+                            _context.pExdocs.Remove(row);
+                        }
+
                         // Commit
                         await _context.SaveChangesAsync();
+
                         transaction.Complete();
                     }
                     catch (Exception e)
