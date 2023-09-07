@@ -485,7 +485,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     string resPayDetail;
                     if (pexbcppaymentreq.PPayment != null)
                     {
-                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssCollect(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, pexbcppaymentreq.PEXBC.EVENT_NO, resReceiptNo);
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssCollect(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, jsonResponse.PEXBC.EVENT_NO, resReceiptNo);
                         if (resPayDetail != "ERROR")
                         {
                             resPayD = true;

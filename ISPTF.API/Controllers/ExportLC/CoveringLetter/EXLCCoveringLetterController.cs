@@ -196,9 +196,9 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXLCSaveResponse>> Save([FromBody] PEXLCSaveRequest data)
+        public async Task<ActionResult<PEXLCSaveCoveringResponse>> Save([FromBody] PEXLCSaveCoveringRequest data)
         {
-            PEXLCSaveResponse response = new();
+            PEXLCSaveCoveringResponse response = new();
             // Class validate
 
             try
@@ -258,11 +258,69 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
                         eventRow.UPDATE_DATE = DateTime.Now; // With Time
-                        eventRow.IN_USE = 1;
+                        eventRow.IN_USE = 0;
 
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = DateTime.Today; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
+
+                        // Call Save PaymentDetail
+
+                        bool savepEXDocResult = ExportLCHelper.SaveExDoc(_context, eventRow, data.PEXDOC);
+
+                        //save swift
+                        // Save SWIFT
+                        if (data.PSWEXPORT!=null)
+                        {
+                            var pSWExportEvent = (from row in _context.pSWExports
+                                                  where row.DocNo == eventRow.EXPORT_LC_NO &&
+                                                        row.Event_No == eventRow.EVENT_NO
+                                                  select row).AsNoTracking().FirstOrDefault();
+                            bool swNew=false;
+                            if (pSWExportEvent == null)
+                            {
+                                swNew = true;
+                            }
+                            if (swNew==true)
+                            {
+                                pSWExportEvent = new();
+                                pSWExportEvent.AutoNum = EXHelper.GenSWNo(_context);
+                                pSWExportEvent.DocNo = eventRow.EXPORT_LC_NO;
+                                pSWExportEvent.Event_No = eventRow.EVENT_NO;
+                                pSWExportEvent.Event = "COVERING";
+                                pSWExportEvent.SwiftFile = "TFF" + eventRow.EXPORT_LC_NO + eventRow.EVENT_NO.ToString("00") + "-" + eventRow.EVENT_DATE.Value.ToString("MMdd") + DateTime.Now.ToString("hhmm");
+                                pSWExportEvent.F53A = eventRow.REIMBURSE_BANK_ID;
+                                pSWExportEvent.F52A = eventRow.ISSUE_BANK_ID;
+                                pSWExportEvent.F52D = data.PSWEXPORT.BankInFo;//note
+                                pSWExportEvent.F57A = eventRow.AGENT_BANK_ID;
+                                pSWExportEvent.F57D = eventRow.AGENT_BANK_INFO;
+                            }
+                            pSWExportEvent.F31 = eventRow.EVENT_DATE.Value.ToString("yyMMdd");
+                            pSWExportEvent.MT742 = "N";
+                            pSWExportEvent.MT499 = "N";
+                            if (eventRow.CLAIM_FORMAT == "MT742")
+                            {
+                                pSWExportEvent.MT742 = "Y";
+                            }
+                            else if (eventRow.CLAIM_FORMAT == "MT499")
+                            {
+                                pSWExportEvent.MT499 = "Y";
+                            }
+
+                            pSWExportEvent.MT799 = data.PSWEXPORT.MT799;
+                            pSWExportEvent.MT999 = data.PSWEXPORT.MT999;
+                            if (swNew == true)
+                            {
+                                _context.pSWExports.Add(pSWExportEvent);
+                            }
+                            else
+                            {
+                                _context.pSWExports.Update(pSWExportEvent);
+                            }
+                      
+                        }//pswexport 
+    
+
 
                         // Commit
                         if (pExlcEvent == null)
@@ -282,9 +340,10 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         response.Code = Constants.RESPONSE_OK;
 
-                        PEXLCDataContainer responseData = new();
+                        PEXLCSaveCoveringDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
-
+                        responseData.PSWEXPORT = data.PSWEXPORT;
+                        responseData.PEXDOC = data.PEXDOC;
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";
                         return Ok(response);
