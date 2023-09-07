@@ -195,7 +195,35 @@ namespace ISPTF.API.Controllers.QuoteRate
                         param);
             return results;
         }
-        // ListCFRpage
+        // Confirm Use CFR
+        [HttpGet("UseCFR")]
+        public async Task<IEnumerable<QuoteCFRUsedRsp>> GetUse(string CustCode, string Facility_No, string CurCode, 
+                                                                                           string prdcode, string CFR_1, string CFR_2, double CFR_3, string remark,
+                                                                                           string TxnDate,int? TDay, double CFR_Rate,double Quote_Rate, 
+                                                                                           double TPR, string CCY_Flag)
+        {
+            DynamicParameters param = new();
+            param.Add("@CustCode", CustCode);
+            param.Add("@Facility_No", Facility_No);
+            param.Add("@CurCode", CurCode);
+            param.Add("@prdcode", prdcode);
+            param.Add("@CFR_1", CFR_1);
+            param.Add("@CFR_2", CFR_2);
+            param.Add("@spread", CFR_3);
+            param.Add("@remark", remark);
+            param.Add("@TxnDate", TxnDate);
+            param.Add("@TDay", TDay);
+            param.Add("@CFR_Rate", CFR_Rate);
+            param.Add("@Quote_Rate", Quote_Rate);
+            param.Add("@TPR", TPR);
+            param.Add("@CCY_Flag", CCY_Flag);
+
+            var results = await _db.LoadData<QuoteINTSelect, dynamic>(
+                        storedProcedure: "usp_AQuote_QuoteCFRUsed",
+                        param);
+            return results;
+        }
+        // Select
     }//main
 }
 
