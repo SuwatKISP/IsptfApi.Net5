@@ -19,7 +19,7 @@ namespace ISPTF.Models.QuoteRate
         public string? amount { get; set; }
         public string? value_Date { get; set; }
         public string? Expiry_Date { get; set; }
-        public int? Tenor { get; set; }
+        public String? Tenor { get; set; }
         public string? CFR_1 { get; set; }
         public string? CFR_2 { get; set; }
         public float? CFR_3 { get; set; }
