@@ -218,7 +218,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@TPR", TPR);
             param.Add("@CCY_Flag", CCY_Flag);
 
-            var results = await _db.LoadData<QuoteINTSelect, dynamic>(
+            var results = await _db.LoadData<QuoteCFRUsedRsp, dynamic>(
                         storedProcedure: "usp_AQuote_QuoteCFRUsed",
                         param);
             return results;

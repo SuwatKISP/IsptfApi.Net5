@@ -195,18 +195,18 @@ namespace ISPTF.API.Controllers.ExportLC
             return BadRequest(response);
         }
 
-        //[HttpGet("GetBeneCovering")]
-        //public async Task<ActionResult<PEXLCGetBeneCovering>>GetAddr(string? as_bene )
-        //{
-        //    DynamicParameters param = new();
-        //    EXLCCoveringLetterSelectResponse response = new EXLCCoveringLetterSelectResponse();
-        //    param.Add("@as_bene", as_bene);
+        [HttpGet("GetBeneCovering")]
+        public async Task<IEnumerable<PEXLCGetBeneCovering>> GetAddr(string? as_bene )
+        {
+            DynamicParameters param = new();
+            EXLCCoveringLetterSelectResponse response = new EXLCCoveringLetterSelectResponse();
+            param.Add("@as_bene", as_bene);
 
-        //    var results = await _db.LoadData<PEXLCGetBeneCovering, dynamic>(
-        //                   storedProcedure: "usp_pEXLC_CoveringLetter_Select",
-        //                   param);
-        //    return results;
-        //}
+            var results = await _db.LoadData<PEXLCGetBeneCovering, dynamic>(
+                           storedProcedure: "usp_pEXBC_CoveringLetter_GetBeneCovering",
+                           param);
+            return results;
+        }
         [HttpPost("save")]
         public async Task<ActionResult<PEXLCSaveCoveringResponse>> Save([FromBody] PEXLCSaveCoveringRequest data)
         {
