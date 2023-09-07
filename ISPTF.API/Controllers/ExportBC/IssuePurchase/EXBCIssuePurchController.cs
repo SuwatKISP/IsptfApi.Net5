@@ -662,8 +662,21 @@ namespace ISPTF.API.Controllers.ExportBC
                     {
                         resPayD = true;
                     }
+                    string resQuote;
+                    resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                         response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "NEW", response.Data.PEXBC.USER_ID);
+                    if (resQuote== "ERROR"  || resPayD==false || resGL ==false)
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message ="Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
+                        response.Data = new PEXBCPPaymentRsp();
+                        return BadRequest(response);
+                    }
+                    else
+                    {
+                        return Ok(response);
+                    }
 
-                    return Ok(response);
                 }
                 else
                 {
@@ -1050,9 +1063,20 @@ namespace ISPTF.API.Controllers.ExportBC
                     {
                         resPayD = true;
                     }
-
-
-                    return Ok(response);
+                    string resQuote;
+                    resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                         response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "EDIT", response.Data.PEXBC.USER_ID);
+                    if (resQuote == "ERROR" || resPayD == false || resGL == false)
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
+                        response.Data = new PEXBCPPaymentRsp();
+                        return BadRequest(response);
+                    }
+                    else
+                    {
+                        return Ok(response);
+                    }
                 }
                 else
                 {

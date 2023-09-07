@@ -59,7 +59,20 @@ namespace ISPTF.API.Controllers.ExportLC
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                using (SqlCommand command = new SqlCommand("SELECT GETDATE()", connection))
+                using (SqlCommand command = new SqlCommand("SELECT dbo.SystemDateTime()", connection))
+                {
+                    DateTime currentDate = (DateTime)command.ExecuteScalar();
+                    return currentDate;
+                }
+            }
+        }
+        public static DateTime GetSysDateNT(ISPTFContext context)
+        {
+            string connectionString = context.Database.GetConnectionString();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT dbo.SystemDateTime2()", connection))
                 {
                     DateTime currentDate = (DateTime)command.ExecuteScalar();
                     return currentDate;
@@ -1087,16 +1100,22 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
 
                     _context.SaveChanges();
-
-                    // Save pExdocs[]
-
-                    foreach (var row in pExdocs)
+                    
+                    
+                    for (int i = 0; i < pExdocs.Length; i++)
                     {
-                        _context.pExdocs.Add(row);
+                        pExdocs[i].EVENT_NO = lc.EVENT_NO;
                     }
+                    // Save pExdocs[]
+                    if (pExdocs != null)
+                    {
+                        foreach (var row in pExdocs)
+                        {
+                            _context.pExdocs.Add(row);
+                        }
 
-                    _context.SaveChanges();
-
+                        _context.SaveChanges();
+                    }
                     transaction.Complete();
                     return true;
                 }

@@ -480,6 +480,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     string eventDate;
                     string resVoucherID;
                     PEXBCPPaymentRspGL resultJson = new();
+                    PEXBCPPaymentRsp jsonResponse = JsonConvert.DeserializeObject<PEXBCPPaymentRsp>(pexbcpexpaymentrsp);
 
                     eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
                     if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "PAID")
@@ -494,24 +495,24 @@ namespace ISPTF.API.Controllers.ExportBC
                     }
                     else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "FCD")
                     {
-                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT COLL-FCD", true);
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, jsonResponse.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT COLL-FCD", true);
 
                     }
                     else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "MT202")
                     {
-                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT MT202", true);
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, jsonResponse.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT MT202", true);
 
                     }
                     else if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "UNPAID")
                     {
                         if (pexbcppaymentreq.PEXPayment.Debit_credit_flag == "R")
                         {
-                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT-REVCOLL", true);
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, jsonResponse.PEXBC.EVENT_TYPE, resSeqNo, "PAYMENT-REVCOLL", true);
 
                         }
                         else
                         {
-                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, pexbcppaymentreq.PEXBC.EVENT_TYPE, resSeqNo, pexbcppaymentreq.PEXBC.EVENT_TYPE, false, "U");
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, eventDate, jsonResponse.PEXBC.EVENT_TYPE, resSeqNo, jsonResponse.PEXBC.EVENT_TYPE, false, "U");
 
                         }
 
@@ -533,7 +534,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     string resPayDetail;
                     if (pexbcppaymentreq.PPayment != null)
                     {
-                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_CollectPay(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, pexbcppaymentreq.PEXBC.EVENT_NO, resReceiptNo);
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_CollectPay(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, jsonResponse.PEXBC.EVENT_NO, resReceiptNo);
                         if (resPayDetail != "ERROR")
                         {
                             resPayD = true;
