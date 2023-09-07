@@ -59,8 +59,6 @@ namespace ISPTF.API.Controllers
             return results;
         }
         // Select
-        [HttpGet]
 
-        }
     }
 }

@@ -113,6 +113,8 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@AUTOISP", Quote.AUTOISP);
             param.Add("@TranSEQ", Quote.TranSEQ);
             param.Add("@CFRRemark", Quote.CFRRemark);
+            param.Add("@QuoteCost", Quote.QuoteCost);
+            param.Add("@QuoteSpread", Quote.QuoteSpread);
             param.Add("@Resp", dbType: DbType.Int32,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
@@ -200,7 +202,7 @@ namespace ISPTF.API.Controllers.QuoteRate
         public async Task<IEnumerable<QuoteCFRUsedRsp>> GetUse(string CustCode, string Facility_No, string CurCode, 
                                                                                            string prdcode, string CFR_1, string CFR_2, double CFR_3, string remark,
                                                                                            string TxnDate,int? TDay, double CFR_Rate,double Quote_Rate, 
-                                                                                           double TPR, string CCY_Flag)
+                                                                                           double TPR, string CCY_Flag, double QuoteCost,  double QuoteSpread)
         {
             DynamicParameters param = new();
             param.Add("@CustCode", CustCode);
@@ -217,8 +219,10 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@Quote_Rate", Quote_Rate);
             param.Add("@TPR", TPR);
             param.Add("@CCY_Flag", CCY_Flag);
+            param.Add("@QuoteCost", QuoteCost);
+            param.Add("@QuoteSpread", QuoteSpread);
 
-            var results = await _db.LoadData<QuoteINTSelect, dynamic>(
+            var results = await _db.LoadData<QuoteCFRUsedRsp, dynamic>(
                         storedProcedure: "usp_AQuote_QuoteCFRUsed",
                         param);
             return results;

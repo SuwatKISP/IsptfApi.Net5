@@ -56,6 +56,8 @@ namespace ISPTF.Models.QuoteRate
         public string? AUTOISP { get; set; }
         public int? TranSEQ { get; set; }
         public string? CFRRemark { get; set; }
+        public float? QuoteCost { get; set; }
+        public float? QuoteSpread { get; set; }
 
     }
 }

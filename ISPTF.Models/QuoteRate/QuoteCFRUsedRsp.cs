@@ -22,6 +22,8 @@ namespace ISPTF.Models.QuoteRate
         public double ? Quote_Rate { get; set; }
         public double? TPR { get; set; }
         public string? CCY_Flag { get; set; }
+        public float? QuoteCost { get; set; }
+        public float? QuoteSpread { get; set; }
 
     }
 }
