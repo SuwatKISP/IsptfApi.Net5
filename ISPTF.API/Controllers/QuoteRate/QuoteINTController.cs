@@ -147,6 +147,8 @@ namespace ISPTF.API.Controllers.QuoteRate
 
             DynamicParameters param = new();
             param.Add("@Txn_ID", Quote.Txn_ID);
+            param.Add("@RM1", Quote.RM1);
+            param.Add("@RM1", Quote.RM2);
             param.Add("@Delete_user", Quote.Delete_user);
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
@@ -178,19 +180,55 @@ namespace ISPTF.API.Controllers.QuoteRate
                 return BadRequest(ex.Message);
             }
         }//delete
+
+        [HttpPost("cancel")]
+        public async Task<ActionResult<string>> Cancel([FromBody] QuoteINTCancelReq Quote)
+        {
+
+            DynamicParameters param = new();
+            param.Add("@Txn_ID", Quote.Txn_ID);
+            param.Add("@RM1", Quote.RM1);
+            param.Add("@RM1", Quote.RM2);
+            param.Add("@Delete_user", Quote.Delete_user);
+            param.Add("@Resp", dbType: DbType.Int32,
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
+            try
+            {
+                await _db.SaveData(
+                  storedProcedure: "usp_AQuote_QuoteINTDelete", param);
+                var resp = param.Get<int>("@Resp");
+                if (resp == 1)
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "200";
+                    response.Message = " Rate deleted";
+                    return Ok(response);
+                }
+                else
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = " Rate not exist";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }//delete
+
         [HttpGet("listpageCFR")]
-        public async Task<IEnumerable<QuoteCFRListRsp>> GetCFR(string CustCode, string CurCode, int? Page, int? PageSize)
+        public async Task<IEnumerable<QuoteCFRListRsp>> GetCFR(string CustCode, string Facility_No, int? Page, int? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@CustCode", CustCode);
-            param.Add("@CurCode", CurCode);
+            param.Add("@Facility_No", Facility_No);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
-
-            if (CurCode == null)
-            {
-                param.Add("@CurCode", "");
-            }
 
             var results = await _db.LoadData<QuoteCFRListRsp, dynamic>(
                         storedProcedure: "usp_AQuote_QuoteCFRList",

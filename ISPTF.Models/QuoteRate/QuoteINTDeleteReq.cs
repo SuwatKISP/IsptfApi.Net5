@@ -9,6 +9,8 @@ namespace ISPTF.Models.QuoteRate
     public class QuoteINTDeleteReq
     {
        public string? Txn_ID { get; set; }
+        public string? RM1 { get; set; }
+        public string? RM2 { get; set; }
         public string? Delete_user { get; set; }
   
     }
