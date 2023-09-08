@@ -618,8 +618,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             // 3 - Update PDOCRegister
                             var pExlcNotInUse = (from row in _context.pExlcs
                                                  where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                       row.RECORD_TYPE == "MASTER" &&
-                                                       row.IN_USE == 0
+                                                       row.RECORD_TYPE == "MASTER" 
                                                  select row).ToListAsync();
 
                             foreach (var row in await pExlcNotInUse)
@@ -629,6 +628,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         else if (data.IS_AUTO == true)
                         {
+                            pExlc.REC_STATUS = "R";
                             pExlc.DMS = null;
                         }
    //                     int targetEventNo2 = targetEventNo;
@@ -653,9 +653,11 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             _context.pExdocs.Remove(row);
                         }
-
-                        // Commit
                         await _context.SaveChangesAsync();
+                        //await _context.Database.ExecuteSqlRawAsync($"Delete pExlc Where REC_STATUS = 'R', EVENT_NO = {targetEventNo} WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
+                        //await _context.Database.ExecuteSqlRawAsync($"update pExlc set DMS =null,REC_STATUS ='R' where EXPORT_LC_NO='{data.EXPORT_LC_NO}' and RECORD_TYPE ='MASTER'");
+                        // Commit
+
 
                         transaction.Complete();
                     }
