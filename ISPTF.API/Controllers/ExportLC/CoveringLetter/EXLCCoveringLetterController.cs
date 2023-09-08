@@ -488,28 +488,39 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                         pExlcMaster.LC_DATE = eventRow.LC_DATE;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
-
-
+                        pExlcMaster.COVERING_DATE = eventRow.COVERING_DATE;
+                        pExlcMaster.COVERING_FOR = eventRow.COVERING_FOR;
+                        pExlcMaster.ADVICE_ISSUE_BANK = eventRow.ADVICE_ISSUE_BANK;
+                        pExlcMaster.ADVICE_FORMAT = eventRow.ADVICE_FORMAT;
+                        pExlcMaster.REMIT_CLAIM_TYPE = eventRow.REMIT_CLAIM_TYPE;
+                        pExlcMaster.REIMBURSE_BANK_ID = eventRow.REIMBURSE_BANK_ID;
+                        pExlcMaster.REIMBURSE_BANK_INFO = eventRow.REIMBURSE_BANK_INFO;
+                        pExlcMaster.SWIFT_BANK = eventRow.SWIFT_BANK;
+                        pExlcMaster.CLAIM_FORMAT = eventRow.CLAIM_FORMAT;
+                        pExlcMaster.ISSUE_BANK_ID = eventRow.ISSUE_BANK_ID;
+                        pExlcMaster.AGENT_BANK_ID = eventRow.AGENT_BANK_ID;
+                        pExlcMaster.AGENT_BANK_INFO = eventRow.AGENT_BANK_INFO;
+                        pExlcMaster.AGENT_BANK_REF = eventRow.AGENT_BANK_REF;
+                        pExlcMaster.THIRD_BANK_ID = eventRow.THIRD_BANK_ID;
+                        pExlcMaster.THIRD_BANK_INFO = eventRow.THIRD_BANK_INFO;
+                        pExlcMaster.ISSUE_BANK_INFO = eventRow.ISSUE_BANK_INFO;
+                        pExlcMaster.TXTDOCUMENT = eventRow.TXTDOCUMENT;
+                        pExlcMaster.VALUE_DATE = eventRow.VALUE_DATE;
+                        pExlcMaster.DISCREPANCY_TYPE = eventRow.DISCREPANCY_TYPE;
+                        pExlcMaster.SWIFT_DISC = eventRow.SWIFT_DISC;
+                        pExlcMaster.SWIFT_MAIL = eventRow.SWIFT_MAIL;
+                        pExlcMaster.DOCUMENT_COPY = eventRow.DOCUMENT_COPY;
+                        pExlcMaster.SIGHT_BASIS = eventRow.SIGHT_BASIS;
+                        pExlcMaster.ART44A = eventRow.ART44A;
+                        pExlcMaster.ENDORSED = eventRow.ENDORSED;
+                        pExlcMaster.MT750 = eventRow.MT750;
+                        pExlcMaster.ADJ_TOT_NEGO_AMOUNT = eventRow.ADJ_TOT_NEGO_AMOUNT;
+                        pExlcMaster.ADJ_LESS_CHARGE_AMT = eventRow.ADJ_LESS_CHARGE_AMT;
+                        pExlcMaster.ADJUST_COVERING_AMT = eventRow.ADJUST_COVERING_AMT;
+                        pExlcMaster.ADJUST_LC_REF = eventRow.ADJUST_LC_REF;
+                        pExlcMaster.ADJUST_TENOR = eventRow.ADJUST_TENOR;
+                        pExlcMaster.PAYMENT_INSTRC = eventRow.PAYMENT_INSTRC;
+                        pExlcMaster.PAYMENT_INSTRU = eventRow.PAYMENT_INSTRU;
                         await _context.SaveChangesAsync();
 
 
