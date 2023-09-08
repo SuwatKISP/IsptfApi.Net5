@@ -405,7 +405,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDate = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -446,6 +447,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
+
                         // 3 - Insert/Update EVENT
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
@@ -458,32 +460,63 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
-                        eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                       // eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.AUTH_CODE = USER_ID;
+                        eventRow.AUTH_DATE = UpdateDate; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
 
-                       
+
                         // 4 - Update Master
+                        pExlcMaster.REC_STATUS = "R";
                         pExlcMaster.GENACC_FLAG = "Y";
-                        pExlcMaster.GENACC_DATE = DateTime.Today; // Without Time
+                        pExlcMaster.GENACC_DATE = UpdateDateNT; // Without Time
                         pExlcMaster.VOUCH_ID = "COVERING";
-
+                        pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
+                        pExlcMaster.EVENT_TYPE = EVENT_TYPE;
+                        pExlcMaster.EVENT_NO = targetEventNo;
+                        pExlcMaster.EVENT_MODE = "E";
+                        pExlcMaster.VOUCH_ID = "COVERING";
+                        pExlcMaster.USER_ID = USER_ID;
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
-
+                        pExlcMaster.AUTH_DATE = UpdateDate; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDate; // With Time
                         pExlcMaster.IN_USE = 0;
+
+
+
+                        pExlcMaster.LC_DATE = eventRow.LC_DATE;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
+                        pExlcMaster.REC_STATUS = eventRow.REC_STATUS;
 
 
                         await _context.SaveChangesAsync();
 
+
                         // 5 - Update Master/Event PK to Release
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {pExlcMaster.EVENT_NO + 1} WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {eventRow.EVENT_NO} WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
+
 
                         transaction.Complete();
 
