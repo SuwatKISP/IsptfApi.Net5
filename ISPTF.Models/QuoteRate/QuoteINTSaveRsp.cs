@@ -58,6 +58,7 @@ namespace ISPTF.Models.QuoteRate
         public string? CFRRemark { get; set; }
         public float? QuoteCost { get; set; }
         public float? QuoteSpread { get; set; }
+        public string? ReleaseFlag { get; set; }
 
     }
 }

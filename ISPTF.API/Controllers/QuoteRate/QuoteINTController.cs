@@ -115,6 +115,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@CFRRemark", Quote.CFRRemark);
             param.Add("@QuoteCost", Quote.QuoteCost);
             param.Add("@QuoteSpread", Quote.QuoteSpread);
+            param.Add("@ReleaseFlag", Quote.ReleaseFlag);
             param.Add("@Resp", dbType: DbType.Int32,
                direction: System.Data.ParameterDirection.Output,
                size: 5215585);
