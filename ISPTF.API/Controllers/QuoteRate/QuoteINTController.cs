@@ -148,7 +148,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             DynamicParameters param = new();
             param.Add("@Txn_ID", Quote.Txn_ID);
             param.Add("@RM1", Quote.RM1);
-            param.Add("@RM1", Quote.RM2);
+            param.Add("@RM2", Quote.RM2);
             param.Add("@Delete_user", Quote.Delete_user);
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
@@ -188,7 +188,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             DynamicParameters param = new();
             param.Add("@Txn_ID", Quote.Txn_ID);
             param.Add("@RM1", Quote.RM1);
-            param.Add("@RM1", Quote.RM2);
+            param.Add("@RM2", Quote.RM2);
             param.Add("@Delete_user", Quote.Delete_user);
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
@@ -196,7 +196,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             try
             {
                 await _db.SaveData(
-                  storedProcedure: "usp_AQuote_QuoteINTDelete", param);
+                  storedProcedure: "usp_AQuote_QuoteINTCancel", param);
                 var resp = param.Get<int>("@Resp");
                 if (resp == 1)
                 {
