@@ -106,15 +106,16 @@ namespace ISPTF.API.Controllers.ExportLC
             return 0;
         }
 
-        public static string GenRefNo(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
+        public static string GenRefNo(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo="" )
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
                     string genRefNo = "";
-                    var sysDate = GetSysDate(_context);
-                    string currentYear = sysDate.Year.ToString();
+                    //var sysDate = GetSysDate(_context);
+                    //string currentYear = sysDate.Year.ToString();
+                    string currentYear = custNo;
                     var pRefNo = (from row in _context.pReferenceNos
                                   where row.pRefTrans == docType &&
                                         row.pRefBran == USER_CENTER_ID &&  
@@ -123,7 +124,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     if (pRefNo != null)
                     {
-                        if (pRefNo.InUse != false)
+                        if (pRefNo.InUse == false)
                         {
                             pRefNo.InUse = true;
                             _context.pReferenceNos.Update(pRefNo);
@@ -142,7 +143,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             pRefNo.pRefSeq = runNo;
                             pRefNo.LastUpdate = DateTime.Now;
                             pRefNo.UserCode = USER_ID;
-
+                            pRefNo.InUse = false;
                             _context.pReferenceNos.Update(pRefNo);
                             _context.SaveChanges();
 
@@ -295,7 +296,7 @@ namespace ISPTF.API.Controllers.ExportLC
             {
                 try
                 {
-                    string RECEIPT_NO = GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
+                    string RECEIPT_NO = GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC",lc.EVENT_DATE.Value.Year.ToString());
 
                     var existingPPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == lc.RECEIVED_NO
@@ -307,6 +308,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         payment.RpReceiptNo = RECEIPT_NO;
                         payment.RpDocNo = lc.EXPORT_LC_NO;
                         payment.RpEvent = lc.EVENT_NO.ToString();
+                        
                     }
                     else
                     {
@@ -317,7 +319,77 @@ namespace ISPTF.API.Controllers.ExportLC
                     payment.RpCustCode = lc.BENE_ID;
                     payment.RpPayDate = DateTime.Now;
                     payment.RpNote = "";
-                    payment.RpApplicant = payment.RpApplicant.ToUpper();
+                    if (payment.RpApplicant==null)
+                    {
+                        payment.RpApplicant ="";
+                    }
+                    else
+                    {
+                        payment.RpApplicant = payment.RpApplicant.ToUpper();
+                    }
+
+                    if (payment.RpChqNo == null)
+                    {
+                        payment.RpChqNo = "";
+                    }
+                    else
+                    {
+                        payment.RpChqNo = payment.RpChqNo.ToUpper();
+                    }
+
+                    if (payment.RpChqBank == null)
+                    {
+                        payment.RpChqBank = "";
+                    }
+                    else
+                    {
+                        payment.RpChqBank = payment.RpChqBank.ToUpper();
+                    }
+
+                    if (payment.RpChqBranch == null)
+                    {
+                        payment.RpChqBranch = "";
+                    }
+                    else
+                    {
+                        payment.RpChqBranch = payment.RpChqBranch.ToUpper();
+                    }
+                    if (payment.RpChqBranch == null)
+                    {
+                        payment.RpChqBranch = "";
+                    }
+                    else
+                    {
+                        payment.RpChqBranch = payment.RpChqBranch.ToUpper();
+                    }
+
+                    if (payment.RpCustAc1 == null)
+                    {
+                        payment.RpCustAc1 = "";
+                    }
+                    else
+                    {
+                        payment.RpCustAc1 = payment.RpCustAc1;
+                    }
+
+                    if (payment.RpCustAc2 == null)
+                    {
+                        payment.RpCustAc2 = "";
+                    }
+                    else
+                    {
+                        payment.RpCustAc2 = payment.RpCustAc2;
+                    }
+
+                    if (payment.RpCustAc3 == null)
+                    {
+                        payment.RpCustAc3 = "";
+                    }
+                    else
+                    {
+                        payment.RpCustAc3 = payment.RpCustAc3;
+                    }
+
                     payment.RpStatus = "A";
                     payment.UserCode = lc.USER_ID;
                     payment.UpdateDate = DateTime.Now;
@@ -1101,14 +1173,13 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     _context.SaveChanges();
                     
-                    
-                    for (int i = 0; i < pExdocs.Length; i++)
-                    {
-                        pExdocs[i].EVENT_NO = lc.EVENT_NO;
-                    }
                     // Save pExdocs[]
                     if (pExdocs != null)
                     {
+                        for (int i = 0; i < pExdocs.Length; i++)
+                        {
+                            pExdocs[i].EVENT_NO = lc.EVENT_NO;
+                        }
                         foreach (var row in pExdocs)
                         {
                             _context.pExdocs.Add(row);
