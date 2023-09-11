@@ -333,7 +333,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCPPaymentPPayDetailsSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -341,39 +342,12 @@ namespace ISPTF.API.Controllers.ExportLC
                     try
                     {
 
-                        // 0 - Select EXLC Master
-                        var pExlcMaster = (from row in _context.pExlcs
-                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
-                                                 row.RECORD_TYPE == "MASTER"
-                                           select row).FirstOrDefault();
-
-                        // 1 - Insert Master if not exists
-                        if (pExlcMaster == null)
-                        {
-                            pExlc pExlc = data.PEXLC;
-                            pExlc.EXPORT_LC_NO = data.PEXLC.EXPORT_LC_NO;
-                            pExlc.EVENT_NO = 1;
-                            pExlc.RECORD_TYPE = "MASTER";
-                            pExlc.EVENT_TYPE = EVENT_TYPE;
-
-                            _context.pExlcs.Add(pExlc);
-                            _context.SaveChanges();
-
-                            pExlcMaster = (from row in _context.pExlcs
-                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
-                                                 row.RECORD_TYPE == "MASTER"
-                                           select row).FirstOrDefault();
-                        }
-
-                        // 2 - Insert EVENT
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
-                        pExlc eventRow = data.PEXLC;
-
-
                         // 3 - Select PDOCRegister >> find cust approve
+                        string appvFac ="";
                         var pDocRegister = (from row in _context.pDocRegisters
                                             where row.Reg_Docno == data.PEXLC.EXPORT_LC_NO
                                             select row).FirstOrDefault();
@@ -385,36 +359,104 @@ namespace ISPTF.API.Controllers.ExportLC
 
                             if (pCustApprove != null)
                             {
-                                eventRow.FACNO = pCustApprove.Appv_No;
+                                appvFac = pCustApprove.Appv_No;
                             }
                         }
                         else
                         {
                             // PDocRegister Not Found
                         }
+                        // 0 - Select EXLC Master
+                        var pExlcMaster = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.RECORD_TYPE == "MASTER"
+                                           select row).AsNoTracking().FirstOrDefault();
 
+                        // 1 - Insert Master if not exists
+                        if (pExlcMaster == null)
+                        {
+                            pExlc pExlc = data.PEXLC;
+
+                            pExlc.EXPORT_LC_NO = data.PEXLC.EXPORT_LC_NO;
+                            pExlc.EVENT_NO = 1;
+                            pExlc.IN_USE = 0;
+                            pExlc.REC_STATUS = "P";
+                            pExlc.RECORD_TYPE = "MASTER";
+                            pExlc.EVENT_TYPE = EVENT_TYPE;
+                            pExlc.CenterID = USER_CENTER_ID;
+                            pExlc.BUSINESS_TYPE = BUSINESS_TYPE;
+                            pExlc.EVENT_MODE = "E";
+                            pExlc.AUTOOVERDUE = "N";
+                            pExlc.LCOVERDUE = "N";
+                            if (pExlc.TENOR_OF_COLL == 1)
+                            {
+                                pExlc.LASTINTDATE = pExlc.SIGHT_START_DATE;
+                            }
+                            else
+                            {
+                                pExlc.LASTINTDATE = pExlc.TERM_DUE_DATE;
+                            }
+                            //ventRow.EVENT_DATE = DateTime.Today; // Without Time
+                            //eventRow.VOUCH_ID = "ISSUE-PURC";
+                            pExlc.USER_ID = USER_ID;
+                            pExlc.UPDATE_DATE = UpdateDateT; // With Time
+                            pExlc.FACNO = appvFac;
+
+                            _context.pExlcs.Add(pExlc);
+                            _context.SaveChanges();
+                        }
+              
+
+                        //pExlcMaster = (from row in _context.pExlcs
+                        //               where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                        //                     row.RECORD_TYPE == "MASTER"
+                        //               select row).FirstOrDefault();
+
+
+                        // 2 - Insert EVENT
+                        var pExlcEvent = (from row in _context.pExlcs
+                                       where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                             row.RECORD_TYPE == "EVENT"
+                                       select row).AsNoTracking().FirstOrDefault();
+
+                        pExlc eventRow = data.PEXLC;
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
+                        eventRow.REC_STATUS = "P";
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
-                        eventRow.VOUCH_ID = "ISSUE-PURC";
+                        eventRow.AUTOOVERDUE = "N";
+                        eventRow.LCOVERDUE = "N";
+                        eventRow.IN_USE = 0;
+                        if (eventRow.TENOR_OF_COLL ==1)
+                        {
+                            eventRow.LASTINTDATE = eventRow.SIGHT_START_DATE;
+                        }
+                      else
+                        {
+                            eventRow.LASTINTDATE = eventRow.TERM_DUE_DATE;
+                        }
+                        //ventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        //eventRow.VOUCH_ID = "ISSUE-PURC";
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
+                        eventRow.FACNO = appvFac;
 
-
-                        if (eventRow.PAYMENT_INSTRU == "PAID")
+                        if (eventRow.PAYMENT_INSTRU == "PAID" || eventRow.PAYMENT_INSTRU == "BAHTNET")
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
 
                             // Call Save Payment
                             eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
-                            
+
                             // Call Save PaymentDetail
-                            if (eventRow.RECEIVED_NO != "ERROR") {
-                                bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
-                            }
+                                                        
+                            //if (eventRow.RECEIVED_NO != "ERROR") 
+                            //{  
+                                
+                            //   bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
+                            //}
                         }
                         else
                         {
@@ -439,7 +481,14 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
                         // Commit
-                        _context.pExlcs.Add(eventRow);
+                        if (pExlcEvent ==null)
+                        {
+                            _context.pExlcs.Add(eventRow);
+                        }
+                        else
+                        {
+                            _context.pExlcs.Update(eventRow);
+                        }
                         _context.SaveChanges();
                         transaction.Complete();
 
@@ -451,6 +500,86 @@ namespace ISPTF.API.Controllers.ExportLC
                         responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
+
+
+                        bool resGL;
+                        bool resPayD;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent =response.Data.PEXLC.EVENT_TYPE;
+                        eventDate = response.Data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        if ( response.Data.PEXLC.PAYMENT_INSTRU == "PAID" || response.Data.PEXLC.PAYMENT_INSTRU == "BAHTNET")
+                        {
+                            if (data.PEXLC.WithOutFlag == "Y")
+                            {
+                                if (data.PEXLC.WithOutType == "F")
+                                {
+                                    GLEvent = "ISSUE-PUR-FUND";
+                                }
+                                if (data.PEXLC.WithOutType == "I")
+                                {
+                                    GLEvent = "ISSUE-PUR-UNISB";
+                                }
+                                if (data.PEXLC.WithOutType == "A")
+                                {
+                                    GLEvent = "ISSUE-PUR-UNAGB";
+                                }
+                            }
+                            
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC( response.Data.PEXLC.EXPORT_LC_NO,
+                                eventDate,
+                                response.Data.PEXLC.EVENT_TYPE,
+                                response.Data.PEXLC.EVENT_NO,
+                                response.Data.PEXLC.EVENT_TYPE);
+
+                        }
+                        else
+                        {
+                            resVoucherID = "";
+
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            response.Data.PEXLC.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+
+                        string resPayDetail;
+                        if (response.Data.PPAYMENT != null)
+                        {
+                            resPayDetail = ISPModule.PayDetailEXLC.PayDetail_IssPurchase( response.Data.PEXLC.EXPORT_LC_NO, response.Data.PEXLC.EVENT_NO, response.Data.PEXLC.RECEIVED_NO);
+                            if (resPayDetail != "ERROR")
+                            {
+                                resPayD = true;
+                            }
+                            else
+                            {
+                                resPayD = false;
+                            }
+                        }
+                        else
+                        {
+                            resPayD = true;
+                        }
+                        //string resQuote;
+                        //resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC",  response.Data.PEXLC.EXPORT_BC_NO,
+                        //     response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "NEW", response.Data.PEXBC.USER_ID);
+                        //if (resPayD == false || resGL == false)
+                        //{
+                        //    response.Code = Constants.RESPONSE_ERROR;
+                        //    response.Message = "Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
+                        //    response.Data = new PEXBCPPaymentRsp();
+                        //    return BadRequest(response);
+                        //}
+                        //else
+                        //{
+                        //    return Ok(response);
+                        //}
+
                         response.Message = "Export L/C Saved";
                         return Ok(response);
                     }

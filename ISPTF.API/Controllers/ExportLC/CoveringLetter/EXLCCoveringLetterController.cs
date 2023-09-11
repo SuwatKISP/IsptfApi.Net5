@@ -418,7 +418,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         var pExlcMaster = (from row in _context.pExlcs
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
                                                  row.RECORD_TYPE == "MASTER"
-                                           select row).FirstOrDefault();
+                                           select row).AsNoTracking().FirstOrDefault();
 
                         // 1 - Check if Master Exists
                         if (pExlcMaster == null)
@@ -453,30 +453,28 @@ namespace ISPTF.API.Controllers.ExportLC
                         var claimsPrincipal = HttpContext.User;
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
-                        pExlc eventRow = pExlcEvent;
+                        pExlc eventRow =data.PEXLC;
 
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                       // eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.AUTH_CODE = USER_ID;
                         eventRow.AUTH_DATE = UpdateDate; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = UpdateDateNT; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
-
+                        _context.pExlcs.Update(eventRow);
+                        //await _context.SaveChangesAsync();
 
                         // 4 - Update Master
-                        pExlcMaster.REC_STATUS = "R";
                         pExlcMaster.GENACC_FLAG = "Y";
                         pExlcMaster.GENACC_DATE = UpdateDateNT; // Without Time
                         pExlcMaster.VOUCH_ID = "COVERING";
                         pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
                         pExlcMaster.EVENT_TYPE = EVENT_TYPE;
-                        pExlcMaster.EVENT_NO = targetEventNo;
                         pExlcMaster.EVENT_MODE = "E";
                         pExlcMaster.VOUCH_ID = "COVERING";
                         pExlcMaster.USER_ID = USER_ID;
@@ -484,9 +482,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlcMaster.AUTH_DATE = UpdateDate; // With Time
                         pExlcMaster.UPDATE_DATE = UpdateDate; // With Time
                         pExlcMaster.IN_USE = 0;
-
-
-
                         pExlcMaster.LC_DATE = eventRow.LC_DATE;
                         pExlcMaster.COVERING_DATE = eventRow.COVERING_DATE;
                         pExlcMaster.COVERING_FOR = eventRow.COVERING_FOR;
@@ -521,12 +516,15 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlcMaster.ADJUST_TENOR = eventRow.ADJUST_TENOR;
                         pExlcMaster.PAYMENT_INSTRC = eventRow.PAYMENT_INSTRC;
                         pExlcMaster.PAYMENT_INSTRU = eventRow.PAYMENT_INSTRU;
+
+                        _context.pExlcs.Update(pExlcMaster);
+
                         await _context.SaveChangesAsync();
 
 
                         // 5 - Update Master/Event PK to Release
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {pExlcMaster.EVENT_NO + 1} WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {eventRow.EVENT_NO} WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' , EVENT_NO = {eventRow.EVENT_NO} WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R'  WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}' and  EVENT_NO = {eventRow.EVENT_NO}");
 
 
                         transaction.Complete();
@@ -607,30 +605,30 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 2 - AUTO Check
 
                         var targetEventNo = pExlc.EVENT_NO + 1;
-                        if (data.IS_AUTO == false)
-                        {
-                            //var pExlcNotInUse = (from row in _context.pExlcs
-                            //                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                            //                           row.RECORD_TYPE == "MASTER" &&
-                            //                           row.IN_USE == 0
-                            //                     select row).FirstOrDefault();
-                            //pExlcNotInUse.REC_STATUS = "R";
-                            // 3 - Update PDOCRegister
-                            var pExlcNotInUse = (from row in _context.pExlcs
-                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                       row.RECORD_TYPE == "MASTER" 
-                                                 select row).ToListAsync();
+                        //if (data.IS_AUTO == false)
+                        //{
+                        //    //var pExlcNotInUse = (from row in _context.pExlcs
+                        //    //                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                        //    //                           row.RECORD_TYPE == "MASTER" &&
+                        //    //                           row.IN_USE == 0
+                        //    //                     select row).FirstOrDefault();
+                        //    //pExlcNotInUse.REC_STATUS = "R";
+                        //    // 3 - Update PDOCRegister
+                        //    var pExlcNotInUse = (from row in _context.pExlcs
+                        //                         where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                        //                               row.RECORD_TYPE == "MASTER" 
+                        //                         select row).ToListAsync();
 
-                            foreach (var row in await pExlcNotInUse)
-                            {
-                                row.REC_STATUS = "R";
-                            }
-                        }
-                        else if (data.IS_AUTO == true)
-                        {
-                            pExlc.REC_STATUS = "R";
-                            pExlc.DMS = null;
-                        }
+                        //    foreach (var row in await pExlcNotInUse)
+                        //    {
+                        //        row.REC_STATUS = "R";
+                        //    }
+                        //}
+                        //else if (data.IS_AUTO == true)
+                        //{
+                        //    pExlc.REC_STATUS = "R";
+                        //    pExlc.DMS = null;
+                        //}
    //                     int targetEventNo2 = targetEventNo;
                         // 3 - Delete pSWExport
                         var pSWExports = (from row in _context.pSWExports
@@ -655,7 +653,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         await _context.SaveChangesAsync();
                         //await _context.Database.ExecuteSqlRawAsync($"Delete pExlc Where REC_STATUS = 'R', EVENT_NO = {targetEventNo} WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
-                        //await _context.Database.ExecuteSqlRawAsync($"update pExlc set DMS =null,REC_STATUS ='R' where EXPORT_LC_NO='{data.EXPORT_LC_NO}' and RECORD_TYPE ='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"update pExlc set DMS =null,REC_STATUS ='R' where EXPORT_LC_NO='{data.EXPORT_LC_NO}' and RECORD_TYPE ='MASTER'");
                         // Commit
 
 
