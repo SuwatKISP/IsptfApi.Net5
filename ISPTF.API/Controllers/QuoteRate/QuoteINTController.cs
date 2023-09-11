@@ -88,8 +88,8 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@Txndate", Quote.Txndate);
             param.Add("@TF_inputer", Quote.TF_inputer);
             param.Add("@TF_Inputer_Date", Quote.TF_Inputer_Date);
-            param.Add("@TF_Sale", Quote.Status);
-            param.Add("@TF_Sale_Date", Quote.TF_Sale);
+            param.Add("@TF_Sale", Quote.TF_Sale);
+            param.Add("@TF_Sale_Date", Quote.TF_Sale_Date);
             param.Add("@Delete_Flag", Quote.Delete_Flag);
             param.Add("@Time_stamp", Quote.Time_stamp);
             param.Add("@Use_Tx", Quote.Use_Tx);
