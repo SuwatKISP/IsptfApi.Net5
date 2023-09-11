@@ -72,6 +72,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@Rate", drate.Rate);
             param.Add("@Delete_Flag", drate.Delete_Flag);
             param.Add("@Load_Flag", drate.Load_Flag);
+            param.Add("@ZZStrdate", drate.ZZStrdate);
             param.Add("@ZZdate", drate.ZZdate);
             param.Add("@ZZUser", drate.ZZUser);
             param.Add("@FileName", drate.FileName);
