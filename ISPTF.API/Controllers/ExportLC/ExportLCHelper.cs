@@ -1173,14 +1173,13 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     _context.SaveChanges();
                     
-                    
-                    for (int i = 0; i < pExdocs.Length; i++)
-                    {
-                        pExdocs[i].EVENT_NO = lc.EVENT_NO;
-                    }
                     // Save pExdocs[]
                     if (pExdocs != null)
                     {
+                        for (int i = 0; i < pExdocs.Length; i++)
+                        {
+                            pExdocs[i].EVENT_NO = lc.EVENT_NO;
+                        }
                         foreach (var row in pExdocs)
                         {
                             _context.pExdocs.Add(row);
