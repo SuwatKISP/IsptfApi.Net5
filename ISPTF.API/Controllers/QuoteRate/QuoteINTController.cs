@@ -163,7 +163,7 @@ namespace ISPTF.API.Controllers.QuoteRate
 
                     ReturnResponse response = new();
                     response.StatusCode = "200";
-                    response.Message = " Rate deleted";
+                    response.Message = " Quote Rate deleted";
                     return Ok(response);
                 }
                 else
@@ -171,7 +171,7 @@ namespace ISPTF.API.Controllers.QuoteRate
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = " Rate not exist";
+                    response.Message = " Record not exist";
                     return BadRequest(response);
                 }
             }
@@ -203,7 +203,7 @@ namespace ISPTF.API.Controllers.QuoteRate
 
                     ReturnResponse response = new();
                     response.StatusCode = "200";
-                    response.Message = " Rate deleted";
+                    response.Message = " Quote Rate Cancelled ";
                     return Ok(response);
                 }
                 else
@@ -211,7 +211,7 @@ namespace ISPTF.API.Controllers.QuoteRate
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = " Rate not exist";
+                    response.Message = " Record not exist";
                     return BadRequest(response);
                 }
             }
