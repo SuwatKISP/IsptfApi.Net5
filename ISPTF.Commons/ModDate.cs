@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -235,6 +236,7 @@ namespace ISPTF.Commons
             // "yyyy/MM/dd hh:mm"
             return GetDateNow = GetSysDateTime.ToString("yyyy/MM/dd ") + GetSysTime;
         }
+
         public static DateTime GetSystemDateTime()
         {
             //  private readonly IConfiguration Configuration;
@@ -246,8 +248,7 @@ namespace ISPTF.Commons
             //var url = Configuration["AllowedOrigins"];
             // var url = new Uri("https://tfispau.cimbthai.com:8085/isptfapi//api/SystemDateTime");
 
-            var url = new Uri(Configuration["BaseUrlApi"]+ "/api/systemdatetime");
-            //var url = new Uri("http://203.154.158.182/isptf.api//api/SystemDateTime");
+            var url = new Uri(Configuration["BaseUrlApi"] + "/api/systemdatetime");
             HttpClient client = new();
             try
             {
@@ -256,11 +257,118 @@ namespace ISPTF.Commons
                 GetSystemDateTime results = JsonConvert.DeserializeObject<GetSystemDateTime>(jString);
                 return results.sysDateTime;
             }
+            catch (Exception e)
+            {
+                return DateTime.Now;
+            }
+
+        }
+        public static DateTime GetSystemDateTimebk()
+        {
+            //  private readonly IConfiguration Configuration;
+
+            //public GetSystemDateTime(IConfiguration configuration)
+            //{
+            //    Configuration = configuration;
+            //}
+            //var url = Configuration["AllowedOrigins"];
+            // var url = new Uri("https://tfispau.cimbthai.com:8085/isptfapi//api/SystemDateTime");
+
+            //var url = new Uri(Configuration["BaseUrlApi"] + "/api/systemdatetime");
+            //HttpClient client = new();
+            //try
+            //{
+            //    var response = client.GetAsync(url).Result;
+            //    string jString = response.Content.ReadAsStringAsync().Result;
+            //    GetSystemDateTime results = JsonConvert.DeserializeObject<GetSystemDateTime>(jString);
+            //    return results.sysDateTime;
+            //}
+            //catch (Exception e)
+            //{
+            //    return DateTime.Now;
+            //}
+
+
+            var url = "https://203.154.158.182/isptf.api/api/systemdatetime";
+            HttpClientHandler clientHandler = new HttpClientHandler();
+            clientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            clientHandler.ServerCertificateCustomValidationCallback =
+                (httpRequestMessage, cert, cetChain, policyErrors) =>
+                {
+                    return true;
+                };
+
+            var client = new HttpClient(clientHandler);
+            var response =  client.GetAsync(url).Result;
+           string jString = response.Content.ReadAsStringAsync().Result;
+            var results = JsonConvert.DeserializeObject<GetSystemDateTime>(jString);
+            DateTime xx = Convert.ToDateTime( results.sysDateTime) ;
+            return xx;
+
+        }
+
+        public static GetSystemDateTime GetSystemDateTimeNew()
+        {
+            //var url = "http://localhost:10055/api/EKYC";
+            var url = "https://203.154.158.182/isptf.api/api/systemdatetime";
+            HttpClientHandler clientHandler = new HttpClientHandler();
+            clientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            clientHandler.ServerCertificateCustomValidationCallback =
+                (httpRequestMessage, cert, cetChain, policyErrors) =>
+                {
+                    return true;
+                };
+            var client = new HttpClient(clientHandler);
+            //client.Timeout = TimeSpan.FromMinutes(3);
+            //HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, url);
+            //msg.Headers.Add("User-Agent", "C# Program Get");
+            //var res= await client.SendAsync(msg);
+
+                var res = client.GetAsync(url).Result;
+                string resString = res.Content.ReadAsStringAsync().Result;
+
+                GetSystemDateTime[] response = JsonConvert.DeserializeObject<GetSystemDateTime[]>(resString);
+
+                return response[0];
+
+                //return Ok(< GetSystemDateTime > response);
+
+                //return new ContentResult
+                //{
+                //    StatusCode=(int)res.StatusCode,
+                //    //StatusCode=200,
+                //    Content = response,
+                //    ContentType = "application/json,Encoding.UTF8"
+                //};
+
+           }
+        public static DateTime GetSystemDateCond( string dateFlag)
+        {
+            //  private readonly IConfiguration Configuration;
+
+            //public GetSystemDateTime(IConfiguration configuration)
+            //{
+            //    Configuration = configuration;
+            //}
+            //var url = Configuration["AllowedOrigins"];
+            // var url = new Uri("https://tfispau.cimbthai.com:8085/isptfapi//api/SystemDateTime");
+  
+            
+            var url = new Uri(Configuration["BaseUrlApi"] + "/api/systemdatetime2");
+            //var url = new Uri("http://203.154.158.182/isptf.api//api/SystemDateTime");
+            HttpClient client = new();
+            try
+            {
+                var response = client.GetAsync(url).Result;
+                string jString = response.Content.ReadAsStringAsync().Result;
+                GetSystemDateTime results = JsonConvert.DeserializeObject<GetSystemDateTime>(jString);
+                return DateTime.Now;// results.sysDateTime;
+            }
             catch (Exception)
             {
                 return DateTime.Now;
             }
-           
+
         }
     }
 }

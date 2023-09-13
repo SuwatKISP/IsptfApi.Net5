@@ -16,7 +16,7 @@ using System.Transactions;
 using AutoMapper;
 using CSharpTest.Net;
 using System.Data.SqlClient;
-
+using ISPTF.Commons;
 namespace ISPTF.API.Controllers.ExportLC
 {
     [Authorize]
@@ -30,6 +30,10 @@ namespace ISPTF.API.Controllers.ExportLC
         private const string BUSINESS_TYPE = "1";
         private const string EVENT_TYPE = "Issue Purchase";
 
+        //private  DateTime GetSysDate = ModDate.GetSystemDateTime();
+
+
+       
         public EXLCIssuePurchaseController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -40,7 +44,7 @@ namespace ISPTF.API.Controllers.ExportLC
         public async Task<ActionResult<EXLCIssuePurchaseNewListResponse>> GetAllNew(string? CenterID, string? RegDocNo, string? BENName, string? Page, string? PageSize)
         {
             EXLCIssuePurchaseNewListResponse response = new EXLCIssuePurchaseNewListResponse();
-
+           
             // Validate
             if (string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
             {
@@ -335,17 +339,17 @@ namespace ISPTF.API.Controllers.ExportLC
             // Class validate
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
             var UpdateDateT = ExportLCHelper.GetSysDate(_context);
+            //var Update =
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     try
                     {
-
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
-
+                 
                         // 3 - Select PDOCRegister >> find cust approve
                         string appvFac ="";
                         var pDocRegister = (from row in _context.pDocRegisters
@@ -371,7 +375,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
                                                  row.RECORD_TYPE == "MASTER"
                                            select row).AsNoTracking().FirstOrDefault();
-
+                       
                         // 1 - Insert Master if not exists
                         if (pExlcMaster == null)
                         {
@@ -448,7 +452,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             eventRow.METHOD = data.PEXLC.METHOD;
 
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment2(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, "PAYC",UpdateDateT,UpdateDateNT);
 
                             // Call Save PaymentDetail
                                                         
@@ -491,13 +495,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         _context.SaveChanges();
                         transaction.Complete();
-
+                        transaction.Dispose();
                         response.Code = Constants.RESPONSE_OK;
 
                         PEXLCPPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
-                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+                    //    responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
 
@@ -530,7 +534,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 eventDate,
                                 response.Data.PEXLC.EVENT_TYPE,
                                 response.Data.PEXLC.EVENT_NO,
-                                response.Data.PEXLC.EVENT_TYPE);
+                                GLEvent);
 
                         }
                         else

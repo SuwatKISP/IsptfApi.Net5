@@ -339,6 +339,8 @@ namespace ISPTF.API.Controllers.ImportTR
                 DynamicParameters param = new DynamicParameters();
                 //ListType
                 param.Add("@ListType", saveissue.ListType.ListType);
+                param.Add("@cutLineTextF50K", saveissue.ListType.cutLineTextF50K);
+                param.Add("@cutLineTextF59", saveissue.ListType.cutLineTextF59);
                 //pIMTR
                 param.Add("@CenterID", saveissue.pIMTR.CenterID);
                 param.Add("@TRNumber", saveissue.pIMTR.TRNumber);

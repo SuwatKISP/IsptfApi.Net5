@@ -203,7 +203,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCPPaymentPPayDetailsSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -255,12 +256,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_NO = targetEventNo;
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        //eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
-
+                        eventRow.UPDATE_DATE = UpdateDateNT; // With Time
+                        eventRow.IN_USE = 0;
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateT; // Without Time
 
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
@@ -268,7 +269,16 @@ namespace ISPTF.API.Controllers.ExportLC
                             eventRow.METHOD = data.PEXLC.METHOD;
 
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            string PayFlag;
+                            if ( eventRow.REFUND_DISC_RECEIVE >0)
+                            {
+                                PayFlag = "PAYC";
+                            }
+                            else
+                            {
+                                PayFlag = "PAYD";
+                            }
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment2(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, PayFlag, UpdateDateT, UpdateDateNT);
 
                             // Call Save PaymentDetail
                             //if (eventRow.RECEIVED_NO != "ERROR")
@@ -315,20 +325,77 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                         // GL MOCK WAIT DLL
-                        var glVouchId = "VOUCH ID FROM GL DLL";
-                        eventRow.VOUCH_ID = glVouchId;
+                       // var glVouchId = "VOUCH ID FROM GL DLL";
+                        //eventRow.VOUCH_ID = glVouchId;
                         _context.SaveChanges();
 
                         transaction.Complete();
+                        transaction.Dispose();
 
                         response.Code = Constants.RESPONSE_OK;
 
                         PEXLCPPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
-                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+                    //    responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
+
+                        bool resGL;
+                        bool resPayD;
+                        string eventDate;
+                        string resVoucherID;
+                        eventDate = response.Data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        if (response.Data.PEXLC.PAYMENT_INSTRU == "PAID" )
+                        {
+
+                            string GLEvent = "";
+                            if (response.Data.PEXLC.REFUND_DISC_RECEIVE > 0)
+                            {
+                                GLEvent = "ACCEPT-R";
+                            }
+                            else
+                            {
+                                GLEvent = "ACCEPT-C";
+                            }
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO,
+                                eventDate,
+                                response.Data.PEXLC.EVENT_TYPE,
+                                response.Data.PEXLC.EVENT_NO,GLEvent);
+
+                        }
+                        else
+                        {
+                            resVoucherID = "";
+
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            response.Data.PEXLC.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+
+                        string resPayDetail;
+                        if (response.Data.PPAYMENT != null)
+                        {
+                            resPayDetail = ISPModule.PayDetailEXLC.PayDetail_AcceptDue(response.Data.PEXLC.EXPORT_LC_NO, response.Data.PEXLC.EVENT_NO, response.Data.PEXLC.RECEIVED_NO);
+                            if (resPayDetail != "ERROR")
+                            {
+                                resPayD = true;
+                            }
+                            else
+                            {
+                                resPayD = false;
+                            }
+                        }
+                        else
+                        {
+                            resPayD = true;
+                        }
                         response.Message = "Export L/C Saved";
                         return Ok(response);
                     }
