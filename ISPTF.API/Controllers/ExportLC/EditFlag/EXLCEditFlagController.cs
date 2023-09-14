@@ -183,7 +183,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -235,15 +236,16 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        //eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE =UpdateDateT; // With Time
                         
                         // Event Specific
                         eventRow.IN_USE = 0;
                         eventRow.PAYMENT_INSTRU = "UNPAID";
                         eventRow.METHOD = "";
                         eventRow.RECEIVED_NO = "";
+                        eventRow.VOUCH_ID = "ADJDUE";
 
                         // Commit
                         if (pExlcEvent == null)
@@ -304,7 +306,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -325,6 +328,33 @@ namespace ISPTF.API.Controllers.ExportLC
                             response.Message = "PEXLC Master does not exists";
                             return BadRequest(response);
                         }
+                        var USER_ID = User.Identity.Name;
+                        var claimsPrincipal = HttpContext.User;
+                        var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+
+                        pExlcMaster.AUTH_CODE = USER_ID;
+                        pExlcMaster.AUTH_DATE = UpdateDateNT; // With Time
+                        pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
+                        pExlcMaster.EVENT_MODE = "E";
+                        pExlcMaster.EVENT_TYPE = EVENT_TYPE;
+                        pExlcMaster.USER_ID = USER_ID;
+                        pExlcMaster.UPDATE_DATE = UpdateDateT;
+                        pExlcMaster.VOUCH_ID = data.PEXLC.VOUCH_ID;
+                        pExlcMaster.GENACC_FLAG = "Y";
+                        pExlcMaster.GENACC_DATE = data.PEXLC.GENACC_DATE;
+
+                        pExlcMaster.AUTOOVERDUE = data.PEXLC.AUTOOVERDUE;
+                        pExlcMaster.PAYMENT_INSTRU = "UNPAID";
+                        pExlcMaster.METHOD = "";
+                        pExlcMaster.RECEIVED_NO = "";
+                        pExlcMaster.INTFLAG = data.PEXLC.INTFLAG;
+                        pExlcMaster.OBASEDAY = data.PEXLC.OBASEDAY;
+                        pExlcMaster.INTCODE = data.PEXLC.INTCODE;
+                        pExlcMaster.OINTRATE = data.PEXLC.OINTRATE;
+                        pExlcMaster.OINTSPDRATE = data.PEXLC.OINTSPDRATE;
+                        pExlcMaster.OINTCURRATE = data.PEXLC.OINTCURRATE;
+                        _context.pExlcs.Update(pExlcMaster);
+                        await _context.SaveChangesAsync();
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
 
@@ -343,6 +373,23 @@ namespace ISPTF.API.Controllers.ExportLC
                             response.Message = "PEXLC " + EVENT_TYPE + " Event does not exists";
                             return BadRequest(response);
                         }
+
+                        pExlc eventRow = data.PEXLC;
+                        eventRow.REC_STATUS = "P";
+                        eventRow.EVENT_MODE = "E";
+                        eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
+                        eventRow.EVENT_TYPE = EVENT_TYPE;
+                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.AUTH_CODE = USER_ID;
+                        eventRow.AUTH_DATE = UpdateDateT; // With Time
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
+                        _context.pExlcs.Update(eventRow);
+                        await _context.SaveChangesAsync();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' , EVENT_NO = {eventRow.EVENT_NO} WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R'  WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}' and  EVENT_NO = {eventRow.EVENT_NO}");
+
 
                         response.Code = Constants.RESPONSE_ERROR;
                         response.Message = "Export L/C Released";

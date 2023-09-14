@@ -212,8 +212,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCSaveCoveringResponse response = new();
             // Class validate
-            var UpdateDate1 = ExportLCHelper.GetSysDateNT(_context);
-            var UpdateDate2 = ExportLCHelper.GetSysDate(_context);
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -268,13 +268,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = UpdateDate1; // Without Time
+                        eventRow.EVENT_DATE = UpdateDateNT; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = UpdateDate2; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
                         eventRow.IN_USE = 0;
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = UpdateDate1; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
 
                         // Call Save pExDoc
@@ -406,7 +406,7 @@ namespace ISPTF.API.Controllers.ExportLC
             EXLCResultResponse response = new();
             // Class validate
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
-            var UpdateDate = ExportLCHelper.GetSysDate(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -461,7 +461,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.AUTH_CODE = USER_ID;
-                        eventRow.AUTH_DATE = UpdateDate; // With Time
+                        eventRow.AUTH_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = UpdateDateNT; // Without Time
@@ -479,8 +479,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlcMaster.VOUCH_ID = "COVERING";
                         pExlcMaster.USER_ID = USER_ID;
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = UpdateDate; // With Time
-                        pExlcMaster.UPDATE_DATE = UpdateDate; // With Time
+                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
                         pExlcMaster.IN_USE = 0;
                         pExlcMaster.LC_DATE = eventRow.LC_DATE;
                         pExlcMaster.COVERING_DATE = eventRow.COVERING_DATE;

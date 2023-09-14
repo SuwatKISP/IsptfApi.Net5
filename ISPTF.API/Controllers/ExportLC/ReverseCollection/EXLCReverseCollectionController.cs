@@ -433,7 +433,6 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 5 - Update EVENT
 
-
                         pExlc eventRow = data.PEXLC;
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_MODE = "E";
