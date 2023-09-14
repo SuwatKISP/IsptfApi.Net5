@@ -226,9 +226,9 @@ namespace ISPTF.API.Controllers.ExportADV
         */
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXADPPaymentResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO,string ADVICE_TYPE)
+        public async Task<ActionResult<PEXADPPaymentORIResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO,string ADVICE_TYPE)
         {
-            PEXADPPaymentResponse response = new();
+            PEXADPPaymentORIResponse response = new();
             response.Data = new();
 
             // Validate
@@ -253,7 +253,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     }
                     response.Code = Constants.RESPONSE_OK;
                     response.Data.PEXAD = exad;
-                 //   response.Data.ADVICE_Type = ADVICE_TYPE;
+                    response.Data.ADVICE_Type = ADVICE_TYPE;
                     return Ok(response);
                 }
                 response.Message = "Export Advice L/C does not exist";
@@ -267,9 +267,9 @@ namespace ISPTF.API.Controllers.ExportADV
         }
 
         [HttpPost("save")] 
-        public ActionResult<PEXADPPaymentResponse> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
+        public ActionResult<PEXADPPaymentORIResponse> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
         {
-            PEXADPPaymentResponse response = new();
+            PEXADPPaymentORIResponse response = new();
             response.Data = new();
 
             // Validate
@@ -337,7 +337,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     response.Message = "Export Advice Saved";
                     response.Data.PEXAD = pexadppaymentrequest.pExad;
                     response.Data.PPAYMENT = pexadppaymentrequest.pPayment;
-                  // response.Data.ADVICE_Type = AdviceType;
+                   response.Data.ADVICE_Type = AdviceType;
                     return Ok(response);
                 }
             }
