@@ -365,6 +365,11 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 appvFac = pCustApprove.Appv_No;
                             }
+                            pDocRegister.Reg_Status = "I";
+                            _context.pDocRegisters.Update(pDocRegister);
+                            _context.SaveChanges();
+                            //    cSql = "UPDATE pDocRegister SET Reg_Status = 'I' WHERE Reg_Login = 'EXLC' AND reg_docno='" & lcNo$ & "' AND REG_STATUS='A'"
+
                         }
                         else
                         {
@@ -493,6 +498,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             _context.pExlcs.Add(eventRow);
                             _context.SaveChanges();
+
                         }
                         else
                         {
