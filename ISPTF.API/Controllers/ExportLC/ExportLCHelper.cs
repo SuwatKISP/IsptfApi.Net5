@@ -410,7 +410,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     else
                     {
-                        RECEIPT_NO = existingPPayment.RpReceiptNo;
+                        RECEIPT_NO = lc.RECEIVED_NO;
                     }
 
                     payment.RpModule = "EXLC";

@@ -432,7 +432,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.REC_STATUS = "P";
-                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = 1;
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.AUTOOVERDUE = "N";
@@ -492,7 +492,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 _context.pPayDetails.Remove(row);
                             }
                         }
-
+                        eventRow.RECORD_TYPE = "EVENT";
                         // Commit
                         if (pExlcEvent ==null)
                         {
