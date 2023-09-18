@@ -267,18 +267,36 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
-
-                            // Call Save Payment
                             string PayFlag;
-                            if ( eventRow.REFUND_DISC_RECEIVE >0)
+                            if (eventRow.RECEIVED_NO != "")
                             {
-                                PayFlag = "PAYC";
+                                if (eventRow.REFUND_DISC_RECEIVE > 0)
+                                {
+                                    if (!eventRow.RECEIVED_NO.Contains("DDR"))
+                                    {
+                                        eventRow.RECEIVED_NO = "";
+                                    }
+                                }
+                                else if (!eventRow.RECEIVED_NO.Contains("DCR"))
+                                {
+                                    eventRow.RECEIVED_NO = "";
+                                }
                             }
-                            else
+                            if (eventRow.RECEIVED_NO == null || eventRow.RECEIVED_NO == "")
                             {
-                                PayFlag = "PAYD";
+                                if (eventRow.REFUND_DISC_RECEIVE > 0)
+                                {
+                                    PayFlag = "PAYC";
+                                }
+                                else
+                                {
+                                    PayFlag = "PAYD";
+                                }
+                                eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, PayFlag, UpdateDateT, UpdateDateNT);
                             }
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment2(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, PayFlag, UpdateDateT, UpdateDateNT);
+                   
+                            // Call Save Payment
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, UpdateDateT, UpdateDateNT);
 
                             // Call Save PaymentDetail
                             //if (eventRow.RECEIVED_NO != "ERROR")

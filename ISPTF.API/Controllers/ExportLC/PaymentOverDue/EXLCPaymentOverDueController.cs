@@ -269,17 +269,20 @@ namespace ISPTF.API.Controllers.ExportLC
 
                             // RECEIVED_NO DCR
 
-                            if (!eventRow.RECEIVED_NO.Contains("DCR"))
+                            //if (!eventRow.RECEIVED_NO.Contains("DCR"))
+                            //{
+                            //    eventRow.RECEIVED_NO = "";
+                            //}
+                            //else if (!eventRow.RECEIVED_NO.Contains("DDR"))
+                            //{
+                            //    eventRow.RECEIVED_NO = "";
+                            //}
+                            if (eventRow.RECEIVED_NO == null || eventRow.RECEIVED_NO == "")
                             {
-                                eventRow.RECEIVED_NO = "";
+                                eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
                             }
-                            else if (!eventRow.RECEIVED_NO.Contains("DDR"))
-                            {
-                                eventRow.RECEIVED_NO = "";
-                            }
-
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, UpdateDateT, UpdateDateNT);
 
                             // Call Save PaymentDetail
                             //if (eventRow.RECEIVED_NO != "ERROR")

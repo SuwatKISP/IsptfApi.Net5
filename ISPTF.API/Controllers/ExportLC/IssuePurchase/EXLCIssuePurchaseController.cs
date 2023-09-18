@@ -451,8 +451,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
 
+                            if (eventRow.RECEIVED_NO ==null || eventRow.RECEIVED_NO =="")
+                            {
+                                eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC", UpdateDateT, UpdateDateNT);
+                            }
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment2(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, "PAYC",UpdateDateT,UpdateDateNT);
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT,UpdateDateT,UpdateDateNT);
 
                             // Call Save PaymentDetail
                                                         
@@ -466,7 +470,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-
+                            eventRow.RECEIVED_NO = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
                                                        select row).ToList();
@@ -488,12 +492,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (pExlcEvent ==null)
                         {
                             _context.pExlcs.Add(eventRow);
+                            _context.SaveChanges();
                         }
                         else
                         {
                             _context.pExlcs.Update(eventRow);
                         }
-                        _context.SaveChanges();
+
                         transaction.Complete();
                         transaction.Dispose();
                         response.Code = Constants.RESPONSE_OK;

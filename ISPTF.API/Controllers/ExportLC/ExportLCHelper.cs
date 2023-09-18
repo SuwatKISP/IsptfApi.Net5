@@ -106,16 +106,16 @@ namespace ISPTF.API.Controllers.ExportLC
             return 0;
         }
 
-        public static string GenRefNo(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo="" )
+        public static string GenRefNo(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, DateTime UpdateT, DateTime UpdateNT)
         {
-            DateTime GetSysDate = ModDate.GetSystemDateTime();
+
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
                     string genRefNo = "";
                     //var sysDate = GetSysDate(_context);
-                    string currentYear = GetSysDate.Year.ToString();
+                    string currentYear = UpdateT.Year.ToString();
                   //  string currentYear = custNo;
                     var pRefNo = (from row in _context.pReferenceNos
                                   where row.pRefTrans == docType &&
@@ -142,7 +142,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             genRefNo = USER_CENTER_ID + pRefNo.pRefPrefix + currentYear.Substring(currentYear.Length - 2) + runNo.ToString("000000");
 
                             pRefNo.pRefSeq = runNo;
-                            pRefNo.LastUpdate = GetSysDate;
+                            pRefNo.LastUpdate = UpdateT;
                             pRefNo.UserCode = USER_ID;
                             pRefNo.InUse = false;
                             _context.pReferenceNos.Update(pRefNo);
@@ -179,7 +179,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pReferenceNos.Add(initialRunNo);
                             _context.SaveChanges();
                             transaction.Complete();
-                            return GenRefNo(_context, USER_CENTER_ID, USER_ID, docType);
+                            return GenRefNo(_context, USER_CENTER_ID, USER_ID, docType,  UpdateT,  UpdateNT);
                         }
                         else
                         {
@@ -268,7 +268,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pReferenceNos.Add(initialRunNo);
                             _context.SaveChanges();
                             transaction.Complete();
-                            return GenRefNo(_context, USER_CENTER_ID, USER_ID, docType);
+                            return GenRefNo(_context, USER_CENTER_ID, USER_ID, docType,UpdateT,UpdateNT);
                         }
                         else
                         {
@@ -284,15 +284,15 @@ namespace ISPTF.API.Controllers.ExportLC
             }
             return "ERROR";
         }
-        public static string GetReceiptFCD(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, string custNo = "")
+        public static string GetReceiptFCD(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, string docType, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
                     string genRefNo = "";
-                    var sysDate = GetSysDate(_context);
-                    string currentYear = sysDate.Year.ToString();
+                  //  var sysDate = GetSysDate(_context);
+                    string currentYear = UpdateDateT.Year.ToString();
                     var pRefNo = (from row in _context.pReferenceNos
                                   where row.pRefTrans == docType &&
                                         row.pRefBran == USER_CENTER_ID &&
@@ -318,7 +318,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             genRefNo = USER_CENTER_ID + pRefNo.pRefPrefix + currentYear.Substring(currentYear.Length - 2) + runNo.ToString("000000");
 
                             pRefNo.pRefSeq = runNo;
-                            pRefNo.LastUpdate = DateTime.Now;
+                            pRefNo.LastUpdate = UpdateDateT;
                             pRefNo.UserCode = USER_ID;
 
                             _context.pReferenceNos.Update(pRefNo);
@@ -353,14 +353,14 @@ namespace ISPTF.API.Controllers.ExportLC
                             initialRunNo.pRefYear = currentYear;
                             initialRunNo.pRefPrefix = prefix;
                             initialRunNo.pRefSeq = 0;
-                            initialRunNo.LastUpdate = DateTime.Now;
+                            initialRunNo.LastUpdate = UpdateDateT;
                             initialRunNo.UserCode = USER_ID;
                             initialRunNo.pRefBran = USER_CENTER_ID;
                             initialRunNo.InUse = false;
                             _context.pReferenceNos.Add(initialRunNo);
                             _context.SaveChanges();
                             transaction.Complete();
-                            return GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, docType);
+                            return GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, docType,UpdateDateT,UpdateDateNT);
                         }
                         else
                         {
@@ -379,15 +379,23 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         //LC
-        public static string SavePayment(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment,string PAYF_FLAG ="PAYD")
+        public static string SavePayment(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment, DateTime UpdateT, DateTime UpdateNT)
         {
            DateTime GetSysDate = ModDate.GetSystemDateTime();
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
-                    string RECEIPT_NO = GenRefNo(_context, USER_CENTER_ID, USER_ID, PAYF_FLAG);
-
+                    //string RECEIPT_NO = GenRefNo(_context, USER_CENTER_ID, USER_ID, PAYF_FLAG, UpdateT, UpdateNT);
+                    //if (PAYF_FLAG == "FPAIDC")
+                    //{
+                    //    RECEIPT_NO = GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, PAYF_FLAG, UpdateT, UpdateNT);
+                    //}
+                    //else
+                    //{
+                    //    RECEIPT_NO = GenRefNo(_context, USER_CENTER_ID, USER_ID, PAYF_FLAG, UpdateT, UpdateNT);
+                    //}
+                    string RECEIPT_NO = lc.RECEIVED_NO;
                     var existingPPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == lc.RECEIVED_NO
                                             select row).FirstOrDefault();
@@ -508,134 +516,134 @@ namespace ISPTF.API.Controllers.ExportLC
             }
         }
 
-        public static string SavePayment2(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment,string PAYF_FLAG, DateTime UpdateT, DateTime UpdateNT)
-        {
-            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                try
-                {
-                    string RECEIPT_NO = GenRefNo2(_context, USER_CENTER_ID, USER_ID, PAYF_FLAG,UpdateT,UpdateNT);
+        //public static string SavePayment2(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment,string PAYF_FLAG, DateTime UpdateT, DateTime UpdateNT)
+        //{
+        //    using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        //    {
+        //        try
+        //        {
+        //            string RECEIPT_NO = GenRefNo2(_context, USER_CENTER_ID, USER_ID, PAYF_FLAG,UpdateT,UpdateNT);
 
-                    var existingPPayment = (from row in _context.pPayments
-                                            where row.RpReceiptNo == lc.RECEIVED_NO
-                                            select row).FirstOrDefault();
+        //            var existingPPayment = (from row in _context.pPayments
+        //                                    where row.RpReceiptNo == lc.RECEIVED_NO
+        //                                    select row).FirstOrDefault();
 
-                    if (existingPPayment == null)
-                    {
+        //            if (existingPPayment == null)
+        //            {
 
-                        payment.RpReceiptNo = RECEIPT_NO;
-                        payment.RpDocNo = lc.EXPORT_LC_NO;
-                        payment.RpEvent = lc.EVENT_NO.ToString();
+        //                payment.RpReceiptNo = RECEIPT_NO;
+        //                payment.RpDocNo = lc.EXPORT_LC_NO;
+        //                payment.RpEvent = lc.EVENT_NO.ToString();
 
-                    }
-                    else
-                    {
-                        RECEIPT_NO = existingPPayment.RpReceiptNo;
-                    }
+        //            }
+        //            else
+        //            {
+        //                RECEIPT_NO = existingPPayment.RpReceiptNo;
+        //            }
 
-                    payment.RpModule = "EXLC";
-                    payment.RpCustCode = lc.BENE_ID;
-                    payment.RpNote = "";
-                    if (payment.RpApplicant == null)
-                    {
-                        payment.RpApplicant = "";
-                    }
-                    else
-                    {
-                        payment.RpApplicant = payment.RpApplicant.ToUpper();
-                    }
+        //            payment.RpModule = "EXLC";
+        //            payment.RpCustCode = lc.BENE_ID;
+        //            payment.RpNote = "";
+        //            if (payment.RpApplicant == null)
+        //            {
+        //                payment.RpApplicant = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpApplicant = payment.RpApplicant.ToUpper();
+        //            }
 
-                    if (payment.RpChqNo == null)
-                    {
-                        payment.RpChqNo = "";
-                    }
-                    else
-                    {
-                        payment.RpChqNo = payment.RpChqNo.ToUpper();
-                    }
+        //            if (payment.RpChqNo == null)
+        //            {
+        //                payment.RpChqNo = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpChqNo = payment.RpChqNo.ToUpper();
+        //            }
 
-                    if (payment.RpChqBank == null)
-                    {
-                        payment.RpChqBank = "";
-                    }
-                    else
-                    {
-                        payment.RpChqBank = payment.RpChqBank.ToUpper();
-                    }
+        //            if (payment.RpChqBank == null)
+        //            {
+        //                payment.RpChqBank = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpChqBank = payment.RpChqBank.ToUpper();
+        //            }
 
-                    if (payment.RpChqBranch == null)
-                    {
-                        payment.RpChqBranch = "";
-                    }
-                    else
-                    {
-                        payment.RpChqBranch = payment.RpChqBranch.ToUpper();
-                    }
-                    if (payment.RpChqBranch == null)
-                    {
-                        payment.RpChqBranch = "";
-                    }
-                    else
-                    {
-                        payment.RpChqBranch = payment.RpChqBranch.ToUpper();
-                    }
+        //            if (payment.RpChqBranch == null)
+        //            {
+        //                payment.RpChqBranch = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpChqBranch = payment.RpChqBranch.ToUpper();
+        //            }
+        //            if (payment.RpChqBranch == null)
+        //            {
+        //                payment.RpChqBranch = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpChqBranch = payment.RpChqBranch.ToUpper();
+        //            }
 
-                    if (payment.RpCustAc1 == null)
-                    {
-                        payment.RpCustAc1 = "";
-                    }
-                    else
-                    {
-                        payment.RpCustAc1 = payment.RpCustAc1;
-                    }
+        //            if (payment.RpCustAc1 == null)
+        //            {
+        //                payment.RpCustAc1 = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpCustAc1 = payment.RpCustAc1;
+        //            }
 
-                    if (payment.RpCustAc2 == null)
-                    {
-                        payment.RpCustAc2 = "";
-                    }
-                    else
-                    {
-                        payment.RpCustAc2 = payment.RpCustAc2;
-                    }
+        //            if (payment.RpCustAc2 == null)
+        //            {
+        //                payment.RpCustAc2 = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpCustAc2 = payment.RpCustAc2;
+        //            }
 
-                    if (payment.RpCustAc3 == null)
-                    {
-                        payment.RpCustAc3 = "";
-                    }
-                    else
-                    {
-                        payment.RpCustAc3 = payment.RpCustAc3;
-                    }
+        //            if (payment.RpCustAc3 == null)
+        //            {
+        //                payment.RpCustAc3 = "";
+        //            }
+        //            else
+        //            {
+        //                payment.RpCustAc3 = payment.RpCustAc3;
+        //            }
 
-                    payment.RpStatus = "A";
-                    payment.UserCode = lc.USER_ID;
-                    payment.UpdateDate = DateTime.Now;
+        //            payment.RpStatus = "A";
+        //            payment.UserCode = lc.USER_ID;
+        //            payment.UpdateDate = DateTime.Now;
 
-                    if (existingPPayment == null)
-                    {
-                        _context.pPayments.Add(payment);
-                    }
-                    else
-                    {
-                        _context.pPayments.Update(payment);
+        //            if (existingPPayment == null)
+        //            {
+        //                _context.pPayments.Add(payment);
+        //            }
+        //            else
+        //            {
+        //                _context.pPayments.Update(payment);
 
-                    }
+        //            }
 
-                    _context.SaveChanges();
+        //            _context.SaveChanges();
 
-                    transaction.Complete();
-                    return RECEIPT_NO;
+        //            transaction.Complete();
+        //            return RECEIPT_NO;
 
-                }
-                catch (Exception e)
-                {
-                    // Rollback
-                    return "ERROR";
-                }
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            // Rollback
+        //            return "ERROR";
+        //        }
 
-            }
-        }
-        public static bool SavePaymentDetail(ISPTFContext _context, pExlc lc, pPayDetail[] payDetails)
+        //    }
+        //}
+        public static bool SavePaymentDetail2(ISPTFContext _context, pExlc lc, pPayDetail[] payDetails)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {

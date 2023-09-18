@@ -199,7 +199,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -285,57 +286,55 @@ namespace ISPTF.API.Controllers.ExportLC
                                     eventRow.RECEIVED_NO = "";
                                 }
                             }
-
+                            string PayFlag;
                             var receiptNo = "[MOCK]" + ExportLCHelper.GenerateRandomReceiptNo(5);
-                            if (eventRow.RECEIVED_NO != "" || recNew == true)
+                            if (eventRow.RECEIVED_NO == "" || recNew == true || eventRow.RECEIVED_NO == null)
                             {
                                 if (data.PEXPAYMENT.Debit_credit_flag == "C")
                                 {
                                     if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
                                     {
-                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDC");
+                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDC",UpdateDateT, UpdateDateNT);
                                     }
                                     else
                                     {
-                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
+                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC", UpdateDateT,UpdateDateNT);
                                     }
                                 }
                                 else
                                 {
                                     if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
                                     {
-                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDD");
+                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDD",UpdateDateT,UpdateDateNT);
                                     }
                                     else
                                     {
-                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD");
+                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD", UpdateDateT,UpdateDateNT);
                                     }
+                                }
+                                // Check Duplicate Receipt
+
+                                var duplicateReceipt = (from row in _context.pPayments
+                                                        where row.RpReceiptNo == receiptNo &&
+                                                              row.RpDocNo == data.PEXLC.EXPORT_LC_NO
+                                                        select row).FirstOrDefault();
+
+                                if (duplicateReceipt != null)
+                                {
+                                    response.Code = Constants.RESPONSE_ERROR;
+                                    response.Message = "Duplicate Receipt, Please save again";
+                                    return BadRequest(response);
                                 }
                             }
 
-                            // Check Duplicate Receipt
-
-                            var duplicateReceipt = (from row in _context.pPayments
-                                                    where row.RpReceiptNo == receiptNo &&
-                                                          row.RpDocNo == data.PEXLC.EXPORT_LC_NO
-                                                    select row).FirstOrDefault();
-
-                            if (duplicateReceipt != null)
-                            {
-                                response.Code = Constants.RESPONSE_ERROR;
-                                response.Message = "Duplicate Receipt, Please save again";
-                                return BadRequest(response);
-                            }
-
-
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT,UpdateDateT, UpdateDateNT);
 
                             // Call Save PaymentDetail
-                            if (eventRow.RECEIVED_NO != "ERROR")
-                            {
-                                bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
-                            }
+                            //if (eventRow.RECEIVED_NO != "ERROR")
+                            //{
+                            //    bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
+                            //}
                         }
                         else if (eventRow.PAYMENT_INSTRU == "UNPAID")
                         {
