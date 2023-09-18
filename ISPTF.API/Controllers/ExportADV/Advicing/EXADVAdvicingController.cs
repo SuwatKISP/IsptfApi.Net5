@@ -226,9 +226,9 @@ namespace ISPTF.API.Controllers.ExportADV
         */
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXADPPaymentResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
+        public async Task<ActionResult<PEXADPPaymentORIResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO,string ADVICE_TYPE)
         {
-            PEXADPPaymentResponse response = new();
+            PEXADPPaymentORIResponse response = new();
             response.Data = new();
 
             // Validate
@@ -253,6 +253,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     }
                     response.Code = Constants.RESPONSE_OK;
                     response.Data.PEXAD = exad;
+                    response.Data.ADVICE_Type = ADVICE_TYPE;
                     return Ok(response);
                 }
                 response.Message = "Export Advice L/C does not exist";
@@ -266,9 +267,9 @@ namespace ISPTF.API.Controllers.ExportADV
         }
 
         [HttpPost("save")] 
-        public ActionResult<PEXADPPaymentResponse> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
+        public ActionResult<PEXADPPaymentORIResponse> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
         {
-            PEXADPPaymentResponse response = new();
+            PEXADPPaymentORIResponse response = new();
             response.Data = new();
 
             // Validate
@@ -283,7 +284,7 @@ namespace ISPTF.API.Controllers.ExportADV
             // Get USER_ID, CenterID
             pexadppaymentrequest.pExad.USER_ID = User.Identity.Name;
             pexadppaymentrequest.pExad.CenterID = HttpContext.User.FindFirst("UserBranch").Value.ToString();
-
+            string AdviceType ="";
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -292,7 +293,18 @@ namespace ISPTF.API.Controllers.ExportADV
                     {
                         // Get Requirement
                         int seq;
-
+                        if (pexadppaymentrequest.pExad.EVENT_TYPE == "Full Advice" || pexadppaymentrequest.pExad.EVENT_TYPE == "Pre Advice")
+                        {
+                            AdviceType = "ORIGINAL";
+                        }
+                        else if (pexadppaymentrequest.pExad.EVENT_TYPE == "Pre Advice")
+                        {
+                            AdviceType = "AMEND";
+                        }
+                        else
+                        {
+                            AdviceType = "MAILCONFIRM";
+                        }
                         //Get RECEIPT_NO pexadreq.RECEIPT_NO = ?
                         if (pexadppaymentrequest.pExad.EVENT_TYPE == "Full Advice" || pexadppaymentrequest.pExad.EVENT_TYPE == "Pre Advice")
                         {
@@ -325,6 +337,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     response.Message = "Export Advice Saved";
                     response.Data.PEXAD = pexadppaymentrequest.pExad;
                     response.Data.PPAYMENT = pexadppaymentrequest.pPayment;
+                   response.Data.ADVICE_Type = AdviceType;
                     return Ok(response);
                 }
             }

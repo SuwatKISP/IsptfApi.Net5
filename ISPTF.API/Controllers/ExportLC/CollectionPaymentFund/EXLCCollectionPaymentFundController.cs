@@ -210,7 +210,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -267,12 +268,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_MODE = "E";
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        //eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
 
 
                         if (eventRow.PAYMENT_INSTRU == "PAID" ||
@@ -299,28 +300,28 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
 
                             var receiptNo = "[MOCK]" + ExportLCHelper.GenerateRandomReceiptNo(5);
-                            if (eventRow.RECEIVED_NO != "" || recNew == true)
+                            if (eventRow.RECEIVED_NO == "" || recNew == true || eventRow.RECEIVED_NO == null)
                             {
                                 if (data.PEXPAYMENT.Debit_credit_flag == "C")
                                 {
                                     if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
                                     {
-                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDC");
+                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDC", UpdateDateT, UpdateDateNT);
                                     }
                                     else
                                     {
-                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC");
+                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC", UpdateDateT, UpdateDateNT);
                                     }
                                 }
                                 else
                                 {
                                     if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
                                     {
-                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDD");
+                                        receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDD", UpdateDateT, UpdateDateNT);
                                     }
                                     else
                                     {
-                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD");
+                                        receiptNo = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
                                     }
                                 }
                             }
@@ -341,13 +342,13 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, UpdateDateT, UpdateDateNT);
 
                             // Call Save PaymentDetail
-                            if (eventRow.RECEIVED_NO != "ERROR")
-                            {
-                                bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
-                            }
+                            //if (eventRow.RECEIVED_NO != "ERROR")
+                            //{
+                            //    bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
+                            //}
                         }
                         else if (eventRow.PAYMENT_INSTRU == "UNPAID")
                         {

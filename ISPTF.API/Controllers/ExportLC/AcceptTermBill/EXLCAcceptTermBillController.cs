@@ -212,7 +212,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCPPaymentPPayDetailsSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -273,19 +274,31 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                       // eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
 
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
+                            if (eventRow.RECEIVED_NO == null || eventRow.RECEIVED_NO == "")
+                            {
+                                if (eventRow.REFUND_DISC_RECEIVE==0)
+                                {
+                                    eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC",UpdateDateT,UpdateDateNT);
+
+                                }
+                                else
+                                {
+                                    eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYP",UpdateDateT,UpdateDateNT);
+                                }
+                            }
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, UpdateDateT, UpdateDateNT);
 
                             // Call Save PaymentDetail
                             //if (eventRow.RECEIVED_NO != "ERROR")
@@ -337,7 +350,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         PEXLCPPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
-                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+                       // responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";
@@ -379,7 +392,8 @@ namespace ISPTF.API.Controllers.ExportLC
                                                             string? REC_STATUS)
         {
             EXLCResultResponse response = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
                 EVENT_NO == null ||

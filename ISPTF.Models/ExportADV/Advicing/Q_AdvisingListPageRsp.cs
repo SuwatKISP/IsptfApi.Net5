@@ -22,6 +22,6 @@ namespace ISPTF.Models.ExportADV
         public string? REC_STATUS { get; set; }
         public int? EVENT_NO { get; set; }
         public DateTime? EVENT_DATE { get; set; }
-
+        public string? ADVICE_TYPE { get; set; } 
     }
 }
