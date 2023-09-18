@@ -103,13 +103,13 @@ namespace ISPTF.API.Controllers.QuoteRate
             }
         }//Save
         [HttpPost("delete")]
-        public async Task<ActionResult<string>> Delete([FromBody] FTPRateDeleteReq drate)
+        public async Task<ActionResult<string>> Delete([FromBody] FTPRateDeleteReq dLrate)
         {
             DynamicParameters param = new();
-            param.Add("@RateDate", drate.RateDate);
-            param.Add("@Rate_Type", drate.Rate_Type);
-            param.Add("@CurCode", drate.CurCode);
-            param.Add("@TermType", drate.TermType);
+            param.Add("@RateDate", dLrate.RateDate);
+            param.Add("@Rate_Type", dLrate.Rate_Type);
+            param.Add("@CurCode", dLrate.CurCode);
+            param.Add("@TermType", dLrate.TermType);
             param.Add("@Resp", dbType: DbType.Int32,
                 direction: System.Data.ParameterDirection.Output,
                 size: 5215585);
@@ -140,5 +140,23 @@ namespace ISPTF.API.Controllers.QuoteRate
                 return BadRequest(ex.Message);
             }
         }//delete
+        [HttpGet("GetTerm")]
+        public async Task<IEnumerable<FTPRateTermRsp>> GetTerm(string TermType, string CurCode)
+        {
+            DynamicParameters param = new();
+            param.Add("@TermType", TermType);
+            param.Add("@CurCode", CurCode);
+
+            if (TermType == null)
+            {
+                param.Add("@TermType", "");
+            }
+
+            var results = await _db.LoadData<FTPRateTermRsp, dynamic>(
+                        storedProcedure: "usp_AQuote_FTPTermSelect",
+                        param);
+            return results;
+        }
+        // Term Select
     }//main
 }
