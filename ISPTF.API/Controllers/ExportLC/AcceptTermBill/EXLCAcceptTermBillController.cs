@@ -285,6 +285,20 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
+                            if (eventRow.RECEIVED_NO != "" && eventRow.RECEIVED_NO != null)
+                            {
+                                if (eventRow.REFUND_DISC_RECEIVE > 0)
+                                {
+                                    if (!eventRow.RECEIVED_NO.Contains("DDR"))
+                                    {
+                                        eventRow.RECEIVED_NO = "";
+                                    }
+                                }
+                                else if (!eventRow.RECEIVED_NO.Contains("DCR"))
+                                {
+                                    eventRow.RECEIVED_NO = "";
+                                }
+                            }
                             if (eventRow.RECEIVED_NO == null || eventRow.RECEIVED_NO == "")
                             {
                                 if (eventRow.REFUND_DISC_RECEIVE==0)

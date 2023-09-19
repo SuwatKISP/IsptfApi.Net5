@@ -262,13 +262,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.IN_USE = 0;
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = UpdateDateT; // Without Time
-
+                        eventRow.REC_STATUS = "P";
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
                             string PayFlag;
-                            if (eventRow.RECEIVED_NO != "")
+                            if (eventRow.RECEIVED_NO != "" && eventRow.RECEIVED_NO!=null)
                             {
                                 if (eventRow.REFUND_DISC_RECEIVE > 0)
                                 {

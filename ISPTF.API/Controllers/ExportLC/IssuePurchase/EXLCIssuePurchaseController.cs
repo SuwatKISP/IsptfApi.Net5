@@ -503,6 +503,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         else
                         {
                             _context.pExlcs.Update(eventRow);
+                            _context.SaveChanges();
                         }
 
                         transaction.Complete();
