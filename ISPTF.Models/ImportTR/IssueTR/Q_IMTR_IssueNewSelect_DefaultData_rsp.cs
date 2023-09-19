@@ -12,6 +12,8 @@ namespace ISPTF.Models.ImportTR
         public double? Cable_Rate { get; set; }
         public double? TRDay_Rate { get; set; }
         public DateTime? StartDate { get; set; }
+        public double? SGAmount { get; set; }
+        public double? DOAmount { get; set; }
 
     }
 }

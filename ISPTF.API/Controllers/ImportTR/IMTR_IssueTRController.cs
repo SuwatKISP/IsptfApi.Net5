@@ -655,8 +655,8 @@ namespace ISPTF.API.Controllers.ImportTR
             {
                 await _db.SaveData(
                     storedProcedure: "usp_pIMTR_IssueTR_Release", param);
-                
-                    var Resp = param.Get<int>("@Resp");
+
+                var Resp = param.Get<int>("@Resp");
 
                 if (Resp > 0)
                 {
@@ -734,7 +734,7 @@ namespace ISPTF.API.Controllers.ImportTR
                     }
                     catch (Exception)
                     {
-                        response.Message = Resp.ToString(); 
+                        response.Message = Resp.ToString();
                     }
                     return BadRequest(response);
                 }
@@ -747,6 +747,16 @@ namespace ISPTF.API.Controllers.ImportTR
             }
         }
 
+        [HttpGet("cmbACType")]
+        public async Task<IEnumerable<MControl>> cmbACType()
+        {
+            DynamicParameters param = new DynamicParameters();
+
+            var results = await _db.LoadData<MControl, dynamic>(
+                storedProcedure: "usp_pIMTR_IssueTR_mControlSelect",
+                param);
+            return results;
+        }
 
 
 
@@ -754,43 +764,6 @@ namespace ISPTF.API.Controllers.ImportTR
 
 
 
-
-
-
-
-        //        var results = await _db.LoadData<IMTRResultResponse, dynamic>(
-        //            storedProcedure: "usp_pIMTR_IssueTR_Release",
-        //            param);
-
-        //        var Resp = param.Get<int>("@Resp");
-        //        //var IssueTRSaveResp = param.Get<dynamic>("@IssueTRSaveResp");
-
-        //        //var Resp = param.Get<int>("@Resp");
-        //        if (Resp > 0)
-        //        {
-        //            IMTRResultResponse jsonResponse = JsonSerializer.Deserialize<IMTRResultResponse>(IssueTRSaveResp);
-        //            response.Code = Constants.RESPONSE_OK;
-        //            response.Message = "Success";
-        //            //response.Data = jsonResponse;
-        //            return Ok(response);
-        //        }
-        //        else
-        //        {
-        //            response.Code = Constants.RESPONSE_ERROR;
-        //            response.Message = "EXPORT_LC_NO Insert Error";
-        //            //response.Data = new IMTR_SaveIssue_JSON_rsp();
-        //            return BadRequest(response);
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        response.Code = Constants.RESPONSE_ERROR;
-        //        response.Message = e.ToString();
-        //        //response.Data = new IMTR_SaveIssue_JSON_rsp();
-        //        return BadRequest(response);
-        //    }
-
-        //}
 
 
 

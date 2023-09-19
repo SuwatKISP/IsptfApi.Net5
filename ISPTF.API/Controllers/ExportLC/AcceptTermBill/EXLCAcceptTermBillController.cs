@@ -400,19 +400,16 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXLCResultResponse>> Release(string? EXPORT_LC_NO,
-                                                            int? EVENT_NO,
-                                                            string? RECORD_TYPE,
-                                                            string? REC_STATUS)
+        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] EXLCAcceptTermDueReleaseReq release)
         {
             EXLCResultResponse response = new();
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
             var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
-                EVENT_NO == null ||
-                string.IsNullOrEmpty(RECORD_TYPE) ||
-                string.IsNullOrEmpty(REC_STATUS))
+            if (string.IsNullOrEmpty(release.EXPORT_LC_NO) ||
+                release.EVENT_NO == null ||
+                string.IsNullOrEmpty(release.RECORD_TYPE) ||
+                string.IsNullOrEmpty(release.REC_STATUS))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, RECORD_TYPE, REC_STATUS is required";
@@ -433,7 +430,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         //SaveMaster
                         // 0 - Select EXLC Master
                         var pExlcMaster = (from row in _context.pExlcs
-                                           where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                           where row.EXPORT_LC_NO == release.EXPORT_LC_NO &&
                                                  row.RECORD_TYPE == "MASTER"
                                            select row).FirstOrDefault();
 
@@ -447,11 +444,11 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 2 - Select Existing Event
                         var pExlcEvent = (from row in _context.pExlcs
-                                          where row.EXPORT_LC_NO == EXPORT_LC_NO &&
-                                                row.RECORD_TYPE == RECORD_TYPE &&
-                                                (row.REC_STATUS == REC_STATUS) &&
+                                          where row.EXPORT_LC_NO == release.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == release.RECORD_TYPE &&
+                                                (row.REC_STATUS == release.REC_STATUS) &&
                                                 row.EVENT_TYPE == EVENT_TYPE &&
-                                                row.EVENT_NO == EVENT_NO
+                                                row.EVENT_NO == release.EVENT_NO
                                           select row).AsNoTracking().FirstOrDefault();
 
                         // 3 - Check if Event Exist
@@ -485,19 +482,19 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 5 - Update Event
                         pExlcEvent.RECEIVED_NO = pExlcEvent.RECEIVED_NO;
                         pExlcEvent.AUTH_CODE = USER_ID;
-                        pExlcEvent.AUTH_DATE = DateTime.Today;
+                        pExlcEvent.AUTH_DATE = UpdateDateT;
                         pExlcEvent.GENACC_FLAG = "Y";
-                        pExlcEvent.GENACC_DATE = DateTime.Today;
+                        pExlcEvent.GENACC_DATE = UpdateDateNT;
 
                         // 6 - Update Master
                         pExlcMaster.AcceptFlag = "Y";
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Today;
+                        pExlcMaster.AUTH_DATE = UpdateDateT;
                         pExlcMaster.VOUCH_ID = pExlcEvent.VOUCH_ID;
                         pExlcMaster.GENACC_FLAG = "Y";
-                        pExlcMaster.GENACC_DATE = DateTime.Today;
+                        pExlcMaster.GENACC_DATE = UpdateDateNT;
                         pExlcMaster.USER_ID = USER_ID;
-                        pExlcMaster.UPDATE_DATE = DateTime.Today;
+                        pExlcMaster.UPDATE_DATE = UpdateDateT;
                         pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
                         pExlcMaster.EVENT_TYPE = EVENT_TYPE;
                         pExlcMaster.AcceptDate = pExlcEvent.CONFIRM_DATE;
@@ -541,13 +538,13 @@ namespace ISPTF.API.Controllers.ExportLC
                             pExlcMaster.SUSPAMT = pExlcEvent.SUSPAMT;
                             // 6.1 - Update pMonAccrued
                             var pMonAccrued = (from row in _context.pMonAccrueds
-                                               where row.DocNo == EXPORT_LC_NO &&
+                                               where row.DocNo == release.EXPORT_LC_NO &&
                                                      row.DocMode == "AMORT"
                                                select row).FirstOrDefault();
                             if (pMonAccrued == null)
                             {
                                 response.Code = Constants.RESPONSE_ERROR;
-                                response.Message = "pMonAccrued DocNo " + EXPORT_LC_NO + " does not exists";
+                                response.Message = "pMonAccrued DocNo " + release.EXPORT_LC_NO + " does not exists";
                                 return BadRequest(response);
                             }
                             pMonAccrued.GenAccFlag = "T";
@@ -571,7 +568,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                              select row).FirstOrDefault();
                             pBankLiab.XLCP_Book = pBankLiab.XLCP_Book - pExlcEvent.DRAFT_AMT;
                             pBankLiab.XLCP_Amt = pBankLiab.XLCP_Amt + pExlcEvent.DRAFT_AMT;
-                            pBankLiab.UpdateDate = DateTime.Today;
+                            pBankLiab.UpdateDate = UpdateDateT;
                             // 6.4 - RevalueBankLiab
                             // Nothing in (VB)ModEXQuery
                         }
@@ -605,7 +602,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         await _context.SaveChangesAsync();
 
                         // 9 - Updata Master,Event PK
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {EVENT_NO} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {release.EVENT_NO} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
                         transaction.Complete();
 
