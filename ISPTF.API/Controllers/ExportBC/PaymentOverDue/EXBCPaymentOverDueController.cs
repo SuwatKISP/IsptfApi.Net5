@@ -596,6 +596,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 var PExBcRsp = param.Get<dynamic>("@PExBcRsp");
                 var pexbcpexpaymentrsp = param.Get<dynamic>("@PEXBCPEXPaymentRsp");
+                var rseq = param.Get<dynamic>("@ResSeqNo");
 
                 if (PExBcRsp == 1 && !string.IsNullOrEmpty(pexbcpexpaymentrsp))
                 {
@@ -603,7 +604,59 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+
+
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU != "UNPAID")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            response.Data.PEXBC.EVENT_TYPE,true);
+
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_PayOverdue(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.RECEIVED_NO);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+
                     return Ok(response);
+                    
+
                 }
                 else
                 {
