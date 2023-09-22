@@ -62,6 +62,26 @@ namespace ISPTF.API.Controllers
 
         }
 
+        [HttpGet]  // BNet UID
+        public async Task<IEnumerable<MBankFileBNetUIDRsp>> GetSelUID(string? bankcode)
+        {
+            DynamicParameters param = new();
+            param.Add("@Bank_Code", bankcode);
+            if (bankcode == "*" || bankcode == null)
+            {
+                param.Add("@Bank_Code", "*");
+            }
+            else
+            {
+                param.Add("@Bank_Code", bankcode);
+            }
+            var results = await _db.LoadData<MBankFileBNetUIDRsp, dynamic>(
+                             storedProcedure: "usp_mbankGetBNetUID",
+                             param);
+            return results;
+
+        }
+
         [HttpGet("BankActive")]
         public async Task<IEnumerable<MBankFileActiveRsp>> GetBankActive(string? BankCode,string? BankName ,string? Page, string? PageSize)
         {
