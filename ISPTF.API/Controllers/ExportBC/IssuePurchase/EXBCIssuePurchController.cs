@@ -662,9 +662,12 @@ namespace ISPTF.API.Controllers.ExportBC
                     {
                         resPayD = true;
                     }
-                    string resQuote;
-                    resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
-                         response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "NEW", response.Data.PEXBC.USER_ID);
+                    string resQuote="";
+                  if (pexbcppaymentreq.PEXBC.REC_STATUS == "N")
+                    {
+                        resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                             response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "NEW", response.Data.PEXBC.USER_ID);
+                    }
                     if (resQuote== "ERROR"  || resPayD==false || resGL ==false)
                     {
                         response.Code = Constants.RESPONSE_ERROR;
@@ -1064,7 +1067,7 @@ namespace ISPTF.API.Controllers.ExportBC
                         resPayD = true;
                     }
                     string resQuote="";
-                    if (pexbcppaymentreq.PEXBC.CCS_ACCT == "Y")
+                    if (pexbcppaymentreq.PEXBC.REC_STATUS == "N")
                     { 
                         resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
                              response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "EDIT", response.Data.PEXBC.USER_ID);
