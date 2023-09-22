@@ -82,8 +82,8 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@CFR_2", Quote.CFR_2);
             param.Add("@CFR_3", Quote.CFR_3);
             param.Add("@CFR_Rate", Quote.CFR_Rate);
-            param.Add("@Quote_Rate", Quote.CFR_Rate);
-            param.Add("@TPR", Quote.CFR_Rate);
+            param.Add("@Quote_Rate", Quote.Quote_Rate);
+            param.Add("@TPR", Quote.TPR);
             param.Add("@Status", Quote.Status);
             param.Add("@Txndate", Quote.Txndate);
             param.Add("@TF_inputer", Quote.TF_inputer);

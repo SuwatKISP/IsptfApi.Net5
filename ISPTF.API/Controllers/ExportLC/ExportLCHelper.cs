@@ -381,7 +381,7 @@ namespace ISPTF.API.Controllers.ExportLC
         //LC
         public static string SavePayment(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment, DateTime UpdateT, DateTime UpdateNT)
         {
-           DateTime GetSysDate = ModDate.GetSystemDateTime();
+         //  DateTime GetSysDate = ModDate.GetSystemDateTime();
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
@@ -410,7 +410,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     else
                     {
-                        RECEIPT_NO = existingPPayment.RpReceiptNo;
+                        RECEIPT_NO = lc.RECEIVED_NO;
                     }
 
                     payment.RpModule = "EXLC";

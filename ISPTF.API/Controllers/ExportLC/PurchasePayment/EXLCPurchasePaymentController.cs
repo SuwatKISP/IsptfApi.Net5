@@ -314,7 +314,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-
+                            eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
                                                        select row).ToList();
@@ -387,6 +388,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (pExPaymentRow.PAYMENT_INSTRU == "UNPAID")
                         {
                             pExPaymentRow.Method = "";
+                            eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
                         }
 
                         // GL

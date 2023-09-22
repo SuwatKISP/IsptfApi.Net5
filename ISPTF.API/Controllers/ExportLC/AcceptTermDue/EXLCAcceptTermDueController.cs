@@ -262,13 +262,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.IN_USE = 0;
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = UpdateDateT; // Without Time
-
+                        eventRow.REC_STATUS = "P";
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
                             string PayFlag;
-                            if (eventRow.RECEIVED_NO != "")
+                            if (eventRow.RECEIVED_NO != "" && eventRow.RECEIVED_NO!=null)
                             {
                                 if (eventRow.REFUND_DISC_RECEIVE > 0)
                                 {
@@ -308,7 +308,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-
+                            eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
                                                        select row).ToList();
@@ -447,16 +448,17 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXLCResultResponse>> Release(string? EXPORT_LC_NO, int? EVENT_NO, string? RECORD_TYPE, string? REC_STATUS)
+        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] EXLCAcceptTermDueReleaseReq release)
         {
             EXLCResultResponse response = new();
 
-            
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_LC_NO) ||
-                EVENT_NO == null ||
-                string.IsNullOrEmpty(RECORD_TYPE) ||
-                string.IsNullOrEmpty(REC_STATUS))
+            if (string.IsNullOrEmpty(release.EXPORT_LC_NO) ||
+                release.EVENT_NO == null ||
+                string.IsNullOrEmpty(release.RECORD_TYPE) ||
+                string.IsNullOrEmpty(release.REC_STATUS))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_LC_NO, EVENT_NO, RECORD_TYPE, REC_STATUS is required";
@@ -470,7 +472,7 @@ namespace ISPTF.API.Controllers.ExportLC
                 //SaveMaster
                 // 0 - Select EXLC Master
                 var pExlcMaster = (from row in _context.pExlcs
-                                   where row.EXPORT_LC_NO == EXPORT_LC_NO &&
+                                   where row.EXPORT_LC_NO == release.EXPORT_LC_NO &&
                                          row.RECORD_TYPE == "MASTER"
                                    select row).FirstOrDefault();
 
@@ -484,11 +486,11 @@ namespace ISPTF.API.Controllers.ExportLC
 
                 // 2 - Select Existing Event
                 var pExlcEvent = (from row in _context.pExlcs
-                                  where row.EXPORT_LC_NO == EXPORT_LC_NO &&
-                                        row.RECORD_TYPE == RECORD_TYPE &&
-                                        (row.REC_STATUS == REC_STATUS) &&
+                                  where row.EXPORT_LC_NO == release.EXPORT_LC_NO &&
+                                        row.RECORD_TYPE == release.RECORD_TYPE &&
+                                        (row.REC_STATUS == release.REC_STATUS) &&
                                         row.EVENT_TYPE == EVENT_TYPE &&
-                                        row.EVENT_NO == EVENT_NO
+                                        row.EVENT_NO == release.EVENT_NO
                                   select row).AsNoTracking().FirstOrDefault();
 
                 // 3 - Check if Event Exist
@@ -552,18 +554,18 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         pExlcEvent.RECEIVED_NO = pExlcEvent.RECEIVED_NO;
                         pExlcEvent.AUTH_CODE = pExlcEvent.AUTH_CODE;
-                        pExlcEvent.AUTH_DATE = pExlcEvent.AUTH_DATE;
+                        pExlcEvent.AUTH_DATE = UpdateDateT;
                         pExlcEvent.GENACC_FLAG = "Y";
-                        pExlcEvent.GENACC_DATE = DateTime.Today;
+                        pExlcEvent.GENACC_DATE = UpdateDateNT;
 
                         // 5 - Update Master
                         pExlcMaster.AUTH_CODE = pExlcEvent.AUTH_CODE;
-                        pExlcMaster.AUTH_DATE = pExlcEvent.AUTH_DATE;
+                        pExlcMaster.AUTH_DATE = UpdateDateT;
                         pExlcMaster.VOUCH_ID = pExlcEvent.VOUCH_ID;
                         pExlcMaster.GENACC_FLAG = "Y";
-                        pExlcMaster.GENACC_DATE = DateTime.Today;
+                        pExlcMaster.GENACC_DATE = UpdateDateNT;
                         pExlcMaster.USER_ID = USER_ID;
-                        pExlcMaster.UPDATE_DATE = DateTime.Today;
+                        pExlcMaster.UPDATE_DATE = UpdateDateT;
                         pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
                         pExlcMaster.EVENT_TYPE = EVENT_TYPE;
                         pExlcMaster.SEQ_ACCEPT_DUE = pExlcEvent.SEQ_ACCEPT_DUE;
@@ -675,7 +677,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         await _context.SaveChangesAsync();
 
                         // 8 - Updata Master,Event PK
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {EVENT_NO} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {release.EVENT_NO} WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{pExlcEvent.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
                         transaction.Complete();
 

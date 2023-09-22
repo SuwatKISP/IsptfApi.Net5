@@ -365,6 +365,11 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 appvFac = pCustApprove.Appv_No;
                             }
+                            pDocRegister.Reg_Status = "I";
+                            _context.pDocRegisters.Update(pDocRegister);
+                            _context.SaveChanges();
+                            //    cSql = "UPDATE pDocRegister SET Reg_Status = 'I' WHERE Reg_Login = 'EXLC' AND reg_docno='" & lcNo$ & "' AND REG_STATUS='A'"
+
                         }
                         else
                         {
@@ -427,7 +432,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.REC_STATUS = "P";
-                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.EVENT_NO = 1;
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
                         eventRow.AUTOOVERDUE = "N";
@@ -471,6 +476,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             // UNPAID
                             eventRow.METHOD = "";
                             eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
                                                        select row).ToList();
@@ -487,16 +493,18 @@ namespace ISPTF.API.Controllers.ExportLC
                                 _context.pPayDetails.Remove(row);
                             }
                         }
-
+                        eventRow.RECORD_TYPE = "EVENT";
                         // Commit
                         if (pExlcEvent ==null)
                         {
                             _context.pExlcs.Add(eventRow);
                             _context.SaveChanges();
+
                         }
                         else
                         {
                             _context.pExlcs.Update(eventRow);
+                            _context.SaveChanges();
                         }
 
                         transaction.Complete();
