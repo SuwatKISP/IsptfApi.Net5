@@ -42,6 +42,25 @@ namespace ISPTF.API.Controllers
 
         }
 
+        [HttpGet]  // SwiftBank
+        public async Task<IEnumerable<MBankFileGetSwiftRsp>> GetSelSW(string? bankcode)
+        {
+            DynamicParameters param = new();
+            param.Add("@Bank_Code", bankcode);
+            if (bankcode == "*" || bankcode == null)
+            {
+                param.Add("@Bank_Code", "*");
+            }
+            else
+            {
+                param.Add("@Bank_Code", bankcode);
+            }
+            var results = await _db.LoadData<MBankFileGetSwiftRsp, dynamic>(
+                             storedProcedure: "usp_mbankGetSwiftBk",
+                             param);
+            return results;
+
+        }
 
         [HttpGet("BankActive")]
         public async Task<IEnumerable<MBankFileActiveRsp>> GetBankActive(string? BankCode,string? BankName ,string? Page, string? PageSize)
