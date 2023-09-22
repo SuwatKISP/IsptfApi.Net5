@@ -12,4 +12,4 @@ namespace ISPTF.Models.BankFile
         public string Bank_UID { get; set; }
     }
 }
-}
+

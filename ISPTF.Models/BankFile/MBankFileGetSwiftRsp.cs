@@ -12,4 +12,4 @@ namespace ISPTF.Models.BankFile
         public string Bank_SWIFT { get; set; }
     }
 }
-}
+
