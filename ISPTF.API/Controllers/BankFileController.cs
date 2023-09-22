@@ -42,7 +42,7 @@ namespace ISPTF.API.Controllers
 
         }
 
-        [HttpGet]  // SwiftBank
+        [HttpGet("swiftbank")]  // SwiftBank
         public async Task<IEnumerable<MBankFileGetSwiftRsp>> GetSelSW(string? bankcode)
         {
             DynamicParameters param = new();
@@ -62,7 +62,7 @@ namespace ISPTF.API.Controllers
 
         }
 
-        [HttpGet]  // BNet UID
+        [HttpGet("BNetUID")]  // BNet UID
         public async Task<IEnumerable<MBankFileBNetUIDRsp>> GetSelUID(string? bankcode)
         {
             DynamicParameters param = new();
