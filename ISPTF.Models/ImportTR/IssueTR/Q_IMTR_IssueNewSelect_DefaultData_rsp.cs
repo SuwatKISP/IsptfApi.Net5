@@ -14,6 +14,7 @@ namespace ISPTF.Models.ImportTR
         public DateTime? StartDate { get; set; }
         public double? SGAmount { get; set; }
         public double? DOAmount { get; set; }
+        public String? SWDecimal { get; set; }
 
     }
 }
