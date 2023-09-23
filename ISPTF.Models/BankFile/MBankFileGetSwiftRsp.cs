@@ -8,6 +8,7 @@ namespace ISPTF.Models.BankFile
 {
     public class MBankFileGetSwiftRsp
     {
+        public int RCount { get; set; }
         public string Bank_Code { get; set; }
         public string Bank_SWIFT { get; set; }
     }

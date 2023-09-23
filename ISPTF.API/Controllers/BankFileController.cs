@@ -43,10 +43,13 @@ namespace ISPTF.API.Controllers
         }
 
         [HttpGet("swiftbank")]  // SwiftBank
-        public async Task<IEnumerable<MBankFileGetSwiftRsp>> GetSelSW(string? bankcode)
+        public async Task<IEnumerable<MBankFileGetSwiftRsp>> GetSelSW(string? bankcode, string? Page, string? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@Bank_Code", bankcode);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
             if (bankcode == "*" || bankcode == null)
             {
                 param.Add("@Bank_Code", "*");
