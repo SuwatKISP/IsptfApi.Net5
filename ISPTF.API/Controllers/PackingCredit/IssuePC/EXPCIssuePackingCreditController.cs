@@ -190,82 +190,119 @@ namespace ISPTF.API.Controllers.PackingCredit
             return BadRequest(response);
         }
 
+
         [HttpGet("newselect")]
-        public ActionResult<PEXPCPPaymentResponse> GetNewSelect(string? RegDocNo)
+        public async Task<ActionResult<EXPCIssuePCNewSelectResponse>> GetNewSelect(string? RegDocNo)
         {
-            PEXPCPPaymentResponse response = new();
+            EXPCIssuePCNewSelectResponse response = new EXPCIssuePCNewSelectResponse();
+
             // Validate
             if (string.IsNullOrEmpty(RegDocNo))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "RegDocNo is required";
-                response.Data = new();
+                response.Data = new List<PDocRegister>();
                 return BadRequest(response);
             }
 
             try
             {
-                var pDocReg = (from row in _context.pDocRegisters
-                               where row.Reg_Docno == RegDocNo
-                               select row).AsNoTracking().FirstOrDefault();
-                pExpc pExpc = new();
-                pExpc.PACKING_NO = pDocReg.Reg_Docno;
-                pExpc.cust_id = pDocReg.Reg_CustCode;
-                var mCustomer = (from row in _context.mCustomers
-                                 where row.Cust_Code == pDocReg.Reg_CustCode
-                                 select row).AsNoTracking().FirstOrDefault();
-                if (mCustomer!=null)
-                {
-                    string cus_info = "";
-                    if (mCustomer.Cust_Add1_Line1 != null)
-                        cus_info = mCustomer.Cust_Add1_Line1;
-                    if (mCustomer.Cust_Add1_Line2 != null)
-                        cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line2;
-                    if (mCustomer.Cust_Add1_Line3 != null)
-                        cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line3;
-                    if (mCustomer.Cust_Add1_Line4 != null)
-                        cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line4;
-                    pExpc.cust_info = cus_info;
-                }
-                pExpc.refer_lcno = pDocReg.Reg_RefNo;
-                pExpc.packing_for = pDocReg.Reg_DocType;
-                pExpc.doc_amount = pDocReg.Reg_CcyAmt;
-                pExpc.pack_ccy = pDocReg.Reg_CcyBal;
-                pExpc.rate = pDocReg.Reg_Plus;
-                pExpc.exch_rate = pDocReg.Reg_ExchRate;
-                pExpc.pack_thb = pDocReg.Reg_BhtAmt;
-                pExpc.pn_no = pDocReg.Reg_RefNo2;
-                pExpc.total_credit_ac = pDocReg.Reg_BhtAmt;
+                DynamicParameters param = new();
+                param.Add("@RegDocNo", RegDocNo);
 
-                var exp = "CCY";
-                var ccy = "THB";
-                if(pDocReg.Reg_DocType == "O")
-                {
-                    exp = "INT CCY";
-                    ccy = "CCY";
-                }
-                pExpc.pc_int_rate = EXHelper.CompDiscRate(_context, pDocReg.Reg_CustCode, "EXPC", exp, ccy);
-
-                exp = "SPPCTHB";
-                if (pDocReg.Reg_DocType == "O")
-                {
-                    exp = "SPPCCCY";
-                }
-                pExpc.spread_rate = EXHelper.CompSpreadRate(_context, pDocReg.Reg_CustCode, "EXPC", exp);
-                pExpc.current_intrate = pExpc.pc_int_rate + pExpc.spread_rate;
+                var results = await _db.LoadData<PDocRegister, dynamic>(
+                            storedProcedure: "usp_pDocRegisterSelect",
+                            param);
                 response.Code = Constants.RESPONSE_OK;
-                response.Data = new();
-                response.Data.PEXPC = pExpc;
+                response.Message = "Success";
+                response.Data = (List<PDocRegister>)results;
                 return Ok(response);
             }
             catch (Exception e)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new();
+                response.Data = new List<PDocRegister>();
             }
             return BadRequest(response);
         }
+
+        //[HttpGet("newselect")]
+        //public ActionResult<PEXPCPPaymentResponse> GetNewSelect(string? RegDocNo)
+        //{
+        //    PEXPCPPaymentResponse response = new();
+        //    // Validate
+        //    if (string.IsNullOrEmpty(RegDocNo))
+        //    {
+        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+        //        response.Message = "RegDocNo is required";
+        //        response.Data = new();
+        //        return BadRequest(response);
+        //    }
+
+        //    try
+        //    {
+        //        var pDocReg = (from row in _context.pDocRegisters
+        //                       where row.Reg_Docno == RegDocNo
+        //                       select row).AsNoTracking().FirstOrDefault();
+        //        pExpc pExpc = new();
+        //        pExpc.PACKING_NO = pDocReg.Reg_Docno;
+        //        pExpc.cust_id = pDocReg.Reg_CustCode;
+        //        var mCustomer = (from row in _context.mCustomers
+        //                         where row.Cust_Code == pDocReg.Reg_CustCode
+        //                         select row).AsNoTracking().FirstOrDefault();
+        //        if (mCustomer!=null)
+        //        {
+        //            string cus_info = "";
+        //            if (mCustomer.Cust_Add1_Line1 != null)
+        //                cus_info = mCustomer.Cust_Add1_Line1;
+        //            if (mCustomer.Cust_Add1_Line2 != null)
+        //                cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line2;
+        //            if (mCustomer.Cust_Add1_Line3 != null)
+        //                cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line3;
+        //            if (mCustomer.Cust_Add1_Line4 != null)
+        //                cus_info = cus_info + System.Environment.NewLine + mCustomer.Cust_Add1_Line4;
+        //            pExpc.cust_info = cus_info;
+        //        }
+        //        pExpc.refer_lcno = pDocReg.Reg_RefNo;
+        //        pExpc.packing_for = pDocReg.Reg_DocType;
+        //        pExpc.doc_amount = pDocReg.Reg_CcyAmt;
+        //        pExpc.pack_ccy = pDocReg.Reg_CcyBal;
+        //        pExpc.rate = pDocReg.Reg_Plus;
+        //        pExpc.exch_rate = pDocReg.Reg_ExchRate;
+        //        pExpc.pack_thb = pDocReg.Reg_BhtAmt;
+        //        pExpc.pn_no = pDocReg.Reg_RefNo2;
+        //        pExpc.total_credit_ac = pDocReg.Reg_BhtAmt;
+
+        //        var exp = "CCY";
+        //        var ccy = "THB";
+        //        if(pDocReg.Reg_DocType == "O")
+        //        {
+        //            exp = "INT CCY";
+        //            ccy = "CCY";
+        //        }
+        //        pExpc.pc_int_rate = EXHelper.CompDiscRate(_context, pDocReg.Reg_CustCode, "EXPC", exp, ccy);
+
+        //        exp = "SPPCTHB";
+        //        if (pDocReg.Reg_DocType == "O")
+        //        {
+        //            exp = "SPPCCCY";
+        //        }
+        //        pExpc.spread_rate = EXHelper.CompSpreadRate(_context, pDocReg.Reg_CustCode, "EXPC", exp);
+        //        pExpc.current_intrate = pExpc.pc_int_rate + pExpc.spread_rate;
+        //        response.Code = Constants.RESPONSE_OK;
+        //        response.Data = new();
+        //        response.Data.PEXPC = pExpc;
+        //        return Ok(response);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        response.Code = Constants.RESPONSE_ERROR;
+        //        response.Message = e.ToString();
+        //        response.Data = new();
+        //    }
+        //    return BadRequest(response);
+        //}
 
         [HttpGet("select")]
         public ActionResult<PEXPCPPaymentResponse> Select(string? PACKING_NO)
