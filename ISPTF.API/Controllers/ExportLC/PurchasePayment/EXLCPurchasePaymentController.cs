@@ -286,7 +286,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.INT_AMT_THB = data.PEXLC.INT_AMT_THB;
                         eventRow.INVOICE = data.PEXLC.INVOICE;
                         eventRow.REC_STATUS = "P";
-                        eventRow.IN_USE = 1;
+                        eventRow.IN_USE = 0;
                         eventRow.AGENT_BANK_ID = data.PEXLC.AGENT_BANK_ID;
                         eventRow.AGENT_BANK_INFO = data.PEXLC.AGENT_BANK_INFO;
                         //eventRow.ValueDate = DateTime.Today;
@@ -297,7 +297,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             eventRow.METHOD = data.PEXLC.METHOD;
                             if (eventRow.RECEIVED_NO == null || eventRow.RECEIVED_NO == "")
                             {
-                                eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYP", UpdateDateT, UpdateDateNT);
+                                eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
                             }
 
 
