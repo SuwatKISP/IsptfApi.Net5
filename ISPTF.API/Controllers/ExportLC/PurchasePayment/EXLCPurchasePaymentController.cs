@@ -206,9 +206,9 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("save")]
-        public ActionResult<PEXLCPPaymentPPayDetailsSaveResponse> Save([FromBody] PEXLCPPaymentPEXPaymentPPayDetailsSaveRequest data)
+        public ActionResult<PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse> Save([FromBody] PEXLCPPaymentPEXPaymentPPayDetailsSaveRequest data)
         {
-            PEXLCPPaymentPPayDetailsSaveResponse response = new();
+            PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse response = new();
             // Class validate
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
             var UpdateDateT = ExportLCHelper.GetSysDate(_context);
@@ -272,7 +272,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         eventRow.PurposeCode = data.PEXLC.PurposeCode;
 
-                        eventRow.WithOutFlag = data.PEXLC.WithOutType;
+                        eventRow.WithOutFlag = data.PEXLC.WithOutFlag;
                         eventRow.WithOutType = null;
                         eventRow.Wref_Bank_ID = "";
 
@@ -432,7 +432,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             Call PrintPostGL
                         End If
                         */
-                        eventRow.VOUCH_ID = "MOCK VOUCH_ID";
+                      //  eventRow.VOUCH_ID = "MOCK VOUCH_ID";
 
                         // Commit pExlc
                         if (pExlcEvent == null)
@@ -464,15 +464,109 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         _context.SaveChanges();
                         transaction.Complete();
-
+                        transaction.Dispose();
                         response.Code = Constants.RESPONSE_OK;
 
-                        PEXLCPPaymentPPayDetailDataContainer responseData = new();
+                        PEXLCPPaymentPEXPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
-                     //   responseData.PPAYDETAILS = data.PPAYDETAILS;
+                       responseData.PEXPAYMENT = data.PEXPAYMENT;
 
                         response.Data = responseData;
+
+                        bool resGL;
+                        bool resPayD;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent = response.Data.PEXLC.EVENT_TYPE;
+                        eventDate = response.Data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        if (response.Data.PEXLC.PAYMENT_INSTRU == "PAID")
+                        {
+                            if (response.Data.PEXPAYMENT.PAY_TYPE ==1)
+                            {
+                                if (data.PEXLC.WithOutFlag == "Y")
+                                {
+                                    if (data.PEXLC.WithOutType == "F")
+                                    {
+                                        GLEvent = "";
+                                    }
+                                    if (data.PEXLC.WithOutType == "I")
+                                    {
+                                        GLEvent = "PAYMENT-PUR-UNISB";
+                                    }
+                                    if (data.PEXLC.WithOutType == "A")
+                                    {
+                                        GLEvent = "PAYMENT-PUR-UNAGB";
+                                    }
+                                }
+                                else
+                                {
+                                    GLEvent = response.Data.PEXLC.EVENT_TYPE;
+                                }
+                            }
+
+                            if (response.Data.PEXPAYMENT.PAY_TYPE == 2)
+                            {
+                                if (data.PEXLC.WithOutFlag == "Y")
+                                {
+                                    if (data.PEXLC.WithOutType == "F")
+                                    {
+                                        GLEvent = "";
+                                    }
+                                    if (data.PEXLC.WithOutType == "I")
+                                    {
+                                        GLEvent = "CPAYMENT-PUR-UNISB";
+                                    }
+                                    if (data.PEXLC.WithOutType == "A")
+                                    {
+                                        GLEvent = "CPAYMENT-PUR-UNAGB";
+                                    }
+                                }
+                                else
+                                {
+                                    GLEvent = "CPAYMENT PURCHASE";
+                                }
+                            }
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO,
+                                eventDate,
+                                response.Data.PEXLC.EVENT_TYPE,
+                                response.Data.PEXLC.EVENT_NO,
+                                GLEvent,true);
+
+                        }
+                        else
+                        {
+                            resVoucherID = "";
+
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            response.Data.PEXLC.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+
+                        string resPayDetail;
+                        if (response.Data.PPAYMENT != null)
+                        {
+                            resPayDetail = ISPModule.PayDetailEXLC.PayDetail_PurchasePay(response.Data.PEXLC.EXPORT_LC_NO, response.Data.PEXLC.EVENT_NO, response.Data.PEXLC.RECEIVED_NO);
+                            if (resPayDetail != "ERROR")
+                            {
+                                resPayD = true;
+                            }
+                            else
+                            {
+                                resPayD = false;
+                            }
+                        }
+                        else
+                        {
+                            resPayD = true;
+                        }
+
                         response.Message = "Export L/C Saved";
                         return Ok(response);
                     }
@@ -511,7 +605,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -593,8 +688,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 4 - Update Master
                     pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
+                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
 
 
 

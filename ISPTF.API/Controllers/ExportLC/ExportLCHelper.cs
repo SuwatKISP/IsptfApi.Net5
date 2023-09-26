@@ -398,7 +398,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     string RECEIPT_NO = lc.RECEIVED_NO;
                     var existingPPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == lc.RECEIVED_NO
-                                            select row).FirstOrDefault();
+                                            select row).AsNoTracking().FirstOrDefault();
 
                     if (existingPPayment == null)
                     {
@@ -410,6 +410,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     else
                     {
+                        payment.RpReceiptNo = RECEIPT_NO;
                         RECEIPT_NO = lc.RECEIVED_NO;
                     }
 
@@ -489,7 +490,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     payment.RpStatus = "A";
                     payment.UserCode = lc.USER_ID;
-                    payment.UpdateDate = DateTime.Now;
+                    payment.UpdateDate = UpdateT;
 
                     if (existingPPayment == null)
                     {
