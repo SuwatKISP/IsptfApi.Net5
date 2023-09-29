@@ -192,9 +192,9 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("save")]
-        public ActionResult<PEXLCPPaymentPPayDetailsSaveResponse> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
+        public ActionResult<PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse> Save([FromBody] PEXLCPPaymentPEXPaymentPPayDetailsSaveRequest data)
         {
-            PEXLCPPaymentPPayDetailsSaveResponse response = new();
+            PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse response = new();
             // Class validate
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
             var UpdateDateT = ExportLCHelper.GetSysDate(_context);
@@ -250,12 +250,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_MODE = "E";
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                       // eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
 
                         eventRow.AUTOOVERDUE = "N";
                         eventRow.LCOVERDUE = "Y";
@@ -314,10 +314,47 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         }
 
+                        // 3 - PEXPAYMENT
+
+                        pExPayment pExPaymentRow = data.PEXPAYMENT;
+
+
+                        // 3 - Select Existing Event
+                        var pExPayment = (from row in _context.pExPayments
+                                          where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                                (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                        pExPaymentRow.DOCNUMBER = data.PEXLC.EXPORT_LC_NO;
+                        pExPaymentRow.EVENT_NO = targetEventNo;
+                        pExPaymentRow.EVENT_TYPE = EVENT_TYPE;
+
+                        pExPaymentRow.CenterID = USER_CENTER_ID;
+                        pExPaymentRow.REC_STATUS = "P";
+
+                        if (!string.IsNullOrEmpty(data.PEXPAYMENT.fb_ccy))
+                        {
+                            data.PEXPAYMENT.fb_ccy = data.PEXPAYMENT.fb_ccy;
+                        }
+                        else
+                        {
+                            data.PEXPAYMENT.fb_ccy = null;
+                        }
+
+                        if (pExPaymentRow.PAYMENT_INSTRU == "UNPAID")
+                        {
+                            pExPaymentRow.Method = "";
+                            eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
+                        }
+
                         // Commit
                         if (pExlcEvent == null)
                         {
                             // Insert
+                            eventRow.VOUCH_ID = "";
                             _context.pExlcs.Add(eventRow);
                         }
                         else
@@ -326,22 +363,60 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pExlcs.Update(eventRow);
                         }
 
-
+                        // Commit PExPayment
+                        if (pExlcEvent == null)
+                        {
+                            // Insert
+                            _context.pExPayments.Add(pExPaymentRow);
+                        }
+                        else
+                        {
+                            // Update
+                            _context.pExPayments.Update(pExPaymentRow);
+                        }
                         _context.SaveChanges();
 
-                        var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+                       // var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
 
                         transaction.Complete();
+                        transaction.Dispose();
 
                         response.Code = Constants.RESPONSE_OK;
 
-                        PEXLCPPaymentPPayDetailDataContainer responseData = new();
+                        PEXLCPPaymentPEXPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
                         //responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";
+
+
+                        bool resGL;
+                        string eventDate;
+                        string resVoucherID="";
+                        string GLEvent = response.Data.PEXLC.EVENT_TYPE;
+                        eventDate = response.Data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+
+                        if (response.Data.PEXLC.PAYMENT_INSTRU == "PAID")
+                        {
+
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO,
+                            eventDate, EVENT_TYPE, response.Data.PEXLC.EVENT_NO,
+                            EVENT_TYPE, true);
+
+                            if (resVoucherID != "ERROR")
+                            {
+                                resGL = true;
+                                response.Data.PEXLC.VOUCH_ID = resVoucherID;
+                            }
+                            else
+                            {
+                                resGL = false;
+                            }
+                        }
+
+
                         return Ok(response);
                     }
                     catch (Exception e)

@@ -688,9 +688,146 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 4 - Update Master
                     pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
-                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
+                     pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                     pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
 
+                        var pExPayments = (from row in _context.pExPayments
+                                           where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.EVENT_TYPE == EVENT_TYPE &&
+                                                 row.EVENT_NO == targetEventNo
+                                           select row).AsNoTracking().FirstOrDefault();
+                        double Tot_paid;
+                        if (data.PEXLC.PARTIAL_FULL_RATE ==2) //full rate
+                        {
+
+                            if (pExPayments.SETTLEMENT_CREDIT==0 || pExPayments.SETTLEMENT_CREDIT == 1)//fcy to thb
+                            {
+           
+                                if (pExlcEvent.TENOR_OF_COLL ==1)
+                                {
+                                    Tot_paid = pExPayments.SIGHT_PAID_AMT.Value;
+                                }
+                                else
+                                {
+                                    Tot_paid = pExPayments.TERM_PAID_AMT.Value;
+                                }
+                            }
+                            else if (pExPayments.SETTLEMENT_CREDIT == 2)
+                            {
+                                if (pExlcEvent.TENOR_OF_COLL == 1)
+                                {
+                                    Tot_paid = pExPayments.SIGHT_PAID_THB.Value;
+                                }
+                                else
+                                {
+                                    Tot_paid = pExPayments.TERM_PAID_THB.Value;
+                                }
+                            }
+                        }//full rate
+                        else
+                        {
+                            //if (pExPayments.SETTLEMENT_CREDIT == 0 || pExPayments.SETTLEMENT_CREDIT == 1)//fcy to thb
+                            //{
+                            //    Tot_paid =pExPayments.PARTIAL_AMT1.Value+ pExPayments.PARTIAL_AMT2.Value+
+                            //        pExPayments.PARTIAL_AMT3.Value + pExPayments.PARTIAL_AMT4.Value +
+                            //        pExPayments.PARTIAL_AMT5.Value + pExPayments.PARTIAL_AMT6.Value 
+                            //}
+                            //else if (pExPayments.SETTLEMENT_CREDIT == 2)//fcy to thb
+                            //{
+                            //    Tot_paid = pExPayments.PARTIAL_AMT1_THB.Value + pExPayments.PARTIAL_AMT2_THB.Value +
+                            //        pExPayments.PARTIAL_AMT3_THB.Value + pExPayments.PARTIAL_AMT4_THB.Value +
+                            //        pExPayments.PARTIAL_AMT5_THB.Value + pExPayments.PARTIAL_AMT6_THB.Value 
+                            //}
+
+                        }
+                        pExlcMaster.PurposeCode = pExlcEvent.PurposeCode;
+
+
+
+//                        !VOUCH_ID = LbVouch.Caption
+//                         !user_id = cUserCode
+//                         !RELETE_PACK = txtRelaPackNo.Text
+//                         !update_date = getDateTime("YMDHMS")
+//    'DAT
+//    '!EVENT_DATE = nowDate$
+
+
+//    'PAYMENT
+//    !NEGO_AMT = Val(num(totNegoBAl.Text))
+//    !LESS_AGENT = Val(num(txtLessAgent.Text))
+//    !tot_nego_amount = Val(num(totNegoAmt.Text))
+
+//    !NET_PROCEED_CLAIM = Val(Format(txtNetProcClaim.Text, "#0.00"))
+//    !BANK_CHARGE_AMT = Val(Format(txtBankCharge.Text, "#0.00"))
+//    !TOT_NEGO_AMT = Val(Format(totNegoAmt.Text, "#0.00"))
+//    If optPayType(1).Value Then !PaymentType = "F"
+//    If optPayType(0).Value Then !PaymentType = "P"
+
+//    !PURCHASE_AMT = IIf(IsNull(!PURCHASE_AMT), 0, !PURCHASE_AMT) - Tot_paid
+//    !TOT_NEGO_AMT = IIf(IsNull(!TOT_NEGO_AMT), 0, !TOT_NEGO_AMT) - Tot_paid
+//    !tot_nego_amount = !TOT_NEGO_AMT
+//    If!TOT_NEGO_AMT = 0 Or optPayType(1).Value Then
+//        !PaymentType = "F"
+//        ckPayFull = True
+//    Else
+//        !PaymentType = "P"
+//        ckPayFull = False
+//        If optFullRate(1).Value Then
+//            !PARTIAL_AMT1 = !PURCHASE_AMT
+//            !PARTIAL_AMT2 = 0
+//            !PARTIAL_AMT3 = 0
+//            !PARTIAL_AMT4 = 0
+//            !PARTIAL_AMT5 = 0
+//            !PARTIAL_AMT6 = 0
+
+//            !PARTIAL_AMT1_THB = !PURCHASE_AMT * !PARTIAL_RATE1
+//            !PARTIAL_AMT2_THB = 0
+//            !PARTIAL_AMT3_THB = 0
+//            !PARTIAL_AMT4_THB = 0
+//            !PARTIAL_AMT5_THB = 0
+//            !PARTIAL_AMT6_THB = 0
+
+//            !PARTIAL_RATE2 = 0
+//            !PARTIAL_RATE3 = 0
+//            !PARTIAL_RATE4 = 0
+//            !PARTIAL_RATE5 = 0
+//            !PARTIAL_RATE6 = 0
+
+//            !FORWARD_CONRACT_NO1 = ""
+//            !FORWARD_CONRACT_NO2 = ""
+//            !FORWARD_CONRACT_NO3 = ""
+//            !FORWARD_CONRACT_NO4 = ""
+//            !FORWARD_CONRACT_NO5 = ""
+//            !FORWARD_CONRACT_NO6 = ""
+//        End If
+//    End If
+
+
+//    !TOTAL_NEGO_BALANCE = Val(num(TxtNetNegoCcy.Text))
+//    !total_nego_bal_thb = Val(num(TxtNetNegoTHB.Text))
+
+
+//'TAB 2
+//    !nego_comm = num(txtCharge(0).Text): !telex_swift = num(txtCharge(1).Text): !courier_postage = num(txtCharge(2).Text)
+//    !stamp_fee = num(txtCharge(3).Text): !be_stamp = num(txtCharge(4).Text): !comm_Other = num(txtCharge(5).Text)
+//    !handing_fee = num(txtCharge(6).Text): !draftComm = num(txtCharge(7).Text)
+//    !total_charge = num(txtTotCharge.Text)
+//    !refund_tax_yn = IIf(optRefund(1).Value = True, optRefund(1).Tag, optRefund(2).Tag)
+//    !refund_tax_amt = num(txtTax.Text)
+//    !TOTAL_AMOUNT = num(txtTotAcc.Text)
+//    If OptPaid.Value = True Then 'if not paid not save
+//        !payment_instru = "PAID"
+//        !method = CmbMethod.Text
+//        !RECEIVED_NO = ReceiptNo
+//    Else
+//        !payment_instru = "UNPAID"
+//        !method = ""
+//        !RECEIVED_NO = ReceiptNo
+//    End If
+//    !DISCOUNT_CCY = Val(num(TxtDiscount(1).Text))
+//    !discrate = Val(Format(TxtDiscount(0).Text, "#0.00000000"))
+//    !DISCOUNT_AMT = Val(num(txtCharge(8).Text))
+//    !ValueDate = cvTxt2Date(mskPayDate.Text)
 
 
                         _context.SaveChanges();

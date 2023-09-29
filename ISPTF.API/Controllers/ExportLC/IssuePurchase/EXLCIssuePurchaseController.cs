@@ -352,6 +352,7 @@ namespace ISPTF.API.Controllers.ExportLC
                  
                         // 3 - Select PDOCRegister >> find cust approve
                         string appvFac ="";
+                        string appvNo = "";
                         var pDocRegister = (from row in _context.pDocRegisters
                                             where row.Reg_Docno == data.PEXLC.EXPORT_LC_NO
                                             select row).FirstOrDefault();
@@ -363,7 +364,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
                             if (pCustApprove != null)
                             {
-                                appvFac = pCustApprove.Appv_No;
+                                appvNo = pCustApprove.Appv_No;
+                                appvFac = pCustApprove.Facility_No;
                             }
                             pDocRegister.Reg_Status = "I";
                             _context.pDocRegisters.Update(pDocRegister);
@@ -375,6 +377,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // PDocRegister Not Found
                         }
+
                         // 0 - Select EXLC Master
                         var pExlcMaster = (from row in _context.pExlcs
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
@@ -414,6 +417,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             pExlc.USER_ID = USER_ID;
                             pExlc.UPDATE_DATE = UpdateDateT; // With Time
                             pExlc.FACNO = appvFac;
+                            pExlc.APPVNO = appvNo;
 
                             _context.pExlcs.Update(pExlc);
                             _context.SaveChanges();
@@ -454,6 +458,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         //eventRow.VOUCH_ID = "ISSUE-PURC";
                         eventRow.USER_ID = USER_ID;
                         eventRow.UPDATE_DATE = UpdateDateT; // With Time
+                        eventRow.APPVNO = appvNo;
                         eventRow.FACNO = appvFac;
 
                         if (eventRow.PAYMENT_INSTRU == "PAID" || eventRow.PAYMENT_INSTRU == "BAHTNET")
@@ -546,12 +551,13 @@ namespace ISPTF.API.Controllers.ExportLC
                                     GLEvent = "ISSUE-PUR-UNAGB";
                                 }
                             }
-                            
-                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC( response.Data.PEXLC.EXPORT_LC_NO,
-                                eventDate,
-                                response.Data.PEXLC.EVENT_TYPE,
-                                response.Data.PEXLC.EVENT_NO,
-                                GLEvent);
+
+                            //resVoucherID = ISPModule.GeneratrEXP.StartPEXLC( response.Data.PEXLC.EXPORT_LC_NO,
+                            //    eventDate,
+                            //    response.Data.PEXLC.EVENT_TYPE,
+                            //    response.Data.PEXLC.EVENT_NO,
+                            //    GLEvent);
+                            resVoucherID = "";
 
                         }
                         else
@@ -699,7 +705,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             if (data.PEXLC.CLAIM_TYPE ==1)
                             {
 
-                                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C', REFER_LC_NO ='{data.PEXLC.REFER_LC_NO}'AUTH_CODE = '{USER_ID}', AUTH_DATE = '{UpdateDateT}' WHERE EXPORT_LC_NO = '{data.PEXLC.REFER_LC_NO}' AND RECORD_TYPE='MASTER'");
+                                await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C', REFER_LC_NO ='{data.PEXLC.REFER_LC_NO}',AUTH_CODE = '{USER_ID}', AUTH_DATE = '{UpdateDateT}' WHERE EXPORT_LC_NO = '{data.PEXLC.REFER_LC_NO}' AND RECORD_TYPE='MASTER'");
                                 await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C' ,in_use =2  WHERE EXPORT_LC_NO = '{data.PEXLC.REFER_LC_NO}' AND RECORD_TYPE='EVENT'");
                             }
 

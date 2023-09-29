@@ -26,7 +26,7 @@ namespace ISPTF.API.Controllers.BatchControl
         }
 
         [HttpGet("BatchLogQuery")]
-        public async Task<IEnumerable<BatchLogQuery>> GetAll(string WorkDate)
+        public async Task<IEnumerable<BatchLogQuery>> GetAll(DateTime WorkDate)
         {
             DynamicParameters param = new();
             param.Add("@WorkDate", WorkDate);

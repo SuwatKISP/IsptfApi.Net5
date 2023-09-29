@@ -488,6 +488,16 @@ namespace ISPTF.API.Controllers.ExportLC
                         payment.RpCustAc3 = payment.RpCustAc3;
                     }
 
+                    if (payment.RpPayDate == null)
+                    {
+                        payment.RpPayDate = lc.EVENT_DATE;
+                    }
+                    else
+                    {
+                        payment.RpPayDate = payment.RpPayDate;
+                    }
+
+                   payment.RpRecStatus = lc.REC_STATUS;
                     payment.RpStatus = "A";
                     payment.UserCode = lc.USER_ID;
                     payment.UpdateDate = UpdateT;
