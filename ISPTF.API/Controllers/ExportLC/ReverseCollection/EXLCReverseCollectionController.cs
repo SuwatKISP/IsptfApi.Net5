@@ -452,9 +452,9 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         transaction.Complete();
                         transaction.Dispose();
+
                         string resCustLiab;
                         string eventDate;
-
                         eventDate = data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
                         resCustLiab = ISPModule.CustLiabEXLC.EXLC_ReverseIssue(eventDate, "COLLECT", "SAVE", data.PEXLC.EXPORT_LC_NO, data.PEXLC.BENE_ID,"","", data.PEXLC.DRAFT_CCY, data.PEXLC.DRAFT_AMT.ToString(), data.PEXLC.TOT_NEGO_AMT.ToString(),"");
 

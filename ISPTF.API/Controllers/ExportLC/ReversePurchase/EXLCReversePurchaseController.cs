@@ -334,7 +334,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
 
                             resVoucherID = ISPModule.GeneratrEXP.RevGLPayment(GLEvent, 1,
-                                response.Data.PEXLC.EVENT_NO,responseData.PEXLC.EXPORT_LC_NO, eventDate);
+                            response.Data.PEXLC.EVENT_NO,responseData.PEXLC.EXPORT_LC_NO, eventDate);
 
                         }
                         else
@@ -405,7 +405,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -419,7 +420,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                  row.RECORD_TYPE == "MASTER"
                                            select row).FirstOrDefault();
 
-                        // 1 - Check if Master Exists
+                        // 1 - Check if Master+EVENT Exists
                         if (pExlcMaster == null)
                         {
                             response.Code = Constants.RESPONSE_ERROR;
@@ -427,24 +428,55 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
-
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.BUSINESS_TYPE == BUSINESS_TYPE &&
+                                                row.EVENT_NO == data.PEXLC.EVENT_NO
+                                          select row).AsNoTracking().FirstOrDefault();
+                        if (pExlcEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC Master does not exists";
+                            return BadRequest(response);
+                        }
                         // 2 - Update Master
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
-
+                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
+                        pExlcMaster.USER_ID = USER_ID;
+                        pExlcMaster.EVENT_MODE = "E";
+                        pExlcMaster.GENACC_FLAG = "Y";
+                        pExlcMaster.GENACC_DATE = UpdateDateNT;
 
                         await _context.SaveChangesAsync();
 
                         // 3 - Update Master/Event PK to Release
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C',EVENT_NO ='{data.PEXLC.EVENT_NO}',EVENT_TYPE ='{EVENT_TYPE}'  WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
+                        // 3 - Update Master/Event PK to Release
+                        pExlcEvent.AUTH_CODE = USER_ID;
+                        pExlcEvent.AUTH_DATE = UpdateDateT; // With Time
+                        await _context.SaveChangesAsync();
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R'  WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}' and  EVENT_NO = '{data.PEXLC.EVENT_NO}'");
 
-                        // 4 - Update GL Flag
+                        // 4 - Update PPayment
+                        var pPayments = (from row in _context.pPayments
+                                         where row.RpReceiptNo == data.PEXLC.RECEIVED_NO
+                                         select row).ToListAsync();
+
+                        foreach (var row in await pPayments)
+                        {
+                            row.RpRecStatus = "R";
+                        }
+                        await _context.SaveChangesAsync();
+
+                        // 5 - Update GL Flag
                         var gls = (from row in _context.pDailyGLs
                                    where row.VouchID == data.PEXLC.VOUCH_ID &&
                                             row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
@@ -454,11 +486,24 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             row.SendFlag = "R";
                         }
+                        await _context.SaveChangesAsync();
+
 
                         transaction.Complete();
+                        transaction.Dispose();
 
                         response.Code = Constants.RESPONSE_OK;
                         response.Message = "Export L/C Released";
+
+                        string resCustLiab;
+                        string eventDate;
+                        string WithOut="";
+                       
+                        eventDate = data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        if (data.PEXLC.Wref_Bank_ID != null) WithOut = data.PEXLC.Wref_Bank_ID;
+                        resCustLiab = ISPModule.CustLiabEXLC.EXLC_ReverseIssuePur(eventDate, "ISSUE", "SAVE", data.PEXLC.EXPORT_LC_NO, data.PEXLC.BENE_ID, 
+                            data.PEXLC.CLAIM_TYPE.ToString(), "", data.PEXLC.DRAFT_CCY, data.PEXLC.DRAFT_AMT.ToString(), data.PEXLC.TOT_NEGO_AMT.ToString(), WithOut);
+
                         return Ok(response);
                     }
                     catch (Exception e)

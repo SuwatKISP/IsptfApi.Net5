@@ -378,6 +378,14 @@ namespace ISPTF.API.Controllers.ExportLC
                             // PDocRegister Not Found
                         }
 
+                        var pExlcMasterDelete = (from row in _context.pExlcs
+                                           where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO 
+                                           select row).ToList();
+                        foreach (var row in pExlcMasterDelete)
+                        {
+                            _context.pExlcs.Remove(row);
+                        }
+                        _context.SaveChanges();
                         // 0 - Select EXLC Master
                         var pExlcMaster = (from row in _context.pExlcs
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
@@ -438,6 +446,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         pExlc eventRow = data.PEXLC;
                         eventRow.CenterID = USER_CENTER_ID;
+                        //eventRow.RECORD_TYPE = "EVENT";
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_NO = 1;
@@ -551,13 +560,12 @@ namespace ISPTF.API.Controllers.ExportLC
                                     GLEvent = "ISSUE-PUR-UNAGB";
                                 }
                             }
-
-                            //resVoucherID = ISPModule.GeneratrEXP.StartPEXLC( response.Data.PEXLC.EXPORT_LC_NO,
-                            //    eventDate,
-                            //    response.Data.PEXLC.EVENT_TYPE,
-                            //    response.Data.PEXLC.EVENT_NO,
-                            //    GLEvent);
-                            resVoucherID = "";
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO,
+                                eventDate,
+                                response.Data.PEXLC.EVENT_TYPE,
+                                response.Data.PEXLC.EVENT_NO,
+                                GLEvent);
+                            
 
                         }
                         else
