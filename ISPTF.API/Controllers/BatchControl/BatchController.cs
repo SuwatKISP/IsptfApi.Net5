@@ -62,6 +62,18 @@ namespace ISPTF.API.Controllers.BatchControl
             return results;
         }
 
+        // BatchLogQuery
+        [HttpGet("DailyBatch/select")]
+        public async Task<IEnumerable<BatchDailySelectRes>> DailyBatchSelect()
+        {
+            DynamicParameters param = new();
+
+            var results = await _db.LoadData<BatchDailySelectRes, dynamic>(
+                        storedProcedure: "usp_BatchDaily_select",
+                        param);
+            return results;
+        }
+
         [HttpGet("StartEndDay/checkpending")]
         public async Task<IEnumerable<BatchStartEndDayPending>> ChkPending()
         {
@@ -107,7 +119,7 @@ namespace ISPTF.API.Controllers.BatchControl
                 {
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = "Rate Code exist";
+                    response.Message = "Error for Start-End of Day";
                     return BadRequest(response);
                 }
             }
@@ -125,10 +137,44 @@ namespace ISPTF.API.Controllers.BatchControl
             {
                 SendMailResultResponse response = new SendMailResultResponse();
                 var AppPath = ConfigurationHelper.config.GetSection("AppPath");
-                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat(AppPath.Value, "ISPTFBatch.exe"));
+                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat(AppPath.Value, "ISPTFBath.exe"));
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
                 System.Diagnostics.Process.Start(startInfo);
+
+   //             // Start the child process.
+   //             Process p = new Process();
+   //             // Redirect the output stream of the child process.
+   //             p.StartInfo.UseShellExecute = false;
+   //             p.StartInfo.RedirectStandardOutput = true;
+   //             p.StartInfo.FileName = AppPath.Value+ "batch.bat";
+   //             p.Start();
+   //.
+   //             string output = p.StandardOutput.ReadToEnd();
+   //             p.WaitForExit();
+
+   //             string pathToProgram= AppPath.Value + "batch.bat";
+   //             var process = Process.Start(pathToProgram);
+
+   //             process.WaitForExit();
+
+   //             var exitCode = process.ExitCode;
+
+
+   //             Process.Start(@"C:\temp\publish\SOC");
+            
+
+   //             string command = " -h"; //common help flag for console apps
+   //             System.Diagnostics.Process pRun;
+   //             pRun = new System.Diagnostics.Process();
+   //             pRun.EnableRaisingEvents = true;
+   //            // pRun.Exited += new EventHandler(pRun_Exited);
+   //             pRun.StartInfo.FileName = AppPath.Value + "batch.bat";
+   //             pRun.StartInfo.Arguments = command;
+   //             pRun.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+
+   //             pRun.Start();
+   //             pRun.WaitForExit();
 
                 response.Code = "200";
                 response.Message = "";
@@ -147,9 +193,12 @@ namespace ISPTF.API.Controllers.BatchControl
         {
             try
             {
+                var RunDate = data.RunBatchDate.Value.ToString("yyyyMMdd");
                 SendMailResultResponse response = new SendMailResultResponse();
                 var AppPath = ConfigurationHelper.config.GetSection("AppPath");
                 ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat(AppPath.Value, "GenerateDMS.exe"));
+                startInfo.Arguments = RunDate;
+                //+ "\"";
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
                 System.Diagnostics.Process.Start(startInfo);

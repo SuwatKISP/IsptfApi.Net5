@@ -290,7 +290,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // Event Specific
                         eventRow.IN_USE = 0;
-                        eventRow.WithOutFlag = "N";
+                        //eventRow.WithOutFlag = "N";
                         eventRow.WithOut = null;
                         eventRow.PAYMENT_INSTRU = "UNPAID";
                         eventRow.METHOD = "";
@@ -504,6 +504,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         await _context.SaveChangesAsync();
 
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = '{targetEventNo}'  WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+
+                        var HistoryInt = ExportLCHelper.HistInterestIssueODU(_context, USER_CENTER_ID, USER_ID, data.PEXLC);
 
                         transaction.Complete();
                         transaction.Dispose();

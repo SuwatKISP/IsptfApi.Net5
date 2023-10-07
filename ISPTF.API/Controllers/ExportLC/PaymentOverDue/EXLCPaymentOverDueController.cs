@@ -261,7 +261,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.LCOVERDUE = "Y";
                         eventRow.LCPastDue = "O";
                         eventRow.IN_USE = 0;
-
+                        eventRow.DRAFT_CCY = "THB";
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
@@ -670,7 +670,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlcMaster.OINTRATE = data.PEXLC.OINTRATE;
                         pExlcMaster.OINTSPDRATE = data.PEXLC.OINTSPDRATE;
                         pExlcMaster.OINTCURRATE = data.PEXLC.OINTCURRATE;
-                        pExlcMaster.INTBALANCE = (data.PEXLC.INTBALANCE + data.PEXLC.LASTINTAMT) - pExPayments.int_paid_amt;
+                        pExlcMaster.INTBALANCE = (data.PEXLC.INTBALANCE + data.PEXLC.LASTINTAMT) - pExPayments.int_paid_thb;
                         pExlcMaster.PRNBALANCE = data.PEXLC.PRNBALANCE - pExPayments.prn_paid_thb;
                         pExlcMaster.LASTINTAMT = data.PEXLC.LASTINTAMT;
                         pExlcMaster.TOTAL_NEGO_BALANCE =  data.PEXLC.TOTAL_NEGO_BALANCE;

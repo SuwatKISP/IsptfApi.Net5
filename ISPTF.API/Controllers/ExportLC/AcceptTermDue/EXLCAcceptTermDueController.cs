@@ -501,48 +501,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     return BadRequest(response);
                 }
                
-
-                bool onePUse = false;
-                if (onePUse && pExlcEvent.TOTAL_AMOUNT > 0)
-                {
-                    string op_event;
-                    if (pExlcEvent.METHOD.Contains("DEBIT"))
-                    {
-                        op_event = "DR";
-                    }
-                    else if (pExlcEvent.METHOD.Contains("CREDIT"))
-                    {
-                        op_event = "CR";
-                    }
-                    else
-                    {
-                        op_event = "";
-                    }
-                    // Use Socket
-                    /*
-                    If op_event <> "" Then
-                        Req1PSys = Send1PTxn(txtbene_id.Text, TxtCode.Text, OPSeqNo, "EXLC", op_event, _
-                        txtaccount_no1.Text, txtAmt_Debit1.Text, _
-                        txtaccount_no2.Text, txtAmt_Debit2.Text, _
-                        txtaccount_no3.Text, txtAmt_Debit3.Text)
-                        If Req1PSys = False Then
-                            cSql = "Update pExlc set   REC_STATUS ='W'   where  " _
-                                & "EXPORT_LC_NO='" & TxtCode.Text & "' and EVENT_TYPE ='" & eventType & "'   and rec_status IN('P','W') and record_type='EVENT' "
-                            cn.Execute cSql
-                            framRelease.Visible = False
-                            CmdDel.Enabled = True
-                            CmdSave.Enabled = False
-                            CmdPrint.Enabled = False
-                             CmdExit.Enabled = True: SSTab1.Enabled = True
-                            TxtCode.Enabled = True: cmdFndLC.Enabled = True
-                            Exit Sub
-                        End If
-                        If Duplicate = True Then
-                            If ChkReleaseMaster("EXLC", Trim(TxtCode.Text)) = True Then CmdDel.Enabled = False: framRelease.Visible = False: CmdSave.Enabled = False: Exit Sub
-                        End If
-                    End If 
-                    */
-                }
+                
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     try
@@ -654,10 +613,18 @@ namespace ISPTF.API.Controllers.ExportLC
                             pExlcMaster.PAYMENT_INSTRU = "PAID";
                             pExlcMaster.METHOD = pExlcEvent.METHOD;
                             pExlcMaster.RECEIVED_NO = pExlcEvent.RECEIVED_NO;
-                            var pPayment = (from row in _context.pPayments
-                                            where row.RpReceiptNo == pExlcEvent.RECEIVED_NO
-                                            select row).AsNoTracking().FirstOrDefault();
-                            pPayment.RpRecStatus = "R";
+                            //var pPayment = (from row in _context.pPayments
+                            //                where row.RpReceiptNo == pExlcEvent.RECEIVED_NO
+                            //                select row).AsNoTracking().FirstOrDefault();
+                            //pPayment.RpRecStatus = "R";
+                            var pPayments = (from row in _context.pPayments
+                                             where row.RpReceiptNo == pExlcEvent.RECEIVED_NO
+                                             select row).ToListAsync();
+
+                            foreach (var row in await pPayments)
+                            {
+                                row.RpRecStatus = "R";
+                            }
                         }
                         else
                         {
@@ -668,12 +635,22 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 7 - Update pDailyGL
                         if (pExlcEvent.PAYMENT_INSTRU == "PAID")
                         {
-                            var dailyGL = (from row in _context.pDailyGLs
-                                           where row.VouchID == pExlcEvent.VOUCH_ID &&
-                                                 row.VouchDate == pExlcEvent.EVENT_DATE
-                                           select row).AsNoTracking().FirstOrDefault();
-                            dailyGL.SendFlag = "R";
+                            //var dailyGL = (from row in _context.pDailyGLs
+                            //               where row.VouchID == pExlcEvent.VOUCH_ID &&
+                            //                     row.VouchDate == pExlcEvent.EVENT_DATE
+                            //               select row).AsNoTracking().FirstOrDefault();
+                            //dailyGL.SendFlag = "R";
+                            var gls = (from row in _context.pDailyGLs
+                                       where row.VouchID == pExlcEvent.VOUCH_ID &&
+                                             row.VouchDate == pExlcEvent.EVENT_DATE.GetValueOrDefault().Date
+                                       select row).ToListAsync();
+
+                            foreach (var row in await gls)
+                            {
+                                row.SendFlag = "R";
+                            }
                         }
+
                         await _context.SaveChangesAsync();
 
                         // 8 - Updata Master,Event PK

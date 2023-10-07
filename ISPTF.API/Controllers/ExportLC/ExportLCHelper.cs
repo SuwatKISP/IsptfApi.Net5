@@ -535,11 +535,17 @@ namespace ISPTF.API.Controllers.ExportLC
                 try
                 {
                     int cSeqNo;
-                    var maxSeq = (from row in _context.pEXInterests
-                                  where row.Login == "EXLC" &&
-                                  row.DocNo == lc.EXPORT_LC_NO
-                                  select row).Max(x => x.Seqno);
-                    if (maxSeq == null)
+                    int maxSeq = 0;
+                    var maxSeqRow = (from row in _context.pEXInterests
+                                     where row.Login == "EXLC" &&
+                                      row.DocNo == lc.EXPORT_LC_NO
+                                     select row).ToList().OrderByDescending(x => x.Seqno);
+                    foreach (var row in maxSeqRow)
+                    {
+                        maxSeq = row.Seqno;
+                        break;
+                    }
+                    if (maxSeq == 0)
                     {
                         cSeqNo = 1;
                     }
@@ -549,92 +555,91 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     var pEXInterests = (from row in _context.pEXInterests
                                   where row.Login == "EXLC" &&
-                                  row.Event ==payment.EVENT_TYPE &&
                                   row.DocNo == lc.EXPORT_LC_NO &&
                                   row.EventNo == payment.EVENT_NO &&
                                   row.Seqno == cSeqNo
                                   select row).AsNoTracking().FirstOrDefault();
+                    pEXInterest exinterest = new pEXInterest();
                     if (pEXInterests==null)
                     {
                       //  cAddNew = True
 
-                        pEXInterests.DocNo = payment.DOCNUMBER;
-                        pEXInterests.Login = "EXLC";
-                        pEXInterests.Event = payment.EVENT_TYPE;
-                        pEXInterests.EventNo = payment.EVENT_NO;
-        }
+                        exinterest.DocNo = payment.DOCNUMBER;
+                        exinterest.Login = "EXLC";
+                        exinterest.Event = "";
+                        exinterest.EventNo = payment.EVENT_NO;
+                    }
+                
+                    exinterest.CenterID = USER_CENTER_ID;
+                    exinterest.Seqno = cSeqNo;
+                    exinterest.CalDate = payment.EVENT_DATE;
+                    if (lc.TENOR_OF_COLL ==1)
+                    {
+                        exinterest.IntFrom = lc.SIGHT_START_DATE;
+                    }
                     else
                     {
-                        pEXInterests.CenterID = USER_CENTER_ID;
-                        pEXInterests.Seqno = cSeqNo;
-                        pEXInterests.CalDate = payment.EVENT_DATE;
-                        if (lc.TENOR_OF_COLL ==1)
-                        {
-                            pEXInterests.IntFrom = lc.SIGHT_START_DATE;
-                        }
-                        else
-                        {
-                            pEXInterests.IntFrom = lc.TERM_DUE_DATE;
-                        }
+                        exinterest.IntFrom = lc.TERM_DUE_DATE;
+                    }
 
-                        pEXInterests.IntTo = payment.PAYMENT_DATE;
-                        pEXInterests.Ccy = lc.DRAFT_CCY;
-                        pEXInterests.IntDay = payment.int_day;
-                        pEXInterests.CurIntRate = payment.CURRENT_INT_RATE;
-                        pEXInterests.IntCCy = payment.int_paid_amt;
-                        pEXInterests.IntAmt = payment.int_paid_thb;
-                        pEXInterests.IntExchRate = payment.int_exch_rate;
-                        pEXInterests.BaseDay = payment.BASE_DAY;
-                        if (payment.PARTIAL_FULL_RATE==2) // ' full rate
+                    exinterest.IntTo = payment.PAYMENT_DATE;
+                    exinterest.Ccy = lc.DRAFT_CCY;
+                    exinterest.IntDay = payment.int_day;
+                    exinterest.CurIntRate = payment.CURRENT_INT_RATE;
+                    exinterest.IntCCy = payment.int_paid_amt;
+                    exinterest.IntAmt = payment.int_paid_thb;
+                    exinterest.IntExchRate = payment.int_exch_rate;
+                    exinterest.BaseDay = payment.BASE_DAY;
+                    if (payment.PARTIAL_FULL_RATE==2) // ' full rate
+                    {
+                        if (payment.SETTLEMENT_CREDIT==0) //'fcd to thb
                         {
-                            if (payment.SETTLEMENT_CREDIT==0) //'fcd to thb
+                            if (lc.TENOR_OF_COLL ==1)
                             {
-                                if (lc.TENOR_OF_COLL ==1)
-                                {
-                                    pEXInterests.BalCcy = payment.SIGHT_PAID_AMT;
-                                }
-                                else
-                                {
-                                    pEXInterests.BalCcy = payment.TERM_PAID_AMT;
-                                }
-                            } // FCD TO THB
+                                exinterest.BalCcy = payment.SIGHT_PAID_AMT;
+                            }
                             else
                             {
-                                if (lc.TENOR_OF_COLL == 1)
-                                {
-                                    pEXInterests.BalCcy = payment.SIGHT_PAID_THB;
-                                }
-                                else
-                                {
-                                    pEXInterests.BalCcy = payment.TERM_PAID_THB;
-                                }
+                                exinterest.BalCcy = payment.TERM_PAID_AMT;
                             }
-                        }
+                        } // FCD TO THB
                         else
                         {
-                            if (payment.SETTLEMENT_CREDIT == 0 || payment.SETTLEMENT_CREDIT == 1)//fcy to thb
+                            if (lc.TENOR_OF_COLL == 1)
                             {
-                                pEXInterests.BalCcy = payment.PARTIAL_AMT1.Value + payment.PARTIAL_AMT2.Value +
-                                    payment.PARTIAL_AMT3.Value + payment.PARTIAL_AMT4.Value +
-                                    payment.PARTIAL_AMT5.Value + payment.PARTIAL_AMT6.Value;
+                                exinterest.BalCcy = payment.SIGHT_PAID_THB;
                             }
-                            else if (payment.SETTLEMENT_CREDIT == 2)//fcy to thb
+                            else
                             {
-                                pEXInterests.BalCcy = payment.PARTIAL_AMT1_THB.Value + payment.PARTIAL_AMT2_THB.Value +
-                                    payment.PARTIAL_AMT3_THB.Value + payment.PARTIAL_AMT4_THB.Value +
-                                    payment.PARTIAL_AMT5_THB.Value + payment.PARTIAL_AMT6_THB.Value;
+                                exinterest.BalCcy = payment.TERM_PAID_THB;
                             }
                         }
                     }
+                    else
+                    {
+                        if (payment.SETTLEMENT_CREDIT == 0 || payment.SETTLEMENT_CREDIT == 1)//fcy to thb
+                        {
+                            exinterest.BalCcy = payment.PARTIAL_AMT1.Value + payment.PARTIAL_AMT2.Value +
+                                payment.PARTIAL_AMT3.Value + payment.PARTIAL_AMT4.Value +
+                                payment.PARTIAL_AMT5.Value + payment.PARTIAL_AMT6.Value;
+                        }
+                        else if (payment.SETTLEMENT_CREDIT == 2)//fcy to thb
+                        {
+                            exinterest.BalCcy = payment.PARTIAL_AMT1_THB.Value + payment.PARTIAL_AMT2_THB.Value +
+                                payment.PARTIAL_AMT3_THB.Value + payment.PARTIAL_AMT4_THB.Value +
+                                payment.PARTIAL_AMT5_THB.Value + payment.PARTIAL_AMT6_THB.Value;
+                        }
+                    }
+                    
                     
 
                     if (pEXInterests == null)
                     {
-                        _context.pEXInterests.Add(pEXInterests);
+                        _context.pEXInterests.Add(exinterest);
                     }
                     else
                     {
-                        _context.pEXInterests.Update(pEXInterests);
+                        _context.pEXInterests.Update(exinterest);
 
                     }
 
@@ -661,11 +666,17 @@ namespace ISPTF.API.Controllers.ExportLC
                 try
                 {
                     int cSeqNo;
-                    var maxSeq = (from row in _context.pEXInterests
-                                  where row.Login == "EXLC" &&
-                                  row.DocNo == lc.EXPORT_LC_NO
-                                  select row).Max(x => x.Seqno);
-                    if (maxSeq == null)
+                    int maxSeq = 0;
+                    var maxSeqRow = (from row in _context.pEXInterests
+                                     where row.Login == "EXLC" &&
+                                      row.DocNo == lc.EXPORT_LC_NO
+                                     select row).ToList().OrderByDescending(x => x.Seqno);
+                    foreach (var row in maxSeqRow)
+                    {
+                        maxSeq = row.Seqno;
+                        break;
+                    }
+                    if (maxSeq == 0)
                     {
                         cSeqNo = 1;
                     }
@@ -675,50 +686,143 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     var pEXInterests = (from row in _context.pEXInterests
                                         where row.Login == "EXLC" &&
-                                        row.Event == payment.EVENT_TYPE &&
                                         row.DocNo == lc.EXPORT_LC_NO &&
                                         row.EventNo == payment.EVENT_NO &&
                                         row.Seqno == cSeqNo
                                         select row).AsNoTracking().FirstOrDefault();
+                    pEXInterest exinterest = new pEXInterest();
                     if (pEXInterests == null)
                     {
                         //  cAddNew = True
 
-                        pEXInterests.DocNo = payment.DOCNUMBER;
-                        pEXInterests.Login = "EXLC";
-                        pEXInterests.Event = payment.EVENT_TYPE;
-                        pEXInterests.EventNo = payment.EVENT_NO;
+                        exinterest.DocNo = payment.DOCNUMBER;
+                        exinterest.Login = "EXLC";
+                        exinterest.Event = payment.EVENT_TYPE;
+                        exinterest.EventNo = payment.EVENT_NO;
                     }
-                    else
-                    {
-                        pEXInterests.CenterID = USER_CENTER_ID;
-                        pEXInterests.Seqno = cSeqNo;
-                        pEXInterests.CalDate = payment.EVENT_DATE;
-                        pEXInterests.IntFrom = lc.LASTINTDATE;
-                        pEXInterests.IntTo = lc.ValueDate;
 
-                        pEXInterests.BalCcy = lc.PRNBALANCE;
+                    exinterest.CenterID = USER_CENTER_ID;
+                    exinterest.Seqno = cSeqNo;
+                    exinterest.CalDate = payment.EVENT_DATE;
+                    exinterest.IntFrom = lc.LASTINTDATE;
+                    exinterest.IntTo = lc.ValueDate;
 
-                        pEXInterests.IntCode = lc.INTCODE;
-                        pEXInterests.IntRate = lc.OINTRATE;
-                        pEXInterests.Spread = lc.OINTSPDRATE;
-                        pEXInterests.CurIntRate = lc.OINTCURRATE;
-                        pEXInterests.IntDay = lc.OINTDAY;
-                        pEXInterests.BaseDay = lc.OBASEDAY;
-                        pEXInterests.IntCCy = 0;
-                        pEXInterests.IntExchRate = 0;
-                        pEXInterests.IntAmt = payment.int_paid_thb;
-                        pEXInterests.Ccy = payment.fb_ccy;
-                    }
+                    exinterest.BalCcy = lc.PRNBALANCE;
+
+                    exinterest.IntCode = lc.INTCODE;
+                    exinterest.IntRate = lc.OINTRATE;
+                    exinterest.Spread = lc.OINTSPDRATE;
+                    exinterest.CurIntRate = lc.OINTCURRATE;
+                    exinterest.IntDay = lc.OINTDAY;
+                    exinterest.BaseDay = lc.OBASEDAY;
+                    exinterest.IntCCy = 0;
+                    exinterest.IntExchRate = 0;
+                    exinterest.IntAmt = payment.int_paid_thb;
+                    exinterest.Ccy = payment.fb_ccy;
+                    
 
 
                     if (pEXInterests == null)
                     {
-                        _context.pEXInterests.Add(pEXInterests);
+                        _context.pEXInterests.Add(exinterest);
                     }
                     else
                     {
-                        _context.pEXInterests.Update(pEXInterests);
+                        _context.pEXInterests.Update(exinterest);
+
+                    }
+
+                    _context.SaveChanges();
+
+                    transaction.Complete();
+                    return "OK";
+
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return "ERROR";
+                }
+
+            }
+        }
+
+        public static string HistInterestIssueODU(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc)
+        {
+            //  DateTime GetSysDate = ModDate.GetSystemDateTime();
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    //var maxSeq5 = (from row in _context.pEXInterests
+                    //              where row.Login == "EXLC" &&
+                    //              row.DocNo == lc.EXPORT_LC_NO
+                    //              select row).Max(x => x.Seqno);
+                    int cSeqNo;
+                    int maxSeq=0;
+                    var maxSeqRow = (from row in _context.pEXInterests
+                                   where row.Login == "EXLC" &&
+                                    row.DocNo == lc.EXPORT_LC_NO
+                                   select row).ToList().OrderByDescending(x=>x.Seqno);
+                    foreach (var row in maxSeqRow)
+                    {
+                        maxSeq = row.Seqno;
+                        break;
+                    }
+                    if (maxSeq == 0)
+                    {
+                        cSeqNo = 1;
+                    }
+                    else
+                    {
+                        cSeqNo = maxSeq + 1;
+                    }
+                    var pEXInterests = (from row in _context.pEXInterests
+                                        where row.Login == "EXLC" &&
+                                        row.Event == "OVERDUE" &&
+                                        row.DocNo == lc.EXPORT_LC_NO &&
+                                        row.EventNo == lc.EVENT_NO &&
+                                        row.Seqno == cSeqNo
+                                        select row).AsNoTracking().FirstOrDefault();
+                    pEXInterest exinterest = new pEXInterest();
+                    if (pEXInterests == null)
+                    {
+                        //  cAddNew = True
+
+                        exinterest.DocNo = lc.EXPORT_LC_NO;
+                        exinterest.Login = "EXLC";
+                        exinterest.Event = "OVERDUE";
+                        exinterest.EventNo = lc.EVENT_NO;
+                    }
+  
+                    exinterest.CenterID = USER_CENTER_ID;
+                    exinterest.Seqno = cSeqNo;
+                    exinterest.CalDate = lc.EVENT_DATE;
+                    exinterest.IntFrom = lc.LASTINTDATE;
+                    exinterest.IntTo = lc.VALUE_DATE;
+
+                    exinterest.BalCcy = lc.PURCHASE_AMT;
+
+                    exinterest.IntCode = "CCY";
+                    exinterest.IntRate = lc.CURRENT_INT_RATE;
+                    exinterest.Spread = 0;
+                    exinterest.CurIntRate = lc.CURRENT_INT_RATE;
+                    exinterest.IntDay = lc.OINTDAY;
+                    exinterest.BaseDay = lc.BASE_DAY;
+                    exinterest.IntCCy = lc.PARTIAL_AMT1;
+                    exinterest.IntExchRate = lc.PARTIAL_RATE1;
+                    exinterest.IntAmt = lc.PARTIAL_AMT1_THB;
+                    exinterest.Ccy =lc.DRAFT_CCY;
+                    
+
+
+                    if (pEXInterests == null)
+                    {
+                        _context.pEXInterests.Add(exinterest);
+                    }
+                    else
+                    {
+                        _context.pEXInterests.Update(exinterest);
 
                     }
 

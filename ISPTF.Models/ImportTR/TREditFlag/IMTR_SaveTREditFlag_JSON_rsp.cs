@@ -9,7 +9,7 @@ namespace ISPTF.Models.ImportTR
     public class IMTR_SaveTREditFlag_JSON_rsp
     {
         public Q_IMTR_Select_pIMTR_rsp pIMTR { get; set; }
-        //public Q_IMTR_Select_pIMPayment_rsp pIMPayment { get; set; }
-        //public Q_IMTR_Select_pPayment_rsp pPayment { get; set; }
+        public Q_IMTR_Select_DefaultRate_rsp DefaultRate { get; set; }
+
     }
 }

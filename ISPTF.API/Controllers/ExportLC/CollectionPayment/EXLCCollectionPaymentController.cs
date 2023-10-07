@@ -256,12 +256,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_MODE = "E";
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        //eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
 
 
                         if (eventRow.PAYMENT_INSTRU == "PAID" ||
@@ -287,7 +287,8 @@ namespace ISPTF.API.Controllers.ExportLC
                                 }
                             }
                             string PayFlag;
-                            var receiptNo = "[MOCK]" + ExportLCHelper.GenerateRandomReceiptNo(5);
+                            //    var receiptNo = "[MOCK]" + ExportLCHelper.GenerateRandomReceiptNo(5);
+                            string receiptNo;
                             if (eventRow.RECEIVED_NO == "" || recNew == true || eventRow.RECEIVED_NO == null)
                             {
                                 if (data.PEXPAYMENT.Debit_credit_flag == "C")
@@ -412,23 +413,114 @@ namespace ISPTF.API.Controllers.ExportLC
                         _context.SaveChanges();
 
                         // GL MOCK WAIT DLL
-                        var glVouchId = "VOUCH ID FROM GL DLL";
-                        eventRow.VOUCH_ID = glVouchId;
+                        //var glVouchId = "VOUCH ID FROM GL DLL";
+                        //eventRow.VOUCH_ID = glVouchId;
                         _context.SaveChanges();
 
                         transaction.Complete();
-
+                        transaction.Dispose();
                         response.Code = Constants.RESPONSE_OK;
 
                         PEXLCPPaymentPEXPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
                         responseData.PEXPAYMENT = data.PEXPAYMENT;
-                      //  responseData.PPAYDETAILS = data.PPAYDETAILS;
+                        //  responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";
-                        return Ok(response);
+
+                        bool resGL;
+                        bool resPayD;
+                        string eventDate;
+                        string resVoucherID ="";
+                        string GLEvent = response.Data.PEXLC.EVENT_TYPE;
+                        eventDate = response.Data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+
+
+                        int resSeqNo = targetEventNo;
+                        if (response.Data.PEXLC.PAYMENT_INSTRU == "PAID")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO, eventDate, "Payment Collect", resSeqNo, "Payment Collect", true);
+
+                        }
+                        else if (response.Data.PEXLC.PAYMENT_INSTRU == "BAHTNET")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO, eventDate, "Payment Collect", resSeqNo, "Payment Collect", true);
+
+                        }
+                        else if (response.Data.PEXLC.PAYMENT_INSTRU == "FCD")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO, eventDate,EVENT_TYPE, resSeqNo, "PAYMENT COLL-FCD", true);
+
+                        }
+                        else if (response.Data.PEXLC.PAYMENT_INSTRU == "MT202")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO, eventDate, EVENT_TYPE, resSeqNo, "PAYMENT MT202", true);
+
+                        }
+                        else if (response.Data.PEXLC.PAYMENT_INSTRU == "UNPAID")
+                        {
+                            if (response.Data.PEXPAYMENT.Debit_credit_flag == "R")
+                            {
+                                resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO, eventDate, EVENT_TYPE, resSeqNo, "PAYMENT-REVCOLL", true);
+
+                            }
+                            else
+                            {
+                                resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO, eventDate, EVENT_TYPE, resSeqNo, EVENT_TYPE, false, "U");
+
+                            }
+
+                        }
+                        else
+                        {
+                            resVoucherID = "";
+
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                        }
+                        else
+                        {
+                            resGL = false;
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L ";
+                            return BadRequest(response);
+                        }
+
+                        string resPayDetail;
+                        if (response.Data.PPAYMENT!= null)
+                        {
+                            resPayDetail = ISPModule.PayDetailEXBC.PayDetail_CollectPay(response.Data.PEXLC.EXPORT_LC_NO, targetEventNo, response.Data.PEXLC.RECEIVED_NO);
+                            if (resPayDetail != "ERROR")
+                            {
+                                resPayD = true;
+                            }
+                            else
+                            {
+                                resPayD = false;
+                                response.Code = Constants.RESPONSE_ERROR;
+                                response.Message = "Error for  Pay Detail";
+                                return BadRequest(response);
+                            }
+                        }
+                        else
+                        {
+                            resPayD = true;
+                        }
+                        if (resPayD==false || resGL==false)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L or Pay Detail";
+                            return BadRequest(response);
+                        }
+                        else
+                        {
+                            return Ok(response);
+                        }
+
                     }
                     catch (Exception e)
                     {
