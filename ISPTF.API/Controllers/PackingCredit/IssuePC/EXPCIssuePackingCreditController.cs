@@ -422,7 +422,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcMaster.ObjectType = pExpc.ObjectType;
                         pExpcMaster.UnderlyName = pExpc.UnderlyName;
                         pExpcMaster.CenterID = CenterID;
-                        pExpcMaster.user_id = "eark                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ";
+                        pExpcMaster.user_id = user_id;
                         pExpcMaster.update_date =UpdateDateT;
                         pExpcMaster.LastIntDate = pExpc.event_date;
                         pExpcMaster.event_date = pExpc.event_date;
@@ -540,6 +540,10 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcMaster.AppvNo = appvNo;
                         pExpcMaster.FACNO = appvFac;
                         pExpcMaster.DateStartAccru = pExpc.pc_start_date;
+                        pExpcMaster.PcIntType = pExpc.PcIntType;
+                        pExpcMaster.PCOverdue = "N";
+                        pExpcMaster.BPOFlag = pExpc.BPOFlag;
+                        pExpcMaster.in_Use = "0";
                         _context.pExpcs.Update(pExpcMaster);
                         _context.SaveChanges();
 
@@ -679,6 +683,10 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcEvent.AppvNo = appvNo;
                         pExpcEvent.FACNO = appvFac;
                         pExpcEvent.DateStartAccru = pExpc.pc_start_date;
+                        pExpcEvent.PcIntType = pExpc.PcIntType;
+                        pExpcEvent.PCOverdue = "N";
+                        pExpcEvent.BPOFlag = pExpc.BPOFlag;
+                        pExpcMaster.in_Use = "0";
                         _context.pExpcs.Update(pExpcEvent);
                         _context.SaveChanges();
 
@@ -755,12 +763,12 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("delete")]
-        public ActionResult<EXPCResultResponse> Delete(string? PACKING_NO)
+        public ActionResult<EXPCResultResponse> Delete([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
 
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -778,7 +786,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE
                                           select row).AsNoTracking().FirstOrDefault();
@@ -795,7 +803,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         }
                         _context.Database.ExecuteSqlRaw($"DELETE pPayDetail WHERE DpReceiptNo = '{pExpcEvent.received_no}'");
                         _context.Database.ExecuteSqlRaw($"DELETE pDailyGL WHERE TranDocNo = '{pExpcEvent.PACKING_NO}' AND VouchDate = '{pExpcEvent.LastIntDate}'");
-                        _context.Database.ExecuteSqlRaw($"UPDATE pDocRegister SET Reg_Status = 'A' WHERE Reg_Login = 'EXPC' AND Reg_Appv = 'Y' and Reg_Status = 'I' AND Reg_RecStat = 'R' AND Reg_CustCode = '{pExpcEvent.cust_id}' AND Reg_Docno = '{pExpcEvent.PACKING_NO}'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pDocRegister SET Reg_Status = 'A',Remark ='N' WHERE Reg_Login = 'EXPC' AND Reg_Appv = 'Y' and Reg_Status = 'I' AND Reg_RecStat = 'R' AND Reg_CustCode = '{pExpcEvent.cust_id}' AND Reg_Docno = '{pExpcEvent.PACKING_NO}'");
                         _context.Database.ExecuteSqlRaw($"DELETE pExpc WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}'");
 
                         // Commit
@@ -825,13 +833,13 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("release")]
-        public ActionResult<EXPCResultResponse> Release(string? PACKING_NO)
+        public ActionResult<EXPCResultResponse> Release([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
             var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -849,7 +857,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE
                                           select row).AsNoTracking().FirstOrDefault();
@@ -930,20 +938,75 @@ namespace ISPTF.API.Controllers.PackingCredit
                 pPayment.RpPayBy = "4";
             pPayment.RpNote = "";
             pPayment.RpCustCode = pExpcMaster.cust_id;
+            if (pPaymentReq.RpApplicant == null)
+            {
+                pPayment.RpApplicant = "";
+            }
+            else
+            {
+                pPayment.RpApplicant = pPaymentReq.RpApplicant.ToUpper();
+            }
+
+            if (pPaymentReq.RpChqNo == null)
+            {
+                pPayment.RpChqNo = "";
+            }
+            else
+            {
+                pPayment.RpChqNo = pPaymentReq.RpChqNo.ToUpper();
+            }
+
+            if (pPaymentReq.RpChqBank == null)
+            {
+                pPayment.RpChqBank = "";
+            }
+            else
+            {
+                pPayment.RpChqBank = pPaymentReq.RpChqBank.ToUpper();
+            }
+
+
+            if (pPaymentReq.RpChqBranch == null)
+            {
+                pPayment.RpChqBranch = "";
+            }
+            else
+            {
+                pPayment.RpChqBranch = pPaymentReq.RpChqBranch.ToUpper();
+            }
+
+
+            if (pPaymentReq.RpCustAc1 == null)
+            {
+                pPayment.RpCustAc1 = "";
+            }
+            else
+            {
+                pPayment.RpCustAc1 = pPaymentReq.RpCustAc1;
+            }
+
+            if (pPaymentReq.RpCustAc2 == null)
+            {
+                pPayment.RpCustAc2 = "";
+            }
+            else
+            {
+                pPayment.RpCustAc2 = pPaymentReq.RpCustAc2;
+            }
+
+            if (pPaymentReq.RpCustAc3 == null)
+            {
+                pPayment.RpCustAc3 = "";
+            }
+            else
+            {
+                pPayment.RpCustAc3 = pPaymentReq.RpCustAc3;
+            }
             pPayment.RpCustAmt1 = pPaymentReq.RpCustAmt1;
             pPayment.RpCustAmt2 = pPaymentReq.RpCustAmt2;
             pPayment.RpCustAmt3 = pPaymentReq.RpCustAmt3;
-            pPayment.RpCustAc1 = pPaymentReq.RpCustAc1;
-            pPayment.RpCustAc2 = pPaymentReq.RpCustAc2;
-            pPayment.RpCustAc3 = pPaymentReq.RpCustAc3;
-            pPayment.RpCashAmt = pPaymentReq.RpCashAmt;
-            pPayment.RpChqAmt = pPaymentReq.RpChqAmt;
-            pPayment.RpChqNo = pPaymentReq.RpChqNo;
-            pPayment.RpChqBank = pPaymentReq.RpChqBank;
-            pPayment.RpChqBranch = pPaymentReq.RpChqBranch;
             pPayment.RpRefer1 = "";
             pPayment.RpRefer2 = "";
-            pPayment.RpApplicant = "";
             pPayment.RpIssBank = "";
             pPayment.RpStatus = "A";
             pPayment.RpRecStatus = pExpcMaster.rec_status;
