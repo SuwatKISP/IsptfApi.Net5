@@ -12,9 +12,5 @@ namespace ISPTF.Models.ImportTR
         public Q_IMTR_Select_SearchCust_rsp SearchCust { get; set; }
         public Q_IMTR_Select_pIMTRMaster_rsp pIMTRMaster { get; set; }
         public Q_IMTR_Select_pIMInterest_rsp pIMInterest { get; set; }
-<<<<<<< HEAD
-=======
-        public Q_IMTR_Select_DefaultRate_rsp DefaultRate { get; set; }
->>>>>>> c45d0d5b37e973cf630f6278a185e50b4ca8217d
     }
 }

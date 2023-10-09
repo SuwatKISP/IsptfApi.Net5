@@ -110,11 +110,7 @@ namespace ISPTF.API.Controllers.ImportTR
         }
 
         [HttpGet("Select")]
-<<<<<<< HEAD
         public async Task<ActionResult<Q_IMTR_TRPastDueSelect_Response>> Select(string? CustCode, string? RefNumber, string? TRSeqno, string? RecType, string? Event)
-=======
-        public async Task<ActionResult<Q_IMTR_TRPastDueSelect_Response>> Select(string? ListType, string? CustCode, string? RefNumber, string? TRSeqno, string? RecType, string? Event)
->>>>>>> c45d0d5b37e973cf630f6278a185e50b4ca8217d
         {
             Q_IMTR_TRPastDueSelect_Response response = new Q_IMTR_TRPastDueSelect_Response();
             var USER_ID = User.Identity.Name;
@@ -128,25 +124,11 @@ namespace ISPTF.API.Controllers.ImportTR
                 response.Data = new Q_IMTR_TRPastDueSelect_JSON_rsp();
                 return BadRequest(response);
             }
-<<<<<<< HEAD
 
-=======
-            if (ListType != "NEW" && ListType != "EDIT")
-            {
-                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "ListType = NEW or EDIT only";
-                response.Data = new Q_IMTR_TRPastDueSelect_JSON_rsp();
-                return BadRequest(response);
-            }
->>>>>>> c45d0d5b37e973cf630f6278a185e50b4ca8217d
             // Call Store Procedure
             try
             {
                 DynamicParameters param = new();
-<<<<<<< HEAD
-=======
-                param.Add("@ListType", ListType);
->>>>>>> c45d0d5b37e973cf630f6278a185e50b4ca8217d
                 param.Add("@CustCode", CustCode);
                 param.Add("@RefNumber", RefNumber);
                 param.Add("@TRSeqno", TRSeqno);
