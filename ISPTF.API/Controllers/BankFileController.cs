@@ -42,6 +42,48 @@ namespace ISPTF.API.Controllers
 
         }
 
+        [HttpGet("swiftbank")]  // SwiftBank
+        public async Task<IEnumerable<MBankFileGetSwiftRsp>> GetSelSW(string? bankcode, string? Page, string? PageSize)
+        {
+            DynamicParameters param = new();
+            param.Add("@Bank_Code", bankcode);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (bankcode == "*" || bankcode == null)
+            {
+                param.Add("@Bank_Code", "*");
+            }
+            else
+            {
+                param.Add("@Bank_Code", bankcode);
+            }
+            var results = await _db.LoadData<MBankFileGetSwiftRsp, dynamic>(
+                             storedProcedure: "usp_mbankGetSwiftBk",
+                             param);
+            return results;
+
+        }
+
+        [HttpGet("BNetUID")]  // BNet UID
+        public async Task<IEnumerable<MBankFileBNetUIDRsp>> GetSelUID(string? bankcode)
+        {
+            DynamicParameters param = new();
+            param.Add("@Bank_Code", bankcode);
+            if (bankcode == "*" || bankcode == null)
+            {
+                param.Add("@Bank_Code", "*");
+            }
+            else
+            {
+                param.Add("@Bank_Code", bankcode);
+            }
+            var results = await _db.LoadData<MBankFileBNetUIDRsp, dynamic>(
+                             storedProcedure: "usp_mbankGetBNetUID",
+                             param);
+            return results;
+
+        }
 
         [HttpGet("BankActive")]
         public async Task<IEnumerable<MBankFileActiveRsp>> GetBankActive(string? BankCode,string? BankName ,string? Page, string? PageSize)

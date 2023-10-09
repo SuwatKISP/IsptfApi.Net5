@@ -460,7 +460,7 @@ namespace ISPTF.API.Controllers.ExportBC
 
             try
             {
-                var results = await _db.LoadData<PEXBCRsp, dynamic>(
+                var results = await _db.LoadData<pExbc, dynamic>(
                             storedProcedure: "usp_pEXBC_ReversePurchase_Save",
                             param);
                 var resp = param.Get<string>("@Resp");
@@ -469,14 +469,14 @@ namespace ISPTF.API.Controllers.ExportBC
 
                 if (resp == "1")
                 {
-                    bool resGL;
-                    string eventDate;
-                    string resVoucherID;
-                    PEXBCRspGL resultJson = new();
+                    //bool resGL;
+                    //string eventDate;
+                    //string resVoucherID;
+                    //PEXBCRspGL resultJson = new();
 
-                    eventDate = pexbcsave.EVENT_DATE.ToString("dd/MM/yyyy");
-                    resVoucherID = "";
-                    resGL = true;
+                    //eventDate = pexbcsave.EVENT_DATE.ToString("dd/MM/yyyy");
+                    //resVoucherID = "";
+                    //resGL = true;
                     //resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcsave.EXPORT_BC_NO, eventDate, pexbcsave.EVENT_TYPE, resSeqNo, pexbcsave.EVENT_TYPE);
                     //if (resVoucherID != "ERROR")
                     //{
@@ -487,21 +487,51 @@ namespace ISPTF.API.Controllers.ExportBC
                     //    resGL = false;
                     //}
 
-                    if (resGL == true)
+                    //if (resGL == true)
+                    //{
+                    //    resultJson.VoucherID = resVoucherID;
+                    //    resultJson.PEXBC = JsonConvert.DeserializeObject<PEXBCRsp>(respexbc);
+                    //    return Ok(resultJson);
+
+                    //}
+                    //else
+                    //{
+                    //    ReturnResponse bresponse = new();
+                    //    bresponse.StatusCode = "400";
+                    //    bresponse.Message = "EXPORT_BC_NO Update G/L or Payment Error";
+                    //    return BadRequest(bresponse);
+                    //}
+                    //   return Ok(results);
+
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = new PEXBCDataContainer(results.First());
+
+                    bool resGL;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = response.Data.PEXBC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+
+                    resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(response.Data.PEXBC.EXPORT_BC_NO,
+                        eventDate,
+                        response.Data.PEXBC.EVENT_TYPE,
+                        response.Data.PEXBC.EVENT_NO,
+                        response.Data.PEXBC.EVENT_TYPE);
+                    if (resVoucherID != "ERROR")
                     {
-                        resultJson.VoucherID = resVoucherID;
-                        resultJson.PEXBC = JsonConvert.DeserializeObject<PEXBCRsp>(respexbc);
-                        return Ok(resultJson);
-                        //  return Ok(pexbcpexpaymentrsp);
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
                     }
                     else
                     {
-                        ReturnResponse bresponse = new();
-                        bresponse.StatusCode = "400";
-                        bresponse.Message = "EXPORT_BC_NO Update G/L or Payment Error";
-                        return BadRequest(bresponse);
+                        resGL = false;
                     }
-                    //   return Ok(results);
+
+                    string json = JsonConvert.SerializeObject(response);
+
+                    return Content(json, "application/json");
                 }
                 else
                 {
@@ -614,6 +644,14 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";
+                    string resCustLiab;
+                    string eventDate;
+
+                    eventDate = PEXBCReversePurchRelease.EVENTDATE.ToString("dd/MM/yyyy");
+                    resCustLiab = ISPModule.CustLiabEXBC.EXBC_Reverse(eventDate, "ISSUE", "SAVE"
+                        , PEXBCReversePurchRelease.EXPORT_BC_NO, PEXBCReversePurchRelease.BENE_ID, "P", "",
+                        PEXBCReversePurchRelease.DRAFT_CCY,
+                         "", PEXBCReversePurchRelease.TOT_NEGO_AMT.ToString(), USER_ID);
                     return Ok(response);
                 }
                 else

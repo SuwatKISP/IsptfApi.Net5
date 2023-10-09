@@ -204,7 +204,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -226,6 +227,8 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
+                        // 2 - Update Master
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'P' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
 
@@ -253,14 +256,14 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                     //   eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
-                        eventRow.IN_USE = 1;
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
+                        eventRow.IN_USE = 0;
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
-                        eventRow.VOUCH_ID = "COVERING";
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
+                        eventRow.VOUCH_ID = "";
 
                         // Commit
                         if (pExlcEvent == null)
@@ -321,7 +324,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -373,13 +377,14 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
-                        eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                       // eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.AUTH_CODE = USER_ID;
+                        eventRow.AUTH_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
-                        eventRow.VOUCH_ID = "ACCEPT_DUE";
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
+                        eventRow.VOUCH_ID = "";
+                        eventRow.IN_USE = 0;
 
 
                         // 4 - Update Master
@@ -388,16 +393,16 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlcMaster.VOUCH_ID = "ACCEPT_DUE";
 
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
+                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
 
                         pExlcMaster.NARRATIVE = data.PEXLC.NARRATIVE;
-
+                        pExlcMaster.IN_USE = 0;
 
                         await _context.SaveChangesAsync();
 
                         // 5 - Update Master/Event PK to Release
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R',EVENT_NO ='{targetEventNo}' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}' AND REC_STATUS='P'");
 
                         transaction.Complete();

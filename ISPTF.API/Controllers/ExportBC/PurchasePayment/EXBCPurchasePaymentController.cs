@@ -247,13 +247,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPEXPaymentRsp();
                 return BadRequest(response);
             }
-            if (pexbcppaymentreq.PEXPayment == null)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "PEXPayment is required.";
-                response.Data = new PEXBCPEXPaymentRsp();
-                return BadRequest(response);
-            }
+            //if (pexbcppaymentreq.PEXPayment == null)
+            //{
+            //    response.Code = Constants.RESPONSE_ERROR;
+            //    response.Message = "PEXPayment is required.";
+            //    response.Data = new PEXBCPEXPaymentRsp();
+            //    return BadRequest(response);
+            //}
             try
             {
               
@@ -549,6 +549,51 @@ namespace ISPTF.API.Controllers.ExportBC
                     param.Add("@CHEQUE_AMT", pexbcppaymentreq.PEXPayment.CHEQUE_AMT);
                     param.Add("@CHEQUE_NO", pexbcppaymentreq.PEXPayment.CHEQUE_NO);
                     param.Add("@CHEQUE_BK_BRN", pexbcppaymentreq.PEXPayment.CHEQUE_BK_BRN);
+
+                    param.Add("@ERECEIVE_PAY_AMT", pexbcppaymentreq.PEXPayment.RECEIVE_PAY_AMT);
+                    param.Add("@EPARTIAL_FULL_RATE", pexbcppaymentreq.PEXPayment.PARTIAL_FULL_RATE);
+
+                    param.Add("@EParTnor_Type1", pexbcppaymentreq.PEXPayment.ParTnor_Type1);
+                    param.Add("@EParTnor_Type2", pexbcppaymentreq.PEXPayment.ParTnor_Type2);
+                    param.Add("@EParTnor_Type3", pexbcppaymentreq.PEXPayment.ParTnor_Type3);
+                    param.Add("@EParTnor_Type4", pexbcppaymentreq.PEXPayment.ParTnor_Type4);
+                    param.Add("@EParTnor_Type5", pexbcppaymentreq.PEXPayment.ParTnor_Type5);
+                    param.Add("@EParTnor_Type6", pexbcppaymentreq.PEXPayment.ParTnor_Type6);
+
+                    param.Add("@EPARTIAL_AMT1", pexbcppaymentreq.PEXPayment.PARTIAL_AMT1);
+                    param.Add("@EPARTIAL_AMT2", pexbcppaymentreq.PEXPayment.PARTIAL_AMT2);
+                    param.Add("@EPARTIAL_AMT3", pexbcppaymentreq.PEXPayment.PARTIAL_AMT3);
+                    param.Add("@EPARTIAL_AMT4", pexbcppaymentreq.PEXPayment.PARTIAL_AMT4);
+                    param.Add("@EPARTIAL_AMT5", pexbcppaymentreq.PEXPayment.PARTIAL_AMT5);
+                    param.Add("@EPARTIAL_AMT6", pexbcppaymentreq.PEXPayment.PARTIAL_AMT6);
+
+                    param.Add("@EPARTIAL_RATE1", pexbcppaymentreq.PEXPayment.PARTIAL_RATE1);
+                    param.Add("@EPARTIAL_RATE2", pexbcppaymentreq.PEXPayment.PARTIAL_RATE2);
+                    param.Add("@EPARTIAL_RATE3", pexbcppaymentreq.PEXPayment.PARTIAL_RATE3);
+                    param.Add("@EPARTIAL_RATE4", pexbcppaymentreq.PEXPayment.PARTIAL_RATE4);
+                    param.Add("@EPARTIAL_RATE5", pexbcppaymentreq.PEXPayment.PARTIAL_RATE5);
+                    param.Add("@EPARTIAL_RATE6", pexbcppaymentreq.PEXPayment.PARTIAL_RATE6);
+
+                    param.Add("@EPARTIAL_AMT1_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT1_THB);
+                    param.Add("@EPARTIAL_AMT2_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT2_THB);
+                    param.Add("@EPARTIAL_AMT3_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT3_THB);
+                    param.Add("@EPARTIAL_AMT4_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT4_THB);
+                    param.Add("@EPARTIAL_AMT5_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT5_THB);
+                    param.Add("@EPARTIAL_AMT6_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT6_THB);
+
+                    param.Add("@EFORWARD_CONRACT_NO1", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO1);
+                    param.Add("@EFORWARD_CONRACT_NO2", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO2);
+                    param.Add("@EFORWARD_CONRACT_NO3", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO3);
+                    param.Add("@EFORWARD_CONRACT_NO4", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO4);
+                    param.Add("@EFORWARD_CONRACT_NO5", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO5);
+                    param.Add("@EFORWARD_CONRACT_NO6", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO6);
+
+                    param.Add("@ETOTAL_NEGO_BALANCE", pexbcppaymentreq.PEXPayment.TOTAL_NEGO_BALANCE);
+                    param.Add("@ETOTAL_NEGO_BAL_THB", pexbcppaymentreq.PEXPayment.TOTAL_NEGO_BAL_THB);
+                    param.Add("@ETOTAL_AMOUNT", pexbcppaymentreq.PEXPayment.TOTAL_AMOUNT);
+                    param.Add("@ECURRENT_DIS_RATE", pexbcppaymentreq.PEXPayment.CURRENT_DIS_RATE);
+                    param.Add("@ECURRENT_INT_RATE", pexbcppaymentreq.PEXPayment.CURRENT_INT_RATE);
+                    param.Add("@EBASE_DAY", pexbcppaymentreq.PEXPayment.BASE_DAY);
                 }
                 //PPayment
                 if (pexbcppaymentreq.PPayment != null)
@@ -606,7 +651,78 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return Ok(response);
+                   // return Ok(response);
+
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU != "UNPAID")
+                    {
+                        if (pexbcppaymentreq.PEXPayment.PAY_TYPE == 1)
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            response.Data.PEXBC.EVENT_TYPE, true);
+                        }
+                        else
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            "CPAYMENT PURCHASE", true);
+                        }
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_PurchasePay(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, response.Data.PEXBC.EVENT_NO, resReceiptNo);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+
+                    if (resGL == true && resPayD == true)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "EXPORT_BC_NO Update G/L or Payment Error";
+                        response.Data = new PEXBCPEXPaymentRsp();
+                        return BadRequest(response);
+                    }
+
                 }
                 else
                 {
@@ -631,7 +747,7 @@ namespace ISPTF.API.Controllers.ExportBC
             EXBCResultResponse response = new EXBCResultResponse();
 
             // Validate
-            if (string.IsNullOrEmpty(pExBcPurchasePaymentDelete.EXPORTT_BC_NO))
+            if (string.IsNullOrEmpty(pExBcPurchasePaymentDelete.EXPORT_BC_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "EXPORT_BC_NO is required";
@@ -639,7 +755,7 @@ namespace ISPTF.API.Controllers.ExportBC
             }
 
             DynamicParameters param = new();
-            param.Add("@EXPORT_BC_NO", pExBcPurchasePaymentDelete.EXPORTT_BC_NO);
+            param.Add("@EXPORT_BC_NO", pExBcPurchasePaymentDelete.EXPORT_BC_NO);
             param.Add("@VOUCH_ID", pExBcPurchasePaymentDelete.VOUCH_ID);
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.String,
@@ -687,7 +803,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "Export B/C: " + pExBcPurchasePaymentDelete.EXPORTT_BC_NO + " Not Found.";
+                    response.Message = "Export B/C: " + pExBcPurchasePaymentDelete.EXPORT_BC_NO + " Not Found.";
                     return BadRequest(response);
                 }
             }
@@ -773,7 +889,7 @@ namespace ISPTF.API.Controllers.ExportBC
             param.Add("@BASE_DAY", PEXBCPurchasePaymentRelease.BASE_DAY);
             param.Add("@SIGHT_START_DATE", PEXBCPurchasePaymentRelease.SIGHT_START_DATE);
             param.Add("@TERM_DUE_DATE", PEXBCPurchasePaymentRelease.TERM_DUE_DATE);
-            param.Add("@SIGHT_PAID_AMT", PEXBCPurchasePaymentRelease.SIGHT_START_DATE);
+            param.Add("@SIGHT_PAID_AMT", PEXBCPurchasePaymentRelease.SIGHT_PAID_AMT);
             param.Add("@TERM_PAID_AMT", PEXBCPurchasePaymentRelease.TERM_PAID_AMT);
             param.Add("@SETTLEMENT_CREDIT", PEXBCPurchasePaymentRelease.SETTLEMENT_CREDIT);
             param.Add("@SIGHT_PAID_THB", PEXBCPurchasePaymentRelease.SIGHT_PAID_THB);

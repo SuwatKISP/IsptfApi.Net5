@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ISPTF.Models.ExportBC;
 using ISPTF.Models.PPayment;
+using ISPTF.Models.PEXPayment;
 
 namespace ISPTF.Models.ExportBC
 {
@@ -12,6 +13,6 @@ namespace ISPTF.Models.ExportBC
     {
         public PEXBCRsp PEXBC { get; set; }
         public PPaymentRsp PPayment{ get; set; }
-
+        public PEXPaymentRsp PEXPAYMENT { get; set; }
     }
 }

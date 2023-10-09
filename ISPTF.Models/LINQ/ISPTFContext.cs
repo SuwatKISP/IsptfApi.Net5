@@ -13406,7 +13406,7 @@ namespace ISPTF.Models
 
                 entity.Property(e => e.Wref_Bank_ID).HasMaxLength(14);
 
-                entity.Property(e => e.applicant_info).HasMaxLength(240);
+                entity.Property(e => e.APPLICANT_INFO).HasMaxLength(240);
             });
 
             modelBuilder.Entity<pExpc>(entity =>

@@ -27,7 +27,7 @@ namespace ISPTF.API.Controllers.Functions
         [HttpGet]
         public async Task<IEnumerable<SystemDateTime2>> GetSysDateTime()
         {
-            var sysdatetime=ISPTF.Commons.ModDate.GetSystemDateTime();
+            //var sysdatetime=ISPTF.Commons.ModDate.GetSystemDateTime();
             DynamicParameters param = new();
             var results = await _db.LoadData<SystemDateTime2, dynamic>(
             storedProcedure: "usp_GetSysDateTime2",param);

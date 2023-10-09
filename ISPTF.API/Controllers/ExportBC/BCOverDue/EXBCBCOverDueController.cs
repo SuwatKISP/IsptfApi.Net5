@@ -490,7 +490,6 @@ namespace ISPTF.API.Controllers.ExportBC
                             param);
                 var resp = param.Get<string>("@Resp");
                 var resSeqNo = param.Get<int>("@ResSeqNo");
-
                 var pEXBCVouchIdContainer = new PEXBCVouchIdDataContainer(results.FirstOrDefault());
                 if (resp == "1")
                 {
@@ -503,10 +502,10 @@ namespace ISPTF.API.Controllers.ExportBC
                     resVoucherID = "";
 
                     resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcsave.EXPORT_BC_NO, 
-                        eventDate, 
-                        pexbcsave.EVENT_TYPE, 
-                        resSeqNo, 
-                        pexbcsave.EVENT_TYPE, 
+                        eventDate,
+                        pEXBCVouchIdContainer.PEXBC.EVENT_TYPE, 
+                        resSeqNo,
+                        pEXBCVouchIdContainer.PEXBC.EVENT_TYPE, 
                         false, 
                         "U");
 
@@ -521,7 +520,8 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     if (resGL == true)
                     {
-                        pEXBCVouchIdContainer.VOUCH_ID = resVoucherID;
+                      //  pEXBCVouchIdContainer.VOUCH_ID = resVoucherID;
+                        pEXBCVouchIdContainer.PEXBC.VOUCH_ID = resVoucherID;
                         response.Code = Constants.RESPONSE_OK;
                         response.Message = "Success";
                         response.Data = pEXBCVouchIdContainer;

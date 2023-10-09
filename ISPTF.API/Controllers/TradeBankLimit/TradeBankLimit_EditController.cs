@@ -272,7 +272,19 @@ namespace ISPTF.API.Controllers.TradeBankLimit
             return results;
         }
 
+        [HttpGet("GetLiabilityAmt")]
+        public async Task<IEnumerable<SumAmountBankRsp>> GetLiabilityAmt(string? Bank_Code, string? facility_no)
+        {
+            DynamicParameters param = new();
 
+            param.Add("@Bank_Code", Bank_Code);
+            param.Add("@facility_no", facility_no);
+
+            var results = await _db.LoadData<SumAmountBankRsp, dynamic>(
+                        storedProcedure: "usp_GetLiabilityAmtBank",
+                        param);
+            return results;
+        }
 
 
 

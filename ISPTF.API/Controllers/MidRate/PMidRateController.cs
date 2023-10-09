@@ -26,6 +26,18 @@ namespace ISPTF.API.Controllers.MidRate
             _db = db;
         }
 
+        [HttpGet("GetMidRate")]
+        public async Task<IEnumerable<PMidRateRsp>> GetMidRate(string RateCcy)
+        {
+            DynamicParameters param = new();
+            param.Add("@MidCcy", RateCcy);
+
+            var results = await _db.LoadData<PMidRateRsp, dynamic>(
+                        storedProcedure: "usp_GetMidRate",
+                        param);
+            return results;
+        }
+
         [HttpGet("select")]
         public async Task<IEnumerable<PMidRateRsp>> GetAll(DateTime RateDate, string? RateTime,string? RateCcy)
         {
@@ -62,6 +74,7 @@ namespace ISPTF.API.Controllers.MidRate
                         param);
             return results;
         }
+
         [HttpGet("editlist")]
         public async Task<IEnumerable<PMidRateRsp>> GetMidRateByDate(DateTime RateDate, string ?recstatus, string ?RateCcy,string Page, string PageSize)
         {

@@ -553,8 +553,11 @@ namespace ISPTF.API.Controllers.ExportBC
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
-                    response.Data = new PEXBCDataContainer(results.First());
-                    return Ok(response);
+                    PEXBCDataContainer pEXBCDataContainer = new();
+                    pEXBCDataContainer.PEXBC = results.OrderByDescending(row => row.UPDATE_DATE).First();
+                    response.Data = pEXBCDataContainer;
+                    string json = JsonConvert.SerializeObject(response);
+                    return Content(json, "application/json");
                 }
                 else
                 {

@@ -10,6 +10,6 @@ namespace ISPTF.Models.ImportTR
     {
         public Q_IMTR_Select_pIMTR_rsp pIMTR {get; set;}
         public Q_IMTR_Select_pIMInterest_rsp pIMInterest { get; set; }
-
+        public Q_IMTR_Select_DefaultRate_rsp DefaultRate { get; set; }
     }
 }

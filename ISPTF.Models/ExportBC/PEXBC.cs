@@ -247,5 +247,6 @@ namespace ISPTF.Models.ExportBC
         public string? Campaign_Code { get; set; }
         public DateTime? Campaign_EffDate { get; set; }
         public string? PurposeCode { get; set; }
+
 }
 }

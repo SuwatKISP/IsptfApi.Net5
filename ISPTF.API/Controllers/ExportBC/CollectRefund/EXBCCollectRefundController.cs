@@ -538,6 +538,65 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Message = "Success";
                     response.Data = jsonResponse;
 
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU == "PAID")
+                    {
+                        if (pexbcppaymentreq.PEXBC.COLLECT_REFUND == "1")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                                eventDate,
+                                response.Data.PEXBC.EVENT_TYPE,
+                                response.Data.PEXBC.EVENT_NO,
+                                "COLLECT");
+                        }
+                        else
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                                eventDate,
+                                response.Data.PEXBC.EVENT_TYPE,
+                                response.Data.PEXBC.EVENT_NO,
+                              "REFUND");
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_OtherCharge(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.RECEIVED_NO);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
                     return Ok(response);
                 }
                 else

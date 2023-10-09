@@ -195,12 +195,25 @@ namespace ISPTF.API.Controllers.ExportLC
             return BadRequest(response);
         }
 
-        [HttpPost("save")]
-        public async Task<ActionResult<PEXLCSaveResponse>> Save([FromBody] PEXLCSaveRequest data)
+        [HttpGet("GetBeneCovering")]
+        public async Task<IEnumerable<PEXLCGetBeneCovering>> GetAddr(string? as_bene )
         {
-            PEXLCSaveResponse response = new();
-            // Class validate
+            DynamicParameters param = new();
+            EXLCCoveringLetterSelectResponse response = new EXLCCoveringLetterSelectResponse();
+            param.Add("@as_bene", as_bene);
 
+            var results = await _db.LoadData<PEXLCGetBeneCovering, dynamic>(
+                           storedProcedure: "usp_pEXBC_CoveringLetter_GetBeneCovering",
+                           param);
+            return results;
+        }
+        [HttpPost("save")]
+        public async Task<ActionResult<PEXLCSaveCoveringResponse>> Save([FromBody] PEXLCSaveCoveringRequest data)
+        {
+            PEXLCSaveCoveringResponse response = new();
+            // Class validate
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -255,14 +268,82 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.REC_STATUS = "P";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.EVENT_DATE = UpdateDateNT; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
-                        eventRow.IN_USE = 1;
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
+                        eventRow.IN_USE = 0;
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
+
+                        // Call Save pExDoc
+                        
+
+                        bool savepEXDocResult = ExportLCHelper.SaveExDoc(_context, eventRow, data.PEXDOC);
+
+                        //save swift
+                        // Save SWIFT
+                        if (data.PSWEXPORT!=null)
+                        {
+                            var pSWExportEvent = (from row in _context.pSWExports
+                                                  where row.DocNo == eventRow.EXPORT_LC_NO &&
+                                                        row.Event_No == eventRow.EVENT_NO
+                                                  select row).AsNoTracking().FirstOrDefault();
+                            bool swNew=false;
+                            if (pSWExportEvent == null)
+                            {
+                                swNew = true;
+                            }
+                            if (swNew==true)
+                            {
+                                pSWExportEvent = new();
+                                pSWExportEvent.AutoNum = EXHelper.GenSWNo(_context);
+                                pSWExportEvent.DocNo = eventRow.EXPORT_LC_NO;
+                                pSWExportEvent.Event_No = eventRow.EVENT_NO;
+                                pSWExportEvent.Event = "COVERING";
+                                pSWExportEvent.SwiftFile = "TFF" + eventRow.EXPORT_LC_NO + eventRow.EVENT_NO.ToString("00") + "-" + eventRow.EVENT_DATE.Value.ToString("MMdd") + DateTime.Now.ToString("hhmm");
+                                pSWExportEvent.F53A = eventRow.REIMBURSE_BANK_ID;
+                                pSWExportEvent.F52A = eventRow.ISSUE_BANK_ID;
+                                pSWExportEvent.F52D = data.PSWEXPORT.BankInFo;//note
+                                pSWExportEvent.F57A = eventRow.AGENT_BANK_ID;
+                                pSWExportEvent.F57D = eventRow.AGENT_BANK_INFO;
+                            }
+                            pSWExportEvent.RemitCcy = data.PSWEXPORT.RemitCcy;
+                            pSWExportEvent.RemitAmt = data.PSWEXPORT.RemitAmt;
+                            pSWExportEvent.ValueDate = data.PSWEXPORT.ValueDate;
+                            pSWExportEvent.F20 = data.PSWEXPORT.F20;
+                            pSWExportEvent.BankID = data.PSWEXPORT.BankID;
+                            pSWExportEvent.BankInFo = data.PSWEXPORT.BankInFo;
+                            pSWExportEvent.NBankID = data.PSWEXPORT.NBankID;
+                            pSWExportEvent.NBankInfo = data.PSWEXPORT.NBankInfo;
+
+                            pSWExportEvent.F31 = eventRow.EVENT_DATE.Value.ToString("yyMMdd");
+                            pSWExportEvent.MT742 = "N";
+                            pSWExportEvent.MT499 = "N";
+                            if (eventRow.CLAIM_FORMAT == "MT742")
+                            {
+                                pSWExportEvent.MT742 = "Y";
+                            }
+                            else if (eventRow.CLAIM_FORMAT == "MT499")
+                            {
+                                pSWExportEvent.MT499 = "Y";
+                            }
+
+                            pSWExportEvent.MT799 = data.PSWEXPORT.MT799;
+                            pSWExportEvent.MT999 = data.PSWEXPORT.MT999;
+                            if (swNew == true)
+                            {
+                                _context.pSWExports.Add(pSWExportEvent);
+                            }
+                            else
+                            {
+                                _context.pSWExports.Update(pSWExportEvent);
+                            }
+                      
+                        }//pswexport 
+    
+
 
                         // Commit
                         if (pExlcEvent == null)
@@ -282,9 +363,10 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         response.Code = Constants.RESPONSE_OK;
 
-                        PEXLCDataContainer responseData = new();
+                        PEXLCSaveCoveringDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
-
+                        responseData.PSWEXPORT = data.PSWEXPORT;
+                        responseData.PEXDOC = data.PEXDOC;
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";
                         return Ok(response);
@@ -323,7 +405,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -335,7 +418,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         var pExlcMaster = (from row in _context.pExlcs
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
                                                  row.RECORD_TYPE == "MASTER"
-                                           select row).FirstOrDefault();
+                                           select row).AsNoTracking().FirstOrDefault();
 
                         // 1 - Check if Master Exists
                         if (pExlcMaster == null)
@@ -364,44 +447,85 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
+
                         // 3 - Insert/Update EVENT
                         var USER_ID = User.Identity.Name;
                         var claimsPrincipal = HttpContext.User;
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
-                        pExlc eventRow = pExlcEvent;
+                        pExlc eventRow =data.PEXLC;
 
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
-                        eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.AUTH_CODE = USER_ID;
+                        eventRow.AUTH_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
+                        _context.pExlcs.Update(eventRow);
+                        //await _context.SaveChangesAsync();
 
-                       
                         // 4 - Update Master
                         pExlcMaster.GENACC_FLAG = "Y";
-                        pExlcMaster.GENACC_DATE = DateTime.Today; // Without Time
+                        pExlcMaster.GENACC_DATE = UpdateDateNT; // Without Time
                         pExlcMaster.VOUCH_ID = "COVERING";
-
+                        pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
+                        pExlcMaster.EVENT_TYPE = EVENT_TYPE;
+                        pExlcMaster.EVENT_MODE = "E";
+                        pExlcMaster.VOUCH_ID = "COVERING";
+                        pExlcMaster.USER_ID = USER_ID;
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
-
+                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
                         pExlcMaster.IN_USE = 0;
+                        pExlcMaster.LC_DATE = eventRow.LC_DATE;
+                        pExlcMaster.COVERING_DATE = eventRow.COVERING_DATE;
+                        pExlcMaster.COVERING_FOR = eventRow.COVERING_FOR;
+                        pExlcMaster.ADVICE_ISSUE_BANK = eventRow.ADVICE_ISSUE_BANK;
+                        pExlcMaster.ADVICE_FORMAT = eventRow.ADVICE_FORMAT;
+                        pExlcMaster.REMIT_CLAIM_TYPE = eventRow.REMIT_CLAIM_TYPE;
+                        pExlcMaster.REIMBURSE_BANK_ID = eventRow.REIMBURSE_BANK_ID;
+                        pExlcMaster.REIMBURSE_BANK_INFO = eventRow.REIMBURSE_BANK_INFO;
+                        pExlcMaster.SWIFT_BANK = eventRow.SWIFT_BANK;
+                        pExlcMaster.CLAIM_FORMAT = eventRow.CLAIM_FORMAT;
+                        pExlcMaster.ISSUE_BANK_ID = eventRow.ISSUE_BANK_ID;
+                        pExlcMaster.AGENT_BANK_ID = eventRow.AGENT_BANK_ID;
+                        pExlcMaster.AGENT_BANK_INFO = eventRow.AGENT_BANK_INFO;
+                        pExlcMaster.AGENT_BANK_REF = eventRow.AGENT_BANK_REF;
+                        pExlcMaster.THIRD_BANK_ID = eventRow.THIRD_BANK_ID;
+                        pExlcMaster.THIRD_BANK_INFO = eventRow.THIRD_BANK_INFO;
+                        pExlcMaster.ISSUE_BANK_INFO = eventRow.ISSUE_BANK_INFO;
+                        pExlcMaster.TXTDOCUMENT = eventRow.TXTDOCUMENT;
+                        pExlcMaster.VALUE_DATE = eventRow.VALUE_DATE;
+                        pExlcMaster.DISCREPANCY_TYPE = eventRow.DISCREPANCY_TYPE;
+                        pExlcMaster.SWIFT_DISC = eventRow.SWIFT_DISC;
+                        pExlcMaster.SWIFT_MAIL = eventRow.SWIFT_MAIL;
+                        pExlcMaster.DOCUMENT_COPY = eventRow.DOCUMENT_COPY;
+                        pExlcMaster.SIGHT_BASIS = eventRow.SIGHT_BASIS;
+                        pExlcMaster.ART44A = eventRow.ART44A;
+                        pExlcMaster.ENDORSED = eventRow.ENDORSED;
+                        pExlcMaster.MT750 = eventRow.MT750;
+                        pExlcMaster.ADJ_TOT_NEGO_AMOUNT = eventRow.ADJ_TOT_NEGO_AMOUNT;
+                        pExlcMaster.ADJ_LESS_CHARGE_AMT = eventRow.ADJ_LESS_CHARGE_AMT;
+                        pExlcMaster.ADJUST_COVERING_AMT = eventRow.ADJUST_COVERING_AMT;
+                        pExlcMaster.ADJUST_LC_REF = eventRow.ADJUST_LC_REF;
+                        pExlcMaster.ADJUST_TENOR = eventRow.ADJUST_TENOR;
+                        pExlcMaster.PAYMENT_INSTRC = eventRow.PAYMENT_INSTRC;
+                        pExlcMaster.PAYMENT_INSTRU = eventRow.PAYMENT_INSTRU;
 
+                        _context.pExlcs.Update(pExlcMaster);
 
                         await _context.SaveChangesAsync();
 
+
                         // 5 - Update Master/Event PK to Release
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {pExlcMaster.EVENT_NO + 1} WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', EVENT_NO = {eventRow.EVENT_NO} WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' , EVENT_NO = {eventRow.EVENT_NO} WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R'  WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}' and  EVENT_NO = {eventRow.EVENT_NO}");
+
 
                         transaction.Complete();
 
@@ -481,20 +605,31 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 2 - AUTO Check
 
                         var targetEventNo = pExlc.EVENT_NO + 1;
-                        if (data.IS_AUTO == false)
-                        {
-                            var pExlcNotInUse = (from row in _context.pExlcs
-                                                 where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
-                                                       row.RECORD_TYPE == "MASTER" &&
-                                                       row.IN_USE == 0
-                                                 select row).FirstOrDefault();
-                            pExlcNotInUse.REC_STATUS = "R";
-                        }
-                        else if (data.IS_AUTO == true)
-                        {
-                            pExlc.DMS = null;
-                        }
+                        //if (data.IS_AUTO == false)
+                        //{
+                        //    //var pExlcNotInUse = (from row in _context.pExlcs
+                        //    //                     where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                        //    //                           row.RECORD_TYPE == "MASTER" &&
+                        //    //                           row.IN_USE == 0
+                        //    //                     select row).FirstOrDefault();
+                        //    //pExlcNotInUse.REC_STATUS = "R";
+                        //    // 3 - Update PDOCRegister
+                        //    var pExlcNotInUse = (from row in _context.pExlcs
+                        //                         where row.EXPORT_LC_NO == data.EXPORT_LC_NO &&
+                        //                               row.RECORD_TYPE == "MASTER" 
+                        //                         select row).ToListAsync();
 
+                        //    foreach (var row in await pExlcNotInUse)
+                        //    {
+                        //        row.REC_STATUS = "R";
+                        //    }
+                        //}
+                        //else if (data.IS_AUTO == true)
+                        //{
+                        //    pExlc.REC_STATUS = "R";
+                        //    pExlc.DMS = null;
+                        //}
+   //                     int targetEventNo2 = targetEventNo;
                         // 3 - Delete pSWExport
                         var pSWExports = (from row in _context.pSWExports
                                           where row.DocNo == data.EXPORT_LC_NO &&
@@ -506,8 +641,22 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pSWExports.Remove(row);
                         }
 
-                        // Commit
+                        // 4 - Delete pExdoc
+                        var pExDocs = (from row in _context.pExdocs
+                                      where row.EXLC_NO == data.EXPORT_LC_NO &&
+                                            row.EVENT_NO == targetEventNo
+                                      select row).ToListAsync();
+
+                        foreach (var row in await pExDocs)
+                        {
+                            _context.pExdocs.Remove(row);
+                        }
                         await _context.SaveChangesAsync();
+                        //await _context.Database.ExecuteSqlRawAsync($"Delete pExlc Where REC_STATUS = 'R', EVENT_NO = {targetEventNo} WHERE EXPORT_LC_NO = '{data.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}'");
+                        await _context.Database.ExecuteSqlRawAsync($"update pExlc set DMS =null,REC_STATUS ='R' where EXPORT_LC_NO='{data.EXPORT_LC_NO}' and RECORD_TYPE ='MASTER'");
+                        // Commit
+
+
                         transaction.Complete();
                     }
                     catch (Exception e)

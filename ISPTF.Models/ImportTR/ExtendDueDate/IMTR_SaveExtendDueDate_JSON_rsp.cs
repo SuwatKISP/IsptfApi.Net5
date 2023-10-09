@@ -10,5 +10,6 @@ namespace ISPTF.Models.ImportTR
     {
         public IMTR_SaveIssue_pIMTR_req pIMTR {get; set;}
         public IMTR_Save_pPayment_req pPayment { get; set; }
+        public Q_IMTR_Select_DefaultRate_rsp DefaultRate { get; set; }
     }
 }

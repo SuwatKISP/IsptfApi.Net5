@@ -189,7 +189,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             PEXLCSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -200,7 +201,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         // 0 - Select EXLC Master
                         var pExlcMaster = (from row in _context.pExlcs
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
-                                                 row.EVENT_TYPE == "Issue Collect" &&
                                                  row.RECORD_TYPE == "MASTER"
                                            select row).FirstOrDefault();
 
@@ -212,6 +212,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             return BadRequest(response);
                         }
 
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'P' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
 
@@ -232,23 +233,19 @@ namespace ISPTF.API.Controllers.ExportLC
                                                 row.EVENT_NO == targetEventNo
                                           select row).AsNoTracking().FirstOrDefault();
 
-
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_NO = targetEventNo;
                         eventRow.EVENT_MODE = "E";
+                        eventRow.REC_STATUS = "P";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                        eventRow.IN_USE =0;
+                        // eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
-
-                        eventRow.WithOutFlag = "N";
-                        eventRow.WithOutType = null;
-                        eventRow.Wref_Bank_ID = "";
-
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE =UpdateDateNT; // Without Time
 
 
                         // Commit
@@ -268,25 +265,25 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // GL MOCK WAIT DLL
 
-                        var glEvent = EVENT_TYPE.ToUpper();
-                        if (eventRow.WithOutFlag == "Y")
-                        {
-                            if (eventRow.WithOutType == "U")
-                            {
-                                glEvent = EVENT_TYPE + "-UNISB";
-                            }
-                            else if (eventRow.WithOutType == "A")
-                            {
-                                glEvent = EVENT_TYPE + "-UNAGB";
-                            }
-                        }
+                        //var glEvent = EVENT_TYPE.ToUpper();
+                        //if (eventRow.WithOutFlag == "Y")
+                        //{
+                        //    if (eventRow.WithOutType == "U")
+                        //    {
+                        //        glEvent = EVENT_TYPE + "-UNISB";
+                        //    }
+                        //    else if (eventRow.WithOutType == "A")
+                        //    {
+                        //        glEvent = EVENT_TYPE + "-UNAGB";
+                        //    }
+                        //}
 
-                        var glVouchId = "VOUCH ID FROM GL DLL" + " " + glEvent;
-                        eventRow.VOUCH_ID = glVouchId;
-                        await _context.SaveChangesAsync();
+                        //var glVouchId = "VOUCH ID FROM GL DLL" + " " + glEvent;
+                        //eventRow.VOUCH_ID = glVouchId;
+                        //await _context.SaveChangesAsync();
 
                         transaction.Complete();
-
+                        transaction.Dispose();
                         // Call PrintPostGL (Crystal Report)
 
                         response.Code = Constants.RESPONSE_OK;
@@ -295,8 +292,34 @@ namespace ISPTF.API.Controllers.ExportLC
                         responseData.PEXLC = eventRow;
 
                         response.Data = responseData;
+                        //response.Message = "Export L/C Saved";
+                        //return Ok(response);
+
+                        bool resGL;
+                        bool resPayD;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent = response.Data.PEXLC.EVENT_TYPE;
+                        eventDate = response.Data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXLC(response.Data.PEXLC.EXPORT_LC_NO,
+                        eventDate,
+                        response.Data.PEXLC.EVENT_TYPE,
+                        response.Data.PEXLC.EVENT_NO,
+                        response.Data.PEXLC.EVENT_TYPE,false,"U");
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            response.Data.PEXLC.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+
                         response.Message = "Export L/C Saved";
                         return Ok(response);
+
                     }
                     catch (Exception e)
                     {
@@ -331,7 +354,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -360,14 +384,21 @@ namespace ISPTF.API.Controllers.ExportLC
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
-
-
+                        pExlcMaster.AUTH_DATE = UpdateDateNT; // With Time
+                        pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
+                        pExlcMaster.EVENT_MODE = "E";
+                        pExlcMaster.EVENT_TYPE = EVENT_TYPE;
+                        pExlcMaster.USER_ID = USER_ID;
+                        pExlcMaster.UPDATE_DATE = UpdateDateT;
+                        pExlcMaster.VOUCH_ID = data.PEXLC.VOUCH_ID;
+                        pExlcMaster.GENACC_FLAG = "Y";
+                        pExlcMaster.GENACC_DATE = data.PEXLC.GENACC_DATE;
+                        _context.pExlcs.Update(pExlcMaster);
                         await _context.SaveChangesAsync();
 
                         // 3 - Update Master/Event PK to Release
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+
+                       // await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
 
                         // 4 - Update GL Flag
@@ -380,8 +411,52 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             row.SendFlag = "R";
                         }
+                        await _context.SaveChangesAsync();
+
+                        // 2 - Select Existing EVENT
+                        var pExlcEvent = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.RECORD_TYPE == "EVENT" &&
+                                                row.REC_STATUS == "P" &&
+                                                row.BUSINESS_TYPE == BUSINESS_TYPE &&
+                                                row.EVENT_NO == data.PEXLC.EVENT_NO
+                                          select row).AsNoTracking().FirstOrDefault();
+
+                        // 3 - Check Event Exists
+                        if (pExlcEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXLC " + EVENT_TYPE + " Event does not exists";
+                            return BadRequest(response);
+                        }
+
+
+                        // 5 - Update EVENT
+
+                        pExlc eventRow = data.PEXLC;
+                        eventRow.REC_STATUS = "P";
+                        eventRow.EVENT_MODE = "E";
+                        eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
+                        eventRow.TENOR_TYPE = pExlcMaster.TENOR_TYPE;
+                        eventRow.EVENT_TYPE = EVENT_TYPE;
+                        eventRow.RECORD_TYPE = "EVENT";
+                        eventRow.AUTH_CODE = USER_ID;
+                        eventRow.AUTH_DATE = UpdateDateT; // With Time
+                        eventRow.GENACC_FLAG = "Y";
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
+                        _context.pExlcs.Update(eventRow);
+                        await _context.SaveChangesAsync();
+
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'C' , EVENT_NO = {eventRow.EVENT_NO} WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R'  WHERE EXPORT_LC_NO = '{eventRow.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE='{EVENT_TYPE}' and  EVENT_NO = {eventRow.EVENT_NO}");
 
                         transaction.Complete();
+                        transaction.Dispose();
+
+                        string resCustLiab;
+                        string eventDate;
+                        eventDate = data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        resCustLiab = ISPModule.CustLiabEXLC.EXLC_ReverseIssue(eventDate, "COLLECT", "SAVE", data.PEXLC.EXPORT_LC_NO, data.PEXLC.BENE_ID,"","", data.PEXLC.DRAFT_CCY, data.PEXLC.DRAFT_AMT.ToString(), data.PEXLC.TOT_NEGO_AMT.ToString(),"");
 
                         response.Code = Constants.RESPONSE_OK;
                         response.Message = "Export L/C Released";

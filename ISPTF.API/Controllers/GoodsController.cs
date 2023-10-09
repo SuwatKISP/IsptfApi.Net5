@@ -45,21 +45,20 @@ namespace ISPTF.API.Controllers
                          storedProcedure: "usp_mgoodsselect",
                          param);
                 var crsp = param.Get<dynamic>("@CRsp");
-                //var ccustrsp = param.Get<dynamic>("@CCustRsp");
-                if (crsp > 0)
-                {
-                    //Response.ContentType = "application/json";
-                    //return Ok(ccustrsp);
-                    return Ok(results);
-                }
-                else
-                {
+                return Ok(results);
+                //if (crsp > 0)
+                //{
 
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = "Goods code not exist";
-                    return BadRequest(response);
-                }
+                //    return Ok(results);
+                //}
+                //else
+                //{
+
+                //    ReturnResponse response = new();
+                //    response.StatusCode = "400";
+                //    response.Message = "Goods code not exist";
+                //    return BadRequest(response);
+                //}
             }
             catch (Exception ex)
             {
