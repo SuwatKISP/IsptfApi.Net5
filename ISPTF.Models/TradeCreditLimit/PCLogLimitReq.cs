@@ -14,6 +14,7 @@ namespace ISPTF.Models.TradeCreditLimit
         public PCLogShare[] pclogshare { get; set; }
         public PCLogLmProduct[] pcloglmproduct { get; set; }
         public PCLogLmCCS[] pcloglmccs { get; set; }
+        public CFRRateLog[] cfrratelog { get; set; }
 
     }
 }

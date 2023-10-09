@@ -52,6 +52,8 @@ namespace ISPTF.Models.Inquiry
         public double? TRDLC_Amt { get; set; }
         public double? TRS_Book { get; set; }
         public double? TRTRS_Amt { get; set; }
+        public double? TxIMBL { get; set; }
+        public double? TxBIMBL { get; set; }
 
     }
 }

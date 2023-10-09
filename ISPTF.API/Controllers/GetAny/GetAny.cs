@@ -167,7 +167,17 @@ namespace ISPTF.API.Controllers.GetAny
             }
         }
 
+        [HttpGet("GetBeneCovering")]
+        public async Task<IEnumerable<GetBeneCoveringRsp>> GetBeneCovering(string? asBen)
+        {
+            DynamicParameters param = new();
+            param.Add("@asBen", asBen);
 
+            var results = await _db.LoadData<GetBeneCoveringRsp, dynamic>(
+                        storedProcedure: "usp_GetBeneCovering",
+                        param);
+            return results;
+        }
 
 
 
