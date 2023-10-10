@@ -12,6 +12,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using ISPTF.Models.Controllers.ExportBC;
+using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -464,13 +466,39 @@ namespace ISPTF.API.Controllers.ExportBC
                             storedProcedure: "usp_pEXBC_ReverseCollection_Save",
                             param);
                 var resp = param.Get<string>("@Resp");
-
+                var PEXBCPRsp = param.Get<string>("@PEXBCPRsp");
                 if (resp == "1")
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = new PEXBCDataContainer(results.First());
-                    return Ok(response);
+
+                    bool resGL;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = response.Data.PEXBC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(response.Data.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            response.Data.PEXBC.EVENT_TYPE,false,"U");
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;  
+                    }
+
+                    string json = JsonConvert.SerializeObject(response);
+
+                    return Content(json, "application/json");
+                   // return Ok(response);
+                    
                 }
                 else
                 {
@@ -584,6 +612,15 @@ namespace ISPTF.API.Controllers.ExportBC
 
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Export B/C NO Release Complete";
+
+                    string resCustLiab;
+                    string eventDate;
+
+                    eventDate = PEXBCReversePurchRelease.EVENTDATE.ToString("dd/MM/yyyy");
+                    resCustLiab = ISPModule.CustLiabEXBC.EXBC_Reverse(eventDate, "ISSUE", "SAVE"
+                        , PEXBCReversePurchRelease.EXPORT_BC_NO, PEXBCReversePurchRelease.BENE_ID,"C","",
+                        PEXBCReversePurchRelease.DRAFT_CCY,
+                         "", PEXBCReversePurchRelease.TOT_NEGO_AMT.ToString(), USER_ID);
                     return Ok(response);
                 }
                 else

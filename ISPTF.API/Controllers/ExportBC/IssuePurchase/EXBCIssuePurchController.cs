@@ -297,13 +297,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPPaymentRsp();
                 return BadRequest(response);
             }
-            if (pexbcppaymentreq.PPayment == null)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "Payment is required.";
-                response.Data = new PEXBCPPaymentRsp();
-                return BadRequest(response);
-            }
+            //if (pexbcppaymentreq.PPayment == null)
+            //{
+            //    response.Code = Constants.RESPONSE_ERROR;
+            //    response.Message = "Payment is required.";
+            //    response.Data = new PEXBCPPaymentRsp();
+            //    return BadRequest(response);
+            //}
 
             try
             {
@@ -560,20 +560,23 @@ namespace ISPTF.API.Controllers.ExportBC
                 param.Add("@Campaign_EffDate", pexbcppaymentreq.PEXBC.Campaign_EffDate);
                 param.Add("@PurposeCode", pexbcppaymentreq.PEXBC.PurposeCode);
                 //PPayment
-                param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
-                param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
-                param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
-                param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
-                param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
-                param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
-                param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
-                param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
-                param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
-                param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
-                param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
-                param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
-                param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
-                param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+                if (pexbcppaymentreq.PPayment != null)
+                {
+                    param.Add("@RpPayDate", pexbcppaymentreq.PPayment.RpPayDate);
+                    param.Add("@RpNote", pexbcppaymentreq.PPayment.RpNote);
+                    param.Add("@RpCashAmt", pexbcppaymentreq.PPayment.RpCashAmt);
+                    param.Add("@RpChqAmt", pexbcppaymentreq.PPayment.RpChqAmt);
+                    param.Add("@RpChqNo", pexbcppaymentreq.PPayment.RpChqNo);
+                    param.Add("@RpChqBank", pexbcppaymentreq.PPayment.RpChqBank);
+                    param.Add("@RpChqBranch", pexbcppaymentreq.PPayment.RpChqBranch);
+                    param.Add("@RpCustAc1", pexbcppaymentreq.PPayment.RpCustAc1);
+                    param.Add("@RpCustAmt1", pexbcppaymentreq.PPayment.RpCustAmt1);
+                    param.Add("@RpCustAc2", pexbcppaymentreq.PPayment.RpCustAc2);
+                    param.Add("@RpCustAmt2", pexbcppaymentreq.PPayment.RpCustAmt2);
+                    param.Add("@RpCustAc3", pexbcppaymentreq.PPayment.RpCustAc3);
+                    param.Add("@RpCustAmt3", pexbcppaymentreq.PPayment.RpCustAmt3);
+                    param.Add("@RpStatus", pexbcppaymentreq.PPayment.RpStatus);
+                }
                 param.Add("@PExBcRsp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);
@@ -612,7 +615,71 @@ namespace ISPTF.API.Controllers.ExportBC
                     // DLL
                     //response.Data.PEXBC.VOUCH_ID = "VHC";
 
-                    return Ok(response);
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU != "UNPAID")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            response.Data.PEXBC.EVENT_TYPE);
+
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssPurchase(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, response.Data.PEXBC.EVENT_NO, resReceiptNo);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+                    string resQuote="";
+                  if (pexbcppaymentreq.PEXBC.REC_STATUS == "N")
+                    {
+                        resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                             response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "NEW", response.Data.PEXBC.USER_ID);
+                    }
+                    if (resQuote== "ERROR"  || resPayD==false || resGL ==false)
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message ="Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
+                        response.Data = new PEXBCPPaymentRsp();
+                        return BadRequest(response);
+                    }
+                    else
+                    {
+                        return Ok(response);
+                    }
+
                 }
                 else
                 {
@@ -648,13 +715,13 @@ namespace ISPTF.API.Controllers.ExportBC
                 response.Data = new PEXBCPPaymentRsp();
                 return BadRequest(response);
             }
-            if (pexbcppaymentreq.PPayment == null)
-            {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = "Payment is required.";
-                response.Data = new PEXBCPPaymentRsp();
-                return BadRequest(response);
-            }
+            //if (pexbcppaymentreq.PPayment == null)
+            //{
+            //    response.Code = Constants.RESPONSE_ERROR;
+            //    response.Message = "Payment is required.";
+            //    response.Data = new PEXBCPPaymentRsp();
+            //    return BadRequest(response);
+            //}
             try
             {
                 DynamicParameters param = new DynamicParameters();
@@ -951,7 +1018,71 @@ namespace ISPTF.API.Controllers.ExportBC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
-                    return Ok(response);
+
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+
+                    eventDate = pexbcppaymentreq.PEXBC.EVENT_DATE.ToString("dd/MM/yyyy");
+                    if (pexbcppaymentreq.PEXBC.PAYMENT_INSTRU != "UNPAID")
+                    {
+                        resVoucherID = ISPModule.GeneratrEXP.StartPEXBC(pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                            eventDate,
+                            response.Data.PEXBC.EVENT_TYPE,
+                            response.Data.PEXBC.EVENT_NO,
+                            response.Data.PEXBC.EVENT_TYPE);
+
+                    }
+                    else
+                    {
+                        resVoucherID = "";
+
+                    }
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.PEXBC.VOUCH_ID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                    }
+
+                    string resPayDetail;
+                    if (pexbcppaymentreq.PPayment != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssPurchase(pexbcppaymentreq.PEXBC.EXPORT_BC_NO, response.Data.PEXBC.EVENT_NO, resReceiptNo);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+                    string resQuote="";
+                    if (pexbcppaymentreq.PEXBC.REC_STATUS == "N")
+                    { 
+                        resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", pexbcppaymentreq.PEXBC.EXPORT_BC_NO,
+                             response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "EDIT", response.Data.PEXBC.USER_ID);
+                    }
+                    if (resQuote == "ERROR" || resPayD == false || resGL == false)
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
+                        response.Data = new PEXBCPPaymentRsp();
+                        return BadRequest(response);
+                    }
+                    else
+                    {
+                        return Ok(response);
+                    }
                 }
                 else
                 {
@@ -1045,8 +1176,7 @@ namespace ISPTF.API.Controllers.ExportBC
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.EXPORT_BC_NO) || 
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.RELEASE_ACTION) ||
                 string.IsNullOrEmpty(pExBcIssuePurchRelease.PAYMENT_INSTRU) || 
-                string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE) || 
-                string.IsNullOrEmpty(pExBcIssuePurchRelease.REFER_BC_NO)
+                string.IsNullOrEmpty(pExBcIssuePurchRelease.EVENT_DATE) 
                )
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;

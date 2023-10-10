@@ -210,11 +210,12 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXLCPPaymentPPayDetailsSaveResponse>> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
+        public ActionResult<PEXLCPPaymentPPayDetailsSaveResponse> Save([FromBody] PEXLCPPaymentPPayDetailsSaveRequest data)
         {
             PEXLCPPaymentPPayDetailsSaveResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -247,7 +248,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             // Call Save Back Liability with checkNew param
                         }
 
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'P' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'P' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
 
                         var targetEventNo = pExlcMaster.EVENT_NO + 1;
@@ -275,43 +276,57 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.RECORD_TYPE = "EVENT";
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
-                        eventRow.EVENT_DATE = DateTime.Today; // Without Time
+                     //   eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = DateTime.Now; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
 
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = DateTime.Today; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
 
 
                         if (eventRow.PAYMENT_INSTRU == "PAID")
                         {
                             eventRow.METHOD = data.PEXLC.METHOD;
                             // Call Save Payment
-                            eventRow.RECEIVED_NO = await ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT);
+                            if (eventRow.RECEIVED_NO == null || eventRow.RECEIVED_NO == "")
+                            {
+                                if (eventRow.REFUND_DISC_RECEIVE == 0)
+                                {
+                                    eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYC", UpdateDateT, UpdateDateNT);
+
+                                }
+                                else
+                                {
+                                    eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
+                                }
+                            }
+
+                            eventRow.RECEIVED_NO = ExportLCHelper.SavePayment(_context, USER_CENTER_ID, USER_ID, eventRow, data.PPAYMENT, UpdateDateT, UpdateDateNT);
 
                             // Call Save PaymentDetail
-                            if (eventRow.RECEIVED_NO != "ERROR")
-                            {
-                                bool savePayDetailResult = await ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
-                            }
+                            //if (eventRow.RECEIVED_NO != "ERROR")
+                            //{
+                            //    bool savePayDetailResult = ExportLCHelper.SavePaymentDetail(_context, eventRow, data.PPAYDETAILS);
+                            //}
                         }
                         else
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-
+                            eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
-                                                       select row).ToListAsync();
-                            foreach (var row in await existingPaymentRows)
+                                                       select row).ToList();
+                            foreach (var row in existingPaymentRows)
                             {
                                 _context.pPayments.Remove(row);
                             }
 
                             var existingPPayDetailRows = (from row in _context.pPayDetails
                                                           where row.DpReceiptNo == eventRow.RECEIVED_NO
-                                                          select row).ToListAsync();
-                            foreach (var row in await existingPPayDetailRows)
+                                                          select row).ToList();
+                            foreach (var row in existingPPayDetailRows)
                             {
                                 _context.pPayDetails.Remove(row);
                             }
@@ -331,7 +346,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         }
 
-                        await _context.SaveChangesAsync();
+                        _context.SaveChanges();
                         transaction.Complete();
 
                         response.Code = Constants.RESPONSE_OK;
@@ -339,7 +354,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         PEXLCPPaymentPPayDetailDataContainer responseData = new();
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
-                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+                       // responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";

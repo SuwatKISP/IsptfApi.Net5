@@ -27,7 +27,7 @@ namespace ISPTF.API.Controllers.ExportLC
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
 
-        private const string BUSINESS_TYPE = "PAYP";
+        private const string BUSINESS_TYPE = "PAYD";
         private const string EVENT_TYPE = "PAYMENT PAST DUE";
         public EXLCPaymentPastDueWREFController(ISqlDataAccess db, ISPTFContext context)
         {
@@ -274,7 +274,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-
+                            eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
                                                        select row).ToListAsync();
@@ -318,6 +319,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (exPaymentRow.PAYMENT_INSTRU == "UNPAID")
                         {
                             exPaymentRow.Method = "";
+                            eventRow.RECEIVED_NO = "";
+                            eventRow.VOUCH_ID = "";
                         }
                         // 3 - Select Existing Event
                         var pExPayment = (from row in _context.pExPayments
@@ -369,7 +372,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
                         responseData.PEXPAYMENT = data.PEXPAYMENT;
-                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+                      //  responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";
@@ -405,7 +408,7 @@ namespace ISPTF.API.Controllers.ExportLC
         }
 
         [HttpPost("release")]
-        public async Task<ActionResult<EXLCResultResponse>> Release([FromBody] PEXLCSaveRequest data)
+        public ActionResult<EXLCResultResponse> Release([FromBody] PEXLCSaveRequest data)
         {
             EXLCResultResponse response = new();
             // Class validate
@@ -496,19 +499,19 @@ namespace ISPTF.API.Controllers.ExportLC
 
 
 
-                        await _context.SaveChangesAsync();
+                        _context.SaveChanges();
 
                         // 5 - Update Master/Event PK to Release
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
 
                         // 6 - Update GL Flag
                         var gls = (from row in _context.pDailyGLs
                                    where row.VouchID == data.PEXLC.VOUCH_ID &&
                                             row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
-                                   select row).ToListAsync();
+                                   select row).ToList();
 
-                        foreach (var row in await gls)
+                        foreach (var row in gls)
                         {
                             row.SendFlag = "R";
                         }
@@ -516,7 +519,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         if (data.PEXLC.WithOutFlag == "N")
                         {
-                            var result = await ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+                            var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
                         }
                         else if (data.PEXLC.WithOutFlag == "Y")
                         {

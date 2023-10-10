@@ -61,5 +61,46 @@ namespace ISPTF.Models.PEXPayment
         public string? CHEQUE_NO { get; set; }
         public string? CHEQUE_BK_BRN { get; set; }
 
+        public string? ParTnor_Type1 { get; set; }
+        public string? ParTnor_Type2 { get; set; }
+        public string? ParTnor_Type3 { get; set; }
+        public string? ParTnor_Type4 { get; set; }
+        public string? ParTnor_Type5 { get; set; }
+        public string? ParTnor_Type6 { get; set; }
+        public double? PARTIAL_AMT1 { get; set; }
+        public double? PARTIAL_AMT2 { get; set; }
+        public double? PARTIAL_AMT3 { get; set; }
+        public double? PARTIAL_AMT4 { get; set; }
+        public double? PARTIAL_AMT5 { get; set; }
+        public double? PARTIAL_AMT6 { get; set; }
+        public double? PARTIAL_RATE1 { get; set; }
+        public double? PARTIAL_RATE2 { get; set; }
+        public double? PARTIAL_RATE3 { get; set; }
+        public double? PARTIAL_RATE4 { get; set; }
+        public double? PARTIAL_RATE5 { get; set; }
+        public double? PARTIAL_RATE6 { get; set; }
+        public double? PARTIAL_AMT1_THB { get; set; }
+        public double? PARTIAL_AMT2_THB { get; set; }
+        public double? PARTIAL_AMT3_THB { get; set; }
+        public double? PARTIAL_AMT4_THB { get; set; }
+        public double? PARTIAL_AMT5_THB { get; set; }
+        public double? PARTIAL_AMT6_THB { get; set; }
+        public string? FORWARD_CONRACT_NO1 { get; set; }
+        public string? FORWARD_CONRACT_NO2 { get; set; }
+        public string? FORWARD_CONRACT_NO3 { get; set; }
+        public string? FORWARD_CONRACT_NO4 { get; set; }
+        public string? FORWARD_CONRACT_NO5 { get; set; }
+        public string? FORWARD_CONRACT_NO6 { get; set; }
+        public double? RECEIVE_PAY_AMT { get; set; }
+        public int? PARTIAL_FULL_RATE { get; set; }
+        public double? TOTAL_NEGO_BALANCE { get; set; }
+        public double? TOTAL_NEGO_BAL_THB { get; set; }
+        public double? TOTAL_AMOUNT { get; set; }
+        public int? BASE_DAY { get; set; }
+        public double? CURRENT_DIS_RATE { get; set; }
+        public double? CURRENT_INT_RATE { get; set; }
+
+
+
     }
 }
