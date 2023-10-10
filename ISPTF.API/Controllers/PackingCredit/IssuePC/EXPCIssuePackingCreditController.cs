@@ -398,6 +398,15 @@ namespace ISPTF.API.Controllers.PackingCredit
                             appvFac = pCustAppv.Facility_No;
                         }
 
+                        var pExlcMasterDelete = (from row in _context.pExpcs
+                                                 where row.PACKING_NO == pExpc.PACKING_NO
+                                                 select row).ToList();
+                        foreach (var row in pExlcMasterDelete)
+                        {
+                            _context.pExpcs.Remove(row);
+                        }
+                        _context.SaveChanges();
+
                         // 2 - Save Master
                         var pExpcMaster = (from row in _context.pExpcs
                                            where row.PACKING_NO == pExpc.PACKING_NO &&
@@ -410,7 +419,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                             pExpcMaster.PACKING_NO = pExpc.PACKING_NO;
                             pExpcMaster.record_type = "MASTER";
                             pExpcMaster.event_no = 1;
-                            pExpcMaster.rec_status = "P";
+                            pExpcMaster.rec_status = pExpc.rec_status;
                             pExpcMaster.event_mode = "E";
                             pExpcMaster.event_type = EVENT_TYPE;
                             pExpcMaster.business_type = BUSINESS_TYPE;
@@ -559,7 +568,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                             pExpcEvent.PACKING_NO = pExpc.PACKING_NO;
                             pExpcEvent.record_type = "EVENT";
                             pExpcEvent.event_no = 1;
-                            pExpcEvent.rec_status = "P";
+                            pExpcEvent.rec_status = pExpc.rec_status;
                             pExpcEvent.event_mode = "E";
                             pExpcEvent.event_type = EVENT_TYPE;
                             pExpcEvent.business_type = BUSINESS_TYPE;
@@ -686,7 +695,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcEvent.PcIntType = pExpc.PcIntType;
                         pExpcEvent.PCOverdue = "N";
                         pExpcEvent.BPOFlag = pExpc.BPOFlag;
-                        pExpcMaster.in_Use = "0";
+                        pExpcEvent.in_Use = "0";
                         _context.pExpcs.Update(pExpcEvent);
                         _context.SaveChanges();
 
@@ -736,6 +745,20 @@ namespace ISPTF.API.Controllers.PackingCredit
                         {
                             response.Code = Constants.RESPONSE_ERROR;
                             response.Message = "Error for G/L";
+                            response.Data = new();
+                            return BadRequest(response);
+                        }
+                        string resQuote = "";
+                        if (response.Data.PEXPC.rec_status == "N")
+                        {
+                            resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXPC", response.Data.PEXPC.PACKING_NO,
+                                 response.Data.PEXPC.event_no, response.Data.PEXPC.event_type, "NEW", response.Data.PEXPC.user_id);
+                        }
+                        if (resQuote == "ERROR" )
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for  Quote Rate ";
+                            response.Data = new();
                             return BadRequest(response);
                         }
                         return Ok(response);

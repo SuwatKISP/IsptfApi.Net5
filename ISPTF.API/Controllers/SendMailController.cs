@@ -30,7 +30,7 @@ namespace ISPTF.API.Controllers
                 var AppPath = ConfigurationHelper.config.GetSection("AppPath");
                 //string[] cParams = new string[] { "dev", "Line1", "1" };
 
-                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat("C:\\temp\\mail\\", "TradeSendMail.exe"));
+                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat(AppPath.Value, "TradeSendMail.exe"));
                 startInfo.Arguments = data.MailTo + "|" + data.MailCC + "|" + data.MailBCC
                     + "|" + data.MailFile1
                     + "|" + data.MailFile2

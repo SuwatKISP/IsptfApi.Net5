@@ -26,13 +26,14 @@ namespace ISPTF.API.Controllers.QuoteRate
         }
 
         [HttpGet("listpage")]
-        public async Task<IEnumerable<FTPRateListRsp>> GetAll(string RateDate, string Rate_Type, int? Page, int? PageSize)
+        public async Task<IEnumerable<FTPRateListRsp>> GetAll(string? RateDate, string? Rate_Type, int? Page, int? PageSize)
         {
             DynamicParameters param = new();
             param.Add("@RateDate", RateDate);
             param.Add("@Rate_Type", Rate_Type);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
+
 
             if (Rate_Type == null)
             {
