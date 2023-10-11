@@ -13,8 +13,6 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Transactions;
-
-
 using ISPTF.Models.ExportLC;
 namespace ISPTF.API.Controllers.ImportTR
 {
@@ -588,15 +586,93 @@ namespace ISPTF.API.Controllers.ImportTR
                 if (Resp > 0)
                 {
                     IMTR_SaveIssue_JSON_rsp jsonResponse = JsonSerializer.Deserialize<IMTR_SaveIssue_JSON_rsp>(IssueTRSaveResp);
+
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+                    //return Ok(response);
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+                    string TRLogin;
+                    eventDate = response.Data.pIMTR.EventDate.Value.ToString("dd/MM/yyyy");
+                    if (response.Data.pIMTR.EventMode=="L")
+                    {
+                        TRLogin = "IMBL";
+                    }
+                    else if (response.Data.pIMTR.EventMode == "B")
+                    {
+                        TRLogin = "IMBC";
+                    }
+                    else if (response.Data.pIMTR.EventMode == "D")
+                    {
+                        TRLogin = "DMLC";
+                    }
+                    else if (response.Data.pIMTR.EventMode == "S")
+                    {
+                        TRLogin = "TRS";
+                    }
+                    else 
+                    {
+                        TRLogin = "PN";
+                    }
+
+                    resVoucherID = ISPModuleIMP.GenerateGL.StartPIMTR(response.Data.pIMTR.TRNumber,
+                        eventDate,
+                        response.Data.pIMTR.TRSeqno.ToString("#0"),
+                        response.Data.pIMTR.Event,TRLogin);
+
+
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.pIMTR.VoucherID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for  Gen.G/L  ";
+                        response.Data = jsonResponse;
+                        return BadRequest(response);
+                    }
                     return Ok(response);
+                    //string resPayDetail;
+
+                    //resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssPurchase(response.Data.pIMTR.EXPORT_BC_NO, response.Data.pIMTR.EVENT_NO, resReceiptNo);
+                    //if (resPayDetail != "ERROR")
+                    //{
+                    //    resPayD = true;
+                    //}
+                    //else
+                    //{
+                    //    resPayD = false;
+                    //}
+
+                    //string resQuote = "";
+                    //if (response.Data.pIMTR.REC_STATUS == "N")
+                    //{
+                    //    resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", response.Data.pIMTR.EXPORT_BC_NO,
+                    //         response.Data.pIMTR.EVENT_NO, response.Data.pIMTR.EVENT_TYPE, "NEW", response.Data.pIMTR.USER_ID);
+                    //}
+                    //if (resQuote == "ERROR" || resPayD == false || resGL == false)
+                    //{
+                    //    response.Code = Constants.RESPONSE_ERROR;
+                    //    response.Message = "Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
+                    //    response.Data = new IMTR_SaveIssue_JSON_rsp();
+                    //    return BadRequest(response);
+                    //}
+                    //else
+                    //{
+                    //    return Ok(response);
+                    //}
+
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "EXPORT_LC_NO Insert Error";
+                    response.Message = "Issue T/R Insert Error";
                     response.Data = new IMTR_SaveIssue_JSON_rsp();
                     return BadRequest(response);
                 }

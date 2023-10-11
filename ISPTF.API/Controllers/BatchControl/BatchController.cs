@@ -137,7 +137,8 @@ namespace ISPTF.API.Controllers.BatchControl
             {
                 SendMailResultResponse response = new SendMailResultResponse();
                 var AppPath = ConfigurationHelper.config.GetSection("AppPath");
-                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat(AppPath.Value, "ISPTFBath.exe"));
+
+                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat("C:\\temp\\publish\\", "batch.bat"));
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
                 System.Diagnostics.Process.Start(startInfo);
