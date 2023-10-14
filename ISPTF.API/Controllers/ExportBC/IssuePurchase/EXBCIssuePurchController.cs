@@ -635,10 +635,12 @@ namespace ISPTF.API.Controllers.ExportBC
                         resVoucherID = "";
 
                     }
+
                     if (resVoucherID != "ERROR")
                     {
                         resGL = true;
                         response.Data.PEXBC.VOUCH_ID = resVoucherID;
+
                     }
                     else
                     {

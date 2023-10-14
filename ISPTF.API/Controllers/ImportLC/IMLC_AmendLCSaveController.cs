@@ -32,6 +32,10 @@ namespace ISPTF.API.Controllers.ImportLC
             _context = context;
         }
 
+
+        //[HttpGet("Remark1/1.Remark for Save,Release,Delete Menu Amend L/C Amount , Amend L/C Other")]
+        //[HttpGet("Remark2/2.LoadLC = 'AMEND-AMT' or @LoadLC = 'AMEND-OTH'")]
+
         [HttpPost("save")]
         public async Task<ActionResult<IMLC_SaveAmend_Response>> Save([FromBody] IMLC_SaveAmend_JSON_req save)
         {
@@ -303,6 +307,314 @@ namespace ISPTF.API.Controllers.ImportLC
             }
 
         }
+
+        [HttpPost("release")]
+        public async Task<ActionResult<IMLCResultResponse>> Release([FromBody] IMLC_ReleaseAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            //if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMLC_SaveAmend_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+
+                //ListType
+                param.Add("@LoadLC", save.ListType.LoadLC);
+
+                //pIMTR
+                param.Add("@LCNumber", save.pIMLC.LCNumber);
+                param.Add("@RecType", save.pIMLC.RecType);
+                param.Add("@LCSeqno", save.pIMLC.LCSeqno);
+                param.Add("@CenterID", save.pIMLC.CenterID);
+                param.Add("@EventDate", save.pIMLC.EventDate);
+                param.Add("@AmendSeq", save.pIMLC.AmendSeq);
+                param.Add("@LCRevolve", save.pIMLC.LCRevolve);
+                param.Add("@LCSentBy", save.pIMLC.LCSentBy);
+                param.Add("@LCForm", save.pIMLC.LCForm);
+                param.Add("@LCBal", save.pIMLC.LCBal);
+                param.Add("@LCAvalBal", save.pIMLC.LCAvalBal);
+                param.Add("@LCPostAmt", save.pIMLC.LCPostAmt);
+                param.Add("@AmendFlag", save.pIMLC.AmendFlag);
+                param.Add("@DePlus_Flag", save.pIMLC.DePlus_Flag);
+                param.Add("@AmendAmt", save.pIMLC.AmendAmt);
+                param.Add("@AmendAmtInc", save.pIMLC.AmendAmtInc);
+                param.Add("@AmendAmtDec", save.pIMLC.AmendAmtDec);
+                param.Add("@AmendPlus", save.pIMLC.AmendPlus);
+                param.Add("@AmendMinus", save.pIMLC.AmendMinus);
+                param.Add("@PrevAmt", save.pIMLC.PrevAmt);
+                param.Add("@PrevNet", save.pIMLC.PrevNet);
+                param.Add("@PrevLCBal", save.pIMLC.PrevLCBal);
+                param.Add("@PrevLCAvalBal", save.pIMLC.PrevLCAvalBal);
+                param.Add("@PrevDateExpiry", save.pIMLC.PrevDateExpiry);
+                param.Add("@DateExpiry", save.pIMLC.DateExpiry);
+                param.Add("@PlaceExpiry", save.pIMLC.PlaceExpiry);
+                param.Add("@DateExpiryMax", save.pIMLC.DateExpiryMax);
+                param.Add("@TenorType", save.pIMLC.TenorType);
+                param.Add("@TenorDay", save.pIMLC.TenorDay);
+                param.Add("@TenorTerm", save.pIMLC.TenorTerm);
+                param.Add("@MixPayment", save.pIMLC.MixPayment);
+                param.Add("@Confirmation", save.pIMLC.Confirmation);
+                param.Add("@Restricted", save.pIMLC.Restricted);
+                param.Add("@AvailWith", save.pIMLC.AvailWith);
+                param.Add("@AvailBy", save.pIMLC.AvailBy);
+                param.Add("@AvailCnty", save.pIMLC.AvailCnty);
+                param.Add("@Drawee", save.pIMLC.Drawee);
+                param.Add("@AdBankCode", save.pIMLC.AdBankCode);
+                param.Add("@ConfBankCode", save.pIMLC.ConfBankCode);
+                param.Add("@BenInfo1", save.pIMLC.BenInfo1);
+                param.Add("@BenInfo2", save.pIMLC.BenInfo2);
+                param.Add("@BenInfo3", save.pIMLC.BenInfo3);
+                param.Add("@BenInfo4", save.pIMLC.BenInfo4);
+                param.Add("@BenCity", save.pIMLC.BenCity);
+                param.Add("@BenCnty", save.pIMLC.BenCnty);
+                param.Add("@PrevBenInfo", save.pIMLC.PrevBenInfo);
+                param.Add("@AdThruBank", save.pIMLC.AdThruBank);
+                param.Add("@AdThruInfo1", save.pIMLC.AdThruInfo1);
+                param.Add("@AdThruCity", save.pIMLC.AdThruCity);
+                param.Add("@AdThruCnty", save.pIMLC.AdThruCnty);
+                param.Add("@OutsideCharge", save.pIMLC.OutsideCharge);
+                param.Add("@ConfirmComm", save.pIMLC.ConfirmComm);
+                param.Add("@Incoterms", save.pIMLC.Incoterms);
+                param.Add("@ShipmentFrom", save.pIMLC.ShipmentFrom);
+                param.Add("@TransportTo", save.pIMLC.TransportTo);
+                param.Add("@DateLateShip", save.pIMLC.DateLateShip);
+                param.Add("@PresentDay", save.pIMLC.PresentDay);
+                param.Add("@PresentPeriod", save.pIMLC.PresentPeriod);
+                param.Add("@PartialShipment", save.pIMLC.PartialShipment);
+                param.Add("@Transhipment", save.pIMLC.Transhipment);
+                param.Add("@TransportType", save.pIMLC.TransportType);
+                param.Add("@ShipPlace", save.pIMLC.ShipPlace);
+                param.Add("@GoodsCode", save.pIMLC.GoodsCode);
+                param.Add("@PurposeCode", save.pIMLC.PurposeCode);
+                param.Add("@ReimPay", save.pIMLC.ReimPay);
+                param.Add("@ReimBank", save.pIMLC.ReimBank);
+                param.Add("@ReimAddr", save.pIMLC.ReimAddr);
+                param.Add("@ReimMT740", save.pIMLC.ReimMT740);
+                param.Add("@ReimCharge", save.pIMLC.ReimCharge);
+                param.Add("@ReimNote", save.pIMLC.ReimNote);
+                param.Add("@Charge740", save.pIMLC.Charge740);
+                param.Add("@Bank740", save.pIMLC.Bank740);
+                param.Add("@MT747_Flag", save.pIMLC.MT747_Flag);
+                param.Add("@Charge71B", save.pIMLC.Charge71B);
+                param.Add("@BanktoBank72", save.pIMLC.BanktoBank72);
+                param.Add("@CommType", save.pIMLC.CommType);
+                param.Add("@CommLCRate", save.pIMLC.CommLCRate);
+                param.Add("@PeriodComm", save.pIMLC.PeriodComm);
+                param.Add("@PeriodCommExt", save.pIMLC.PeriodCommExt);
+                param.Add("@TaxRefund", save.pIMLC.TaxRefund);
+                param.Add("@CommBenCCy", save.pIMLC.CommBenCCy);
+                param.Add("@CommAmt", save.pIMLC.CommAmt);
+                param.Add("@CableAmt", save.pIMLC.CableAmt);
+                param.Add("@PostageAmt", save.pIMLC.PostageAmt);
+                param.Add("@DutyAmt", save.pIMLC.DutyAmt);
+                param.Add("@PayableAmt", save.pIMLC.PayableAmt);
+                param.Add("@OtherAmt", save.pIMLC.OtherAmt);
+                param.Add("@TaxAmt", save.pIMLC.TaxAmt);
+                param.Add("@PayFlag", save.pIMLC.PayFlag);
+                param.Add("@PayMethod", save.pIMLC.PayMethod);
+                param.Add("@PayRemark", save.pIMLC.PayRemark);
+                param.Add("@DateLastPaid", save.pIMLC.DateLastPaid);
+                //param.Add("@UpdateDate", save.pIMLC.UpdateDate);
+                param.Add("@UserCode", save.pIMLC.UserCode);
+                //param.Add("@AuthDate", save.pIMLC.AuthDate);
+                //param.Add("@AuthCode", save.pIMLC.AuthCode);
+                param.Add("@BPOFlag", save.pIMLC.BPOFlag);
+
+                //pIMLCGoods
+                param.Add("@GoodsDesc", save.pIMLCGoods.GoodsDesc);
+
+                //pIMLCAmend
+                param.Add("@Narr77A", save.pIMLCAmend.Narr77A);
+                param.Add("@Amend79", save.pIMLCAmend.Amend79);
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+
+                await _db.SaveData(
+                  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Release Error";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<IMLCResultResponse>> delete([FromBody] IMLC_DeleteAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            //if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMLC_SaveAmend_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+
+                //ListType
+                param.Add("@LoadLC", save.ListType.LoadLC);
+
+                //pIMTR
+                param.Add("@LCNumber", save.pIMLC.LCNumber);
+                param.Add("@LCSeqno", save.pIMLC.LCSeqno);
+                param.Add("@CenterID", save.pIMLC.CenterID);
+                param.Add("@UserCode", save.pIMLC.UserCode);
+                param.Add("@AmendFlag", save.pIMLC.AmendFlag);
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+
+                await _db.SaveData(
+                  storedProcedure: "usp_pIMLC_Amend_Delete", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Delete Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Delete Error";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        [HttpGet("Remark1/1.Remark for Save,Release,Delete Menu Amend L/C Amount , Amend L/C Other")]
+        [HttpGet("Remark2/2.LoadLC = 'AMEND-AMT' or @LoadLC = 'AMEND-OTH'")]
+        public async Task<ActionResult<IMLCResultResponse>> Remark([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            //if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMLC_SaveAmend_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+
+                ////ListType
+                param.Add("@LoadLC", save.ListType.LoadLC);
+
+    
+                param.Add("@Resp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+
+                await _db.SaveData(
+                  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Release Error";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
+
+
 
 
 

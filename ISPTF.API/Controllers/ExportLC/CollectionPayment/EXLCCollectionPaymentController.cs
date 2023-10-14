@@ -193,6 +193,34 @@ namespace ISPTF.API.Controllers.ExportLC
             return BadRequest(response);
         }
 
+        [HttpGet("query")]
+        public async Task<IEnumerable<Q_EXLCCollectionPaymentQueryPageRsp>> GetAllQuery(string? CenterID, string? EXPORT_LC_NO, string? BENName, string? USER_ID, string? Page, string? PageSize)
+        {
+            DynamicParameters param = new();
+
+            //param.Add("@ListType", @ListType);
+            param.Add("@CenterID", CenterID);
+            param.Add("@EXPORT_LC_NO", EXPORT_LC_NO);
+            param.Add("@BENName", BENName);
+            param.Add("@USER_ID", USER_ID);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (EXPORT_LC_NO == null)
+            {
+                param.Add("@EXPORT_LC_NO", "");
+            }
+            if (BENName == null)
+            {
+                param.Add("@BENName", "");
+            }
+
+            var results = await _db.LoadData<Q_EXLCCollectionPaymentQueryPageRsp, dynamic>(
+                        storedProcedure: "usp_q_EXLC_CollectionPaymentQueryPage",
+                        param);
+            return results;
+        }
+
 
         [HttpPost("save")]
         public ActionResult<PEXLCPPaymentPEXPaymentPPayDetailsSaveResponse> Save([FromBody] PEXLCPPaymentPEXPaymentPPayDetailsSaveRequest data)
@@ -272,7 +300,10 @@ namespace ISPTF.API.Controllers.ExportLC
                             eventRow.METHOD = data.PEXLC.METHOD;
 
                             // RECEIVED_NO DCR
-                            if (data.PEXPAYMENT.Debit_credit_flag == "C")
+                            if ( eventRow.RECEIVED_NO !=null && eventRow.RECEIVED_NO != "" )
+                            { 
+
+                                if (data.PEXPAYMENT.Debit_credit_flag == "C")
                             {
                                 if (!eventRow.RECEIVED_NO.Contains("DCR"))
                                 {
@@ -286,6 +317,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                     eventRow.RECEIVED_NO = "";
                                 }
                             }
+                                }
                             string PayFlag;
                             //    var receiptNo = "[MOCK]" + ExportLCHelper.GenerateRandomReceiptNo(5);
                             string receiptNo;
@@ -314,8 +346,8 @@ namespace ISPTF.API.Controllers.ExportLC
                                     }
                                 }
                                 // Check Duplicate Receipt
-
-                                var duplicateReceipt = (from row in _context.pPayments
+                                eventRow.RECEIVED_NO = receiptNo;
+                               var duplicateReceipt = (from row in _context.pPayments
                                                         where row.RpReceiptNo == receiptNo &&
                                                               row.RpDocNo == data.PEXLC.EXPORT_LC_NO
                                                         select row).FirstOrDefault();
@@ -361,19 +393,6 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         }
 
-                        // Commit
-                        if (pExlcEvent == null)
-                        {
-                            // Insert
-                            _context.pExlcs.Add(eventRow);
-                        }
-                        else
-                        {
-                            // Update
-                            _context.pExlcs.Update(eventRow);
-                        }
-
-
                         pExPayment exPaymentRow = data.PEXPAYMENT;
                         exPaymentRow.DOCNUMBER = data.PEXLC.EXPORT_LC_NO;
                         exPaymentRow.EVENT_NO = targetEventNo;
@@ -390,13 +409,23 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 3 - Select Existing Event
                         var pExPayment = (from row in _context.pExPayments
-                                              where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
-                                                    (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
-                                                    row.EVENT_TYPE == EVENT_TYPE &&
-                                                    row.EVENT_NO == targetEventNo
-                                              select row).AsNoTracking().FirstOrDefault();
+                                          where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                                (row.REC_STATUS == "P" || row.REC_STATUS == "W") &&
+                                                row.EVENT_TYPE == EVENT_TYPE &&
+                                                row.EVENT_NO == targetEventNo
+                                          select row).AsNoTracking().FirstOrDefault();
+                        // Commit
+                        if (pExlcEvent == null)
+                        {
+                            // Insert
+                            _context.pExlcs.Add(eventRow);
+                        }
+                        else
+                        {
+                            // Update
+                            _context.pExlcs.Update(eventRow);
+                        }
 
-                        _context.SaveChanges();
 
                         // Commit
                         if (pExPayment == null)
@@ -410,7 +439,6 @@ namespace ISPTF.API.Controllers.ExportLC
                             _context.pExPayments.Update(exPaymentRow);
                         }
 
-                        _context.SaveChanges();
 
                         // GL MOCK WAIT DLL
                         //var glVouchId = "VOUCH ID FROM GL DLL";
