@@ -222,5 +222,32 @@ namespace ISPTF.API.Controllers.GetAny
                         storedProcedure: "usp_Auto_CheckGLBalance", param);
             return results;
         }
+        [HttpGet("AutoRepViewMaster")]
+        public async Task<ActionResult<PMidRateRsp>> AutoRepViewMaster(string UserID)
+        {
+            DynamicParameters param = new();
+            param.Add("@CUser", UserID);
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+            var results = await _db.LoadData<PMidRateRsp, dynamic>(
+                        storedProcedure: "usp_Auto_RepViewMaster", param);
+            var resp = param.Get<int>("@Resp");
+            ReturnResponse response = new();
+            if (resp == 1)
+            {
+                response.StatusCode = "200";
+                response.Message = "Success";
+                return Ok(response);
+            }
+            else
+            {
+
+
+                response.StatusCode = "400";
+                response.Message = "Error for  Auto RepViewMaster";
+                return BadRequest(response);
+            }
+        }
     }
 }

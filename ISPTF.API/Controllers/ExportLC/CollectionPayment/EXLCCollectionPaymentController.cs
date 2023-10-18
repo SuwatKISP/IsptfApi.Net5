@@ -287,10 +287,9 @@ namespace ISPTF.API.Controllers.ExportLC
                         //eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
                         eventRow.UPDATE_DATE = UpdateDateT; // With Time
-
+                        eventRow.IN_USE = 0;
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = UpdateDateNT; // Without Time
-
 
                         if (eventRow.PAYMENT_INSTRU == "PAID" ||
                             eventRow.PAYMENT_INSTRU == "BAHTNET" ||

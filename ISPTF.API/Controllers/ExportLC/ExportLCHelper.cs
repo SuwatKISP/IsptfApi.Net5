@@ -413,7 +413,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         payment.RpReceiptNo = RECEIPT_NO;
                         RECEIPT_NO = lc.RECEIVED_NO;
                     }
-
+                    payment.RpDocNo = lc.EXPORT_LC_NO;
                     payment.RpModule = "EXLC";
                     payment.RpCustCode = lc.BENE_ID;
                     payment.RpNote = "";

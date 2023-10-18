@@ -135,10 +135,33 @@ namespace ISPTF.API.Controllers.BatchControl
         {
             try
             {
+                if (data.RerunGFMS =="Y")
+                {
+                    DynamicParameters param = new DynamicParameters();
+                    param.Add("@Resp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+                    var results = await _db.LoadData<SendMailResultResponse, dynamic>(
+                        storedProcedure: "usp_RerunGFMS",
+                        param);
+                    var resp = param.Get<int>("@Resp");
+                        if (resp == 1)
+                        {
+
+                        }
+                        else
+                        {
+                            ReturnResponse response2 = new();
+                            response2.StatusCode = "400";
+                            response2.Message = "Error for Rerun";
+                            return BadRequest(response2);
+                        }
+                }
                 SendMailResultResponse response = new SendMailResultResponse();
                 var AppPath = ConfigurationHelper.config.GetSection("AppPath");
 
-                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat("C:\\temp\\publish\\", "batch.bat"));
+                ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat(AppPath.Value, "batch.bat"));
+                startInfo.Arguments = data.RerunGFMS; 
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
                 System.Diagnostics.Process.Start(startInfo);

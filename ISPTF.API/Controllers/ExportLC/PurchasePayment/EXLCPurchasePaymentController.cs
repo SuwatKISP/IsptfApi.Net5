@@ -432,7 +432,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             Call PrintPostGL
                         End If
                         */
-                      //  eventRow.VOUCH_ID = "MOCK VOUCH_ID";
+                        //  eventRow.VOUCH_ID = "MOCK VOUCH_ID";
 
                         // Commit pExlc
                         if (pExlcEvent == null)
@@ -456,6 +456,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         else
                         {
+
                             // Update
                             _context.pExPayments.Update(pExPaymentRow);
                         }
@@ -473,6 +474,7 @@ namespace ISPTF.API.Controllers.ExportLC
                        responseData.PEXPAYMENT = data.PEXPAYMENT;
 
                         response.Data = responseData;
+                        response.Message = "Export L/C Saved";
 
                         bool resGL;
                         bool resPayD;
@@ -546,7 +548,9 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         else
                         {
-                            resGL = false;
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L";
+                            return BadRequest(response);
                         }
 
                         string resPayDetail;
@@ -559,7 +563,9 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
                             else
                             {
-                                resPayD = false;
+                                response.Code = Constants.RESPONSE_ERROR;
+                                response.Message = "Error for Payment Detail";
+                                return BadRequest(response);
                             }
                         }
                         else
@@ -567,7 +573,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             resPayD = true;
                         }
 
-                        response.Message = "Export L/C Saved";
+
                         return Ok(response);
                     }
                     catch (Exception e)
