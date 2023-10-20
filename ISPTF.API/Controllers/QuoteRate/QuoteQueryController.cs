@@ -65,7 +65,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             return results;
         }
         // ListpageHist    }
-        [HttpGet("listpageLog")]
+
         public async Task<IEnumerable<QuoteQINTListLog>> GetAllG(string RateDate, int? Page, int? PageSize)
         {
             DynamicParameters param = new();
