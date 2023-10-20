@@ -582,7 +582,8 @@ namespace ISPTF.API.Controllers.ExportLC
         {
             EXLCResultResponse response = new();
             // Class validate
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             try
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -630,62 +631,201 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         pExlc eventRow = pExlcEvent;
 
-                        var opEvent = "";
-                        if (eventRow.METHOD.Contains("DEBIT"))
-                        {
-                            opEvent = "DR";
-                        }
-                        else if (eventRow.METHOD.Contains("CREDIT"))
-                        {
-                            opEvent = "CR";
-                        }
-                        if (opEvent != "")
-                        {
-                            /*
-                             Req1PSys = Send1PTxn(txtBeneCode.Text, TxtExLcCode.Text, OPSeqNo, "EXLC", op_event, _
-                                txtAcctNo(1).Text, txtAmtDebt(1).Text, _
-                                txtAcctNo(2).Text, txtAmtDebt(2).Text, _
-                                txtAcctNo(3).Text, txtAmtDebt(3).Text)
-                                If Req1PSys = False Then
-                                    cSql = "Update pExlc set   REC_STATUS ='W'   where EXPORT_LC_NO='" & TxtExLcCode.Text & "' " _
-                                           & "and record_type='EVENT' and Event_No =" & OPSeqNo & ""
-                                    cn.Execute cSql
-                                    framRelease.Visible = False
-                                    CmdDel.Enabled = True
-                                    CmdSave.Enabled = False
-                                    CmdPrint.Enabled = False
-                                     CmdExit.Enabled = True: SSTab1.Enabled = True
-                                    TxtExLcCode.Enabled = True: cmdFndLC.Enabled = True
-                                    Exit Sub
-                                End If
-                            */
-                        }
 
 
                         // 4 - Update Master
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
+                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
 
+                        var pExPayments = (from row in _context.pExPayments
+                                           where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                                 row.EVENT_TYPE == EVENT_TYPE &&
+                                                 row.EVENT_NO == targetEventNo
+                                           select row).AsNoTracking().FirstOrDefault();
+                        double Tot_paid = 0;
+                        if (pExlcEvent.PARTIAL_FULL_RATE == 2) //full rate
+                        {
+                            if (pExPayments.SETTLEMENT_CREDIT == 0 || pExPayments.SETTLEMENT_CREDIT == 1)//fcy to thb
+                            {
 
+                                if (pExlcEvent.TENOR_OF_COLL == 1)
+                                {
+                                    Tot_paid = pExPayments.SIGHT_PAID_AMT.Value;
+                                }
+                                else
+                                {
+                                    Tot_paid = pExPayments.TERM_PAID_AMT.Value;
+                                }
+                            }
+                            else if (pExPayments.SETTLEMENT_CREDIT == 2)
+                            {
+                                if (pExlcEvent.TENOR_OF_COLL == 1)
+                                {
+                                    Tot_paid = pExPayments.SIGHT_PAID_THB.Value;
+                                }
+                                else
+                                {
+                                    Tot_paid = pExPayments.TERM_PAID_THB.Value;
+                                }
+                            }
+
+                        }
+                        else //full rate
+                        {
+                            double cAmt1 = 0;
+                            double cAmt2 = 0;
+                            double cAmt3 = 0;
+                            double cAmt4 = 0;
+                            double cAmt5 = 0;
+                            double cAmt6 = 0;
+                            double tAmt1 = 0;
+                            double tAmt2 = 0;
+                            double tAmt3 = 0;
+                            double tAmt4 = 0;
+                            double tAmt5 = 0;
+                            double tAmt6 = 0;
+                            if (pExPayments.PARTIAL_AMT1 != null)
+                            {
+                                cAmt1 = pExPayments.PARTIAL_AMT1.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT2 != null)
+                            {
+                                cAmt2 = pExPayments.PARTIAL_AMT2.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT3 != null)
+                            {
+                                cAmt3 = pExPayments.PARTIAL_AMT3.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT4 != null)
+                            {
+                                cAmt4 = pExPayments.PARTIAL_AMT4.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT5 != null)
+                            {
+                                cAmt5 = pExPayments.PARTIAL_AMT5.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT6 != null)
+                            {
+                                cAmt6 = pExPayments.PARTIAL_AMT6.Value;
+                            }
+
+                            if (pExPayments.PARTIAL_AMT1_THB != null)
+                            {
+                                tAmt1 = pExPayments.PARTIAL_AMT1_THB.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT2_THB != null)
+                            {
+                                tAmt2 = pExPayments.PARTIAL_AMT2_THB.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT3_THB != null)
+                            {
+                                tAmt3 = pExPayments.PARTIAL_AMT3_THB.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT4_THB != null)
+                            {
+                                tAmt4 = pExPayments.PARTIAL_AMT4_THB.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT5_THB != null)
+                            {
+                                tAmt5 = pExPayments.PARTIAL_AMT5_THB.Value;
+                            }
+                            if (pExPayments.PARTIAL_AMT6_THB != null)
+                            {
+                                tAmt6 = pExPayments.PARTIAL_AMT6_THB.Value;
+                            }
+                            if (pExPayments.SETTLEMENT_CREDIT == 0 || pExPayments.SETTLEMENT_CREDIT == 1)//fcy to thb
+                            {
+                                Tot_paid = cAmt1 + cAmt2 + cAmt3 + cAmt4 + cAmt5 + cAmt6;
+
+                            }
+                            else if (pExPayments.SETTLEMENT_CREDIT == 2)//fcy to thb
+                            {
+                                Tot_paid = tAmt1 + tAmt2 + tAmt3 + tAmt4 + tAmt5 + tAmt6;
+                            }
+
+                        }
+
+                        pExlcMaster.PurposeCode = pExlcEvent.PurposeCode;
+                        pExlcMaster.INVOICE = pExlcEvent.INVOICE;
+                        pExlcMaster.GENACC_FLAG = "Y";
+                        pExlcMaster.GENACC_DATE = UpdateDateNT;
+                        pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
+                        pExlcMaster.EVENT_MODE = "E";
+
+                        pExlcMaster.VOUCH_ID = pExlcEvent.VOUCH_ID;
+                        pExlcMaster.USER_ID = USER_ID;
+                        pExlcMaster.UPDATE_DATE = UpdateDateT;
+                        pExlcMaster.RELETE_PACK = pExlcEvent.RELETE_PACK;
+                        pExlcMaster.PAYMENTTYPE = pExlcEvent.PAYMENTTYPE;
+                        pExlcMaster.TOT_NEGO_AMT = pExlcMaster.TOT_NEGO_AMT - Tot_paid;
+                        pExlcMaster.TOT_NEGO_AMOUNT = pExlcMaster.TOT_NEGO_AMT;
+                        if (pExlcMaster.TOT_NEGO_AMT==0)
+                        {
+                            pExlcMaster.PAYMENTTYPE = "F";
+                        }
+                        else
+                        {
+                            pExlcMaster.PAYMENTTYPE = "P";
+                        }
+
+                        pExlcMaster.TOTAL_NEGO_BALANCE = pExlcEvent.TOTAL_NEGO_BALANCE;
+                        pExlcMaster.TOTAL_NEGO_BAL_THB = pExlcEvent.TOTAL_NEGO_BAL_THB;
+                        if (pExPayments.Debit_credit_flag =="R")
+                        {
+                            pExlcMaster.TOT_NEGO_AMT = 0;
+                            pExlcMaster.TOT_NEGO_AMOUNT = 0;
+                            pExlcMaster.PAYMENTTYPE = "F";
+                        }
+
+                        // 'PAYMENT
+                
+                        //   'TAB 2
+                        pExlcMaster.NEGO_COMM = pExlcEvent.NEGO_COMM;
+                        pExlcMaster.TELEX_SWIFT = pExlcEvent.TELEX_SWIFT;
+                        pExlcMaster.COURIER_POSTAGE = pExlcEvent.COURIER_POSTAGE;
+                        pExlcMaster.STAMP_FEE = pExlcEvent.STAMP_FEE;
+                        pExlcMaster.BE_STAMP = pExlcEvent.BE_STAMP;
+                        pExlcMaster.COMM_OTHER = pExlcEvent.COMM_OTHER;
+                        pExlcMaster.HANDING_FEE = pExlcEvent.HANDING_FEE;
+                        pExlcMaster.DRAFTCOMM = pExlcEvent.DRAFTCOMM;
+                        pExlcMaster.TOTAL_CHARGE = pExlcEvent.TOTAL_CHARGE;
+                        pExlcMaster.REFUND_TAX_YN = pExlcEvent.REFUND_TAX_YN;
+                        pExlcMaster.REFUND_TAX_AMT = pExlcEvent.REFUND_TAX_AMT;
+                        pExlcMaster.TOTAL_AMOUNT = pExlcEvent.TOTAL_AMOUNT;
 
                         _context.SaveChanges();
 
                         // 5 - Update Master/Event PK to Release
-                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'R',EVENT_NO ='{targetEventNo}',EVENT_TYPE ='{EVENT_TYPE}'   WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', AUTH_CODE = '{USER_ID}', AUTH_DATE = '{UpdateDateT}' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE ='{EVENT_TYPE}' AND EVENT_NO ='{pExlcEvent.EVENT_NO}'");
 
+                        var pPayments = (from row in _context.pPayments
+                                         where row.RpReceiptNo == pExlcEvent.RECEIVED_NO
+                                         select row).ToList();
 
-                        /*
-                         * FRONT OR BACK LOGIC
-                         If Duplicate = True Then
-                            If ChkReleaseMaster("EXLC", Trim(TxtExLcCode.Text)) = True Then CmdDel.Enabled = False: framRelease.Visible = False: CmdSave.Enabled = False: Exit Sub
-                         End If
-                         */
+                        foreach (var row in  pPayments)
+                        {
+                            row.RpRecStatus = "R";
+                        }
+                       _context.SaveChanges();
+
+                        // 8 - Update PPayment
+                        var pEXPayments = (from row in _context.pExPayments
+                                           where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                           row.EVENT_TYPE == EVENT_TYPE && row.EVENT_NO == pExlcEvent.EVENT_NO
+                                           select row).ToList();
+
+                        foreach (var row in  pEXPayments)
+                        {
+                            row.REC_STATUS = "R";
+                        }
+                        _context.SaveChanges();
 
                         // 6 - Update GL Flag
                         var gls = (from row in _context.pDailyGLs
-                                   where row.VouchID == data.PEXLC.VOUCH_ID &&
-                                            row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
+                                   where row.VouchID == pExlcEvent.VOUCH_ID &&
+                                            row.VouchDate == pExlcEvent.EVENT_DATE.GetValueOrDefault().Date
                                    select row).ToList();
 
                         foreach (var row in gls)
@@ -694,14 +834,32 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
 
 
-                        var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
-                       
+                        // var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
+                        _context.SaveChanges();
+
                         transaction.Complete();
 
 
                         response.Code = Constants.RESPONSE_OK;
                         response.Message = "Export L/C Released";
-                        return Ok(response);
+                        string eventDate;
+                        string resCustLiab;
+                        eventDate = pExlcEvent.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        resCustLiab = ISPModule.CustLiabEXLC.EXLC_CollectPay(eventDate, "ISSUE", pExPayments.Debit_credit_flag,
+                        pExlcEvent.EXPORT_LC_NO, pExlcEvent.BENE_ID,
+                        pExlcEvent.DRAFT_CCY,
+                        pExlcEvent.DRAFT_AMT.ToString(),
+                        pExlcEvent.EVENT_NO.ToString());
+                        if (resCustLiab != "ERROR")
+                        {
+                            return Ok(response);
+                        }
+                        else
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C Error for Update Liability";
+                            return BadRequest(response);
+                        }
                     }
                     catch (Exception e)
                     {

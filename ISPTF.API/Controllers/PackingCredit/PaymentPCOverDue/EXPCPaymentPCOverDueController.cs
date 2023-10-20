@@ -215,7 +215,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                                                  row.record_type == "MASTER"
                                            select row).AsNoTracking().FirstOrDefault();
                         var event_no = pExpcMaster.event_no + 1;
-                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET event_no = {event_no}, rec_status = 'P' WHERE PACKING_NO = '{pExpcMaster.PACKING_NO}' AND record_type = 'MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET  rec_status = 'P' WHERE PACKING_NO = '{pExpcMaster.PACKING_NO}' AND record_type = 'MASTER'");
                         _context.SaveChanges();
 
                         // 2 - Save Event
@@ -338,12 +338,12 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("delete")]
-        public ActionResult<EXPCResultResponse> Delete(string? PACKING_NO)
+       public ActionResult<EXPCResultResponse> Delete([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
 
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -361,7 +361,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE
                                           select row).AsNoTracking().FirstOrDefault();

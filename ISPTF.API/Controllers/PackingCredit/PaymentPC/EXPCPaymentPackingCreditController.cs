@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using ISPTF.Models.LoginRegis;
 using System.Transactions;
 using System.Reflection;
+using ISPTF.API.Controllers.ExportLC;
 
 namespace ISPTF.API.Controllers.PackingCredit
 {
@@ -191,6 +192,8 @@ namespace ISPTF.API.Controllers.PackingCredit
         public ActionResult<PEXPCPPaymentResponse> Save([FromBody] PEXPCPPaymentRequest pexpcppaymentrequest)
         {
             PEXPCPPaymentResponse response = new();
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             var pExpc = pexpcppaymentrequest.pExpc;
             if (string.IsNullOrEmpty(pExpc.PACKING_NO))
@@ -216,32 +219,40 @@ namespace ISPTF.API.Controllers.PackingCredit
                                                  row.record_type == "MASTER"
                                            select row).AsNoTracking().FirstOrDefault();
                         var event_no = pExpcMaster.event_no + 1;
-                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET event_no = {event_no}, rec_status = 'P' WHERE PACKING_NO = '{pExpcMaster.PACKING_NO}' AND record_type = 'MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET rec_status = 'P' WHERE PACKING_NO = '{pExpcMaster.PACKING_NO}' AND record_type = 'MASTER'");
                         _context.SaveChanges();
 
                         // 2 - Save Event
-                        var pExpcEvent = (from row in _context.pExpcs
+                        var pExpcEventchk = (from row in _context.pExpcs
                                           where row.PACKING_NO == pExpc.PACKING_NO &&
                                                 row.record_type == "EVENT" &&
                                                 row.event_no == event_no
                                           select row).AsNoTracking().FirstOrDefault();
-                        if (pExpcEvent == null)
+
+                        pExpc pExpcEvent = pexpcppaymentrequest.pExpc;
+
+                        if (pExpcEventchk == null)
                         {
-                            pExpcEvent = new pExpc();
+                         //   pExpcEvent = new pExpc();
                             pExpcEvent.PACKING_NO = pExpc.PACKING_NO;
                             pExpcEvent.record_type = "EVENT";
                             pExpcEvent.event_no = event_no;
                             pExpcEvent.rec_status = "P";
                             _context.pExpcs.Add(pExpcEvent);
                             _context.SaveChanges();
+
                         }
+                        pExpcEvent.PACKING_NO = pExpc.PACKING_NO;
+                        pExpcEvent.record_type = "EVENT";
+                        pExpcEvent.event_no = event_no;
+                        pExpcEvent.rec_status = "P";
                         pExpcEvent.event_mode = "E";
                         pExpcEvent.event_type = EVENT_TYPE;
                         pExpcEvent.business_type = BUSINESS_TYPE;
                         pExpcEvent.PurposeCode = pExpc.PurposeCode;
                         pExpcEvent.CenterID = CenterID;
                         pExpcEvent.user_id = user_id;
-                        pExpcEvent.update_date = DateTime.Now;
+                        pExpcEvent.update_date = UpdateDateT;
                         pExpcEvent.event_date = pExpc.event_date;
                         pExpcEvent.cnty_code = pExpc.cnty_code;
                         pExpcEvent.cust_id = pExpc.cust_id;
@@ -303,17 +314,24 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcEvent.FcdAcc = pExpc.FcdAcc;
                         pExpcEvent.BahtNet = pExpc.BahtNet;
                         pExpcEvent.CalIntDate = pExpc.CalIntDate;
-
+                        pExpcEvent.in_Use = "0";
                         pExpcEvent.pay_instruc = pExpc.pay_instruc;
                         pExpcEvent.received_no = pExpc.received_no;
+
                         if (pExpcEvent.pay_instruc == "1")
                         {
                             pExpcEvent.method = pExpc.method;
-                            pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
-                            if (pExpcEvent.received_no == "")
+                            //pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
+                            //if (pExpcEvent.received_no == "")
+                            //{
+                            //    pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                            //}
+
+                            if (pExpcEvent.received_no == "" || pExpcEvent.received_no == null)
                             {
-                                pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                                pExpcEvent.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
                             }
+
                             SavePayment(pExpcEvent, pexpcppaymentrequest.pPayment);
                         }
                         else if (pExpcEvent.pay_instruc == "2")
@@ -325,22 +343,32 @@ namespace ISPTF.API.Controllers.PackingCredit
                         }
                         else if (pExpcEvent.pay_instruc == "3")
                         {
-                            pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
-                            if (pExpcEvent.received_no == "")
+                            //pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
+                            //if (pExpcEvent.received_no == "")
+                            //{
+                            //    pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                            //}
+                            if (pExpcEvent.received_no == "" || pExpcEvent.received_no == null)
                             {
-                                pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                                pExpcEvent.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
                             }
+
                             pExpcEvent.BahtNet = pExpc.BahtNet;
                             SavePayment(pExpcEvent, pexpcppaymentrequest.pPayment);
                         }
                         else if (pExpcEvent.pay_instruc == "4")
                         {
                             pExpcEvent.method = "";
-                            pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
-                            if (pExpcEvent.received_no == "")
+                            //pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
+                            //if (pExpcEvent.received_no == "")
+                            //{
+                            //    pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                            //}
+                            if (pExpcEvent.received_no == "" || pExpcEvent.received_no == null)
                             {
-                                pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                                pExpcEvent.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
                             }
+
                             pExpcEvent.FcdAcc = pExpc.FcdAcc;
                             pExpcEvent.FcdAmt = pExpc.FcdAmt;
                             SavePayment(pExpcEvent, pexpcppaymentrequest.pPayment);
@@ -357,6 +385,48 @@ namespace ISPTF.API.Controllers.PackingCredit
                         // Commit
                         _context.SaveChanges();
                         transaction.Complete();
+                        transaction.Dispose();
+
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Packing Credit Saved";
+                        response.Data = new();
+                        response.Data.PEXPC = pexpcppaymentrequest.pExpc;
+                        response.Data.PPAYMENT = pexpcppaymentrequest.pPayment;
+     
+
+                        bool resGL;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent = response.Data.PEXPC.event_type;
+                        eventDate = response.Data.PEXPC.event_date.Value.ToString("dd/MM/yyyy");
+                        if (pExpcEvent.pay_instruc == "4")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXPC(response.Data.PEXPC.PACKING_NO,
+                            eventDate, GLEvent, response.Data.PEXPC.event_no, "PAYMENT-FCD");
+                        }
+                        else
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXPC(response.Data.PEXPC.PACKING_NO,
+                            eventDate, GLEvent, response.Data.PEXPC.event_no, GLEvent);
+                        }
+
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            response.Data.PEXPC.vouch_id = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+                        if (resGL == false)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L";
+                            response.Data = new();
+                            return BadRequest(response);
+                        }
+                        return Ok(response);
                     }
                     catch (Exception e)
                     {
@@ -366,12 +436,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         response.Message = e.ToString();
                         return BadRequest(response);
                     }
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Packing Credit Saved";
-                    response.Data = new();
-                    response.Data.PEXPC = pexpcppaymentrequest.pExpc;
-                    response.Data.PPAYMENT = pexpcppaymentrequest.pPayment;
-                    return Ok(response);
+
                 }
             }
             catch (Exception e)
@@ -384,12 +449,12 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("delete")]
-        public ActionResult<EXPCResultResponse> Delete(string? PACKING_NO)
+        public ActionResult<EXPCResultResponse> Delete([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
 
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -407,7 +472,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE
                                           select row).AsNoTracking().FirstOrDefault();

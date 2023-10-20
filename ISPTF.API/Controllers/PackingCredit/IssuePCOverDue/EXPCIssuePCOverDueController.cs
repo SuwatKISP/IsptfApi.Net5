@@ -345,12 +345,12 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("delete")]
-        public ActionResult<EXPCResultResponse> Delete(string? PACKING_NO)
+        public ActionResult<EXPCResultResponse> Delete([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
 
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -368,7 +368,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE
                                           select row).AsNoTracking().FirstOrDefault();
