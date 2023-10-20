@@ -711,7 +711,7 @@ namespace ISPTF.API.Controllers.ExportBC
                     {
                         ReturnResponse response = new();
                         response.StatusCode = "400";
-                        response.Message = "Export BC Error for Update Liability";
+                        response.Message = "Export B/C Error for Update Liability";
                         return BadRequest(response);
                     }
                     //ReturnResponse response = new();

@@ -12,5 +12,6 @@ namespace ISPTF.Models.ImportTR
         public Q_IMTR_ExtendDueDateSelect_SearchCust_rsp SearchCust { get; set; }
         public Q_IMTR_ExtendDueDateSelect_pIMTRMaster_rsp pIMTRMaster { get; set; }
         public Q_IMTR_ExtendDueDateSelect_pPayment_rsp pPayment { get; set; }
+        public Q_IMTR_Select_DefaultRate_rsp DefaultRate { get; set; }
     }
 }

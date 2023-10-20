@@ -129,7 +129,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             pRefNo.InUse = true;
                             _context.pReferenceNos.Update(pRefNo);
-                            _context.SaveChanges();
+                           _context.SaveChanges();
 
                             var currentRunNo = 0;
                             if (pRefNo.pRefSeq != null)
@@ -398,7 +398,7 @@ namespace ISPTF.API.Controllers.ExportLC
                     string RECEIPT_NO = lc.RECEIVED_NO;
                     var existingPPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == lc.RECEIVED_NO
-                                            select row).FirstOrDefault();
+                                            select row).AsNoTracking().FirstOrDefault();
 
                     if (existingPPayment == null)
                     {
@@ -410,9 +410,10 @@ namespace ISPTF.API.Controllers.ExportLC
                     }
                     else
                     {
+                        payment.RpReceiptNo = RECEIPT_NO;
                         RECEIPT_NO = lc.RECEIVED_NO;
                     }
-
+                    payment.RpDocNo = lc.EXPORT_LC_NO;
                     payment.RpModule = "EXLC";
                     payment.RpCustCode = lc.BENE_ID;
                     payment.RpNote = "";
@@ -487,9 +488,19 @@ namespace ISPTF.API.Controllers.ExportLC
                         payment.RpCustAc3 = payment.RpCustAc3;
                     }
 
+                    if (payment.RpPayDate == null)
+                    {
+                        payment.RpPayDate = lc.EVENT_DATE;
+                    }
+                    else
+                    {
+                        payment.RpPayDate = payment.RpPayDate;
+                    }
+
+                   payment.RpRecStatus = lc.REC_STATUS;
                     payment.RpStatus = "A";
                     payment.UserCode = lc.USER_ID;
-                    payment.UpdateDate = DateTime.Now;
+                    payment.UpdateDate = UpdateT;
 
                     if (existingPPayment == null)
                     {
@@ -516,133 +527,319 @@ namespace ISPTF.API.Controllers.ExportLC
             }
         }
 
-        //public static string SavePayment2(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pPayment payment,string PAYF_FLAG, DateTime UpdateT, DateTime UpdateNT)
-        //{
-        //    using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-        //    {
-        //        try
-        //        {
-        //            string RECEIPT_NO = GenRefNo2(_context, USER_CENTER_ID, USER_ID, PAYF_FLAG,UpdateT,UpdateNT);
+        public static string HistInterest(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pExPayment payment)
+        {
+            //  DateTime GetSysDate = ModDate.GetSystemDateTime();
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    int cSeqNo;
+                    int maxSeq = 0;
+                    var maxSeqRow = (from row in _context.pEXInterests
+                                     where row.Login == "EXLC" &&
+                                      row.DocNo == lc.EXPORT_LC_NO
+                                     select row).ToList().OrderByDescending(x => x.Seqno);
+                    foreach (var row in maxSeqRow)
+                    {
+                        maxSeq = row.Seqno;
+                        break;
+                    }
+                    if (maxSeq == 0)
+                    {
+                        cSeqNo = 1;
+                    }
+                    else
+                    {
+                        cSeqNo = maxSeq + 1;
+                    }
+                    var pEXInterests = (from row in _context.pEXInterests
+                                  where row.Login == "EXLC" &&
+                                  row.DocNo == lc.EXPORT_LC_NO &&
+                                  row.EventNo == payment.EVENT_NO &&
+                                  row.Seqno == cSeqNo
+                                  select row).AsNoTracking().FirstOrDefault();
+                    pEXInterest exinterest = new pEXInterest();
+                    if (pEXInterests==null)
+                    {
+                      //  cAddNew = True
 
-        //            var existingPPayment = (from row in _context.pPayments
-        //                                    where row.RpReceiptNo == lc.RECEIVED_NO
-        //                                    select row).FirstOrDefault();
+                        exinterest.DocNo = payment.DOCNUMBER;
+                        exinterest.Login = "EXLC";
+                        exinterest.Event = "";
+                        exinterest.EventNo = payment.EVENT_NO;
+                    }
+                
+                    exinterest.CenterID = USER_CENTER_ID;
+                    exinterest.Seqno = cSeqNo;
+                    exinterest.CalDate = payment.EVENT_DATE;
+                    if (lc.TENOR_OF_COLL ==1)
+                    {
+                        exinterest.IntFrom = lc.SIGHT_START_DATE;
+                    }
+                    else
+                    {
+                        exinterest.IntFrom = lc.TERM_DUE_DATE;
+                    }
 
-        //            if (existingPPayment == null)
-        //            {
+                    exinterest.IntTo = payment.PAYMENT_DATE;
+                    exinterest.Ccy = lc.DRAFT_CCY;
+                    exinterest.IntDay = payment.int_day;
+                    exinterest.CurIntRate = payment.CURRENT_INT_RATE;
+                    exinterest.IntCCy = payment.int_paid_amt;
+                    exinterest.IntAmt = payment.int_paid_thb;
+                    exinterest.IntExchRate = payment.int_exch_rate;
+                    exinterest.BaseDay = payment.BASE_DAY;
+                    if (payment.PARTIAL_FULL_RATE==2) // ' full rate
+                    {
+                        if (payment.SETTLEMENT_CREDIT==0) //'fcd to thb
+                        {
+                            if (lc.TENOR_OF_COLL ==1)
+                            {
+                                exinterest.BalCcy = payment.SIGHT_PAID_AMT;
+                            }
+                            else
+                            {
+                                exinterest.BalCcy = payment.TERM_PAID_AMT;
+                            }
+                        } // FCD TO THB
+                        else
+                        {
+                            if (lc.TENOR_OF_COLL == 1)
+                            {
+                                exinterest.BalCcy = payment.SIGHT_PAID_THB;
+                            }
+                            else
+                            {
+                                exinterest.BalCcy = payment.TERM_PAID_THB;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (payment.SETTLEMENT_CREDIT == 0 || payment.SETTLEMENT_CREDIT == 1)//fcy to thb
+                        {
+                            exinterest.BalCcy = payment.PARTIAL_AMT1.Value + payment.PARTIAL_AMT2.Value +
+                                payment.PARTIAL_AMT3.Value + payment.PARTIAL_AMT4.Value +
+                                payment.PARTIAL_AMT5.Value + payment.PARTIAL_AMT6.Value;
+                        }
+                        else if (payment.SETTLEMENT_CREDIT == 2)//fcy to thb
+                        {
+                            exinterest.BalCcy = payment.PARTIAL_AMT1_THB.Value + payment.PARTIAL_AMT2_THB.Value +
+                                payment.PARTIAL_AMT3_THB.Value + payment.PARTIAL_AMT4_THB.Value +
+                                payment.PARTIAL_AMT5_THB.Value + payment.PARTIAL_AMT6_THB.Value;
+                        }
+                    }
+                    
+                    
 
-        //                payment.RpReceiptNo = RECEIPT_NO;
-        //                payment.RpDocNo = lc.EXPORT_LC_NO;
-        //                payment.RpEvent = lc.EVENT_NO.ToString();
+                    if (pEXInterests == null)
+                    {
+                        _context.pEXInterests.Add(exinterest);
+                    }
+                    else
+                    {
+                        _context.pEXInterests.Update(exinterest);
 
-        //            }
-        //            else
-        //            {
-        //                RECEIPT_NO = existingPPayment.RpReceiptNo;
-        //            }
+                    }
 
-        //            payment.RpModule = "EXLC";
-        //            payment.RpCustCode = lc.BENE_ID;
-        //            payment.RpNote = "";
-        //            if (payment.RpApplicant == null)
-        //            {
-        //                payment.RpApplicant = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpApplicant = payment.RpApplicant.ToUpper();
-        //            }
+                    _context.SaveChanges();
 
-        //            if (payment.RpChqNo == null)
-        //            {
-        //                payment.RpChqNo = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpChqNo = payment.RpChqNo.ToUpper();
-        //            }
+                    transaction.Complete();
+                    return "OK";
 
-        //            if (payment.RpChqBank == null)
-        //            {
-        //                payment.RpChqBank = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpChqBank = payment.RpChqBank.ToUpper();
-        //            }
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return "ERROR";
+                }
 
-        //            if (payment.RpChqBranch == null)
-        //            {
-        //                payment.RpChqBranch = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpChqBranch = payment.RpChqBranch.ToUpper();
-        //            }
-        //            if (payment.RpChqBranch == null)
-        //            {
-        //                payment.RpChqBranch = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpChqBranch = payment.RpChqBranch.ToUpper();
-        //            }
+            }
+        }
 
-        //            if (payment.RpCustAc1 == null)
-        //            {
-        //                payment.RpCustAc1 = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpCustAc1 = payment.RpCustAc1;
-        //            }
+        public static string HistInterestODU(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pExPayment payment)
+        {
+            //  DateTime GetSysDate = ModDate.GetSystemDateTime();
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    int cSeqNo;
+                    int maxSeq = 0;
+                    var maxSeqRow = (from row in _context.pEXInterests
+                                     where row.Login == "EXLC" &&
+                                      row.DocNo == lc.EXPORT_LC_NO
+                                     select row).ToList().OrderByDescending(x => x.Seqno);
+                    foreach (var row in maxSeqRow)
+                    {
+                        maxSeq = row.Seqno;
+                        break;
+                    }
+                    if (maxSeq == 0)
+                    {
+                        cSeqNo = 1;
+                    }
+                    else
+                    {
+                        cSeqNo = maxSeq + 1;
+                    }
+                    var pEXInterests = (from row in _context.pEXInterests
+                                        where row.Login == "EXLC" &&
+                                        row.DocNo == lc.EXPORT_LC_NO &&
+                                        row.EventNo == payment.EVENT_NO &&
+                                        row.Seqno == cSeqNo
+                                        select row).AsNoTracking().FirstOrDefault();
+                    pEXInterest exinterest = new pEXInterest();
+                    if (pEXInterests == null)
+                    {
+                        //  cAddNew = True
 
-        //            if (payment.RpCustAc2 == null)
-        //            {
-        //                payment.RpCustAc2 = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpCustAc2 = payment.RpCustAc2;
-        //            }
+                        exinterest.DocNo = payment.DOCNUMBER;
+                        exinterest.Login = "EXLC";
+                        exinterest.Event = payment.EVENT_TYPE;
+                        exinterest.EventNo = payment.EVENT_NO;
+                    }
 
-        //            if (payment.RpCustAc3 == null)
-        //            {
-        //                payment.RpCustAc3 = "";
-        //            }
-        //            else
-        //            {
-        //                payment.RpCustAc3 = payment.RpCustAc3;
-        //            }
+                    exinterest.CenterID = USER_CENTER_ID;
+                    exinterest.Seqno = cSeqNo;
+                    exinterest.CalDate = payment.EVENT_DATE;
+                    exinterest.IntFrom = lc.LASTINTDATE;
+                    exinterest.IntTo = lc.ValueDate;
 
-        //            payment.RpStatus = "A";
-        //            payment.UserCode = lc.USER_ID;
-        //            payment.UpdateDate = DateTime.Now;
+                    exinterest.BalCcy = lc.PRNBALANCE;
 
-        //            if (existingPPayment == null)
-        //            {
-        //                _context.pPayments.Add(payment);
-        //            }
-        //            else
-        //            {
-        //                _context.pPayments.Update(payment);
+                    exinterest.IntCode = lc.INTCODE;
+                    exinterest.IntRate = lc.OINTRATE;
+                    exinterest.Spread = lc.OINTSPDRATE;
+                    exinterest.CurIntRate = lc.OINTCURRATE;
+                    exinterest.IntDay = lc.OINTDAY;
+                    exinterest.BaseDay = lc.OBASEDAY;
+                    exinterest.IntCCy = 0;
+                    exinterest.IntExchRate = 0;
+                    exinterest.IntAmt = payment.int_paid_thb;
+                    exinterest.Ccy = payment.fb_ccy;
+                    
 
-        //            }
 
-        //            _context.SaveChanges();
+                    if (pEXInterests == null)
+                    {
+                        _context.pEXInterests.Add(exinterest);
+                    }
+                    else
+                    {
+                        _context.pEXInterests.Update(exinterest);
 
-        //            transaction.Complete();
-        //            return RECEIPT_NO;
+                    }
 
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            // Rollback
-        //            return "ERROR";
-        //        }
+                    _context.SaveChanges();
 
-        //    }
-        //}
+                    transaction.Complete();
+                    return "OK";
+
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return "ERROR";
+                }
+
+            }
+        }
+
+        public static string HistInterestIssueODU(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc)
+        {
+            //  DateTime GetSysDate = ModDate.GetSystemDateTime();
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    //var maxSeq5 = (from row in _context.pEXInterests
+                    //              where row.Login == "EXLC" &&
+                    //              row.DocNo == lc.EXPORT_LC_NO
+                    //              select row).Max(x => x.Seqno);
+                    int cSeqNo;
+                    int maxSeq=0;
+                    var maxSeqRow = (from row in _context.pEXInterests
+                                   where row.Login == "EXLC" &&
+                                    row.DocNo == lc.EXPORT_LC_NO
+                                   select row).ToList().OrderByDescending(x=>x.Seqno);
+                    foreach (var row in maxSeqRow)
+                    {
+                        maxSeq = row.Seqno;
+                        break;
+                    }
+                    if (maxSeq == 0)
+                    {
+                        cSeqNo = 1;
+                    }
+                    else
+                    {
+                        cSeqNo = maxSeq + 1;
+                    }
+                    var pEXInterests = (from row in _context.pEXInterests
+                                        where row.Login == "EXLC" &&
+                                        row.Event == "OVERDUE" &&
+                                        row.DocNo == lc.EXPORT_LC_NO &&
+                                        row.EventNo == lc.EVENT_NO &&
+                                        row.Seqno == cSeqNo
+                                        select row).AsNoTracking().FirstOrDefault();
+                    pEXInterest exinterest = new pEXInterest();
+                    if (pEXInterests == null)
+                    {
+                        //  cAddNew = True
+
+                        exinterest.DocNo = lc.EXPORT_LC_NO;
+                        exinterest.Login = "EXLC";
+                        exinterest.Event = "OVERDUE";
+                        exinterest.EventNo = lc.EVENT_NO;
+                    }
+  
+                    exinterest.CenterID = USER_CENTER_ID;
+                    exinterest.Seqno = cSeqNo;
+                    exinterest.CalDate = lc.EVENT_DATE;
+                    exinterest.IntFrom = lc.LASTINTDATE;
+                    exinterest.IntTo = lc.VALUE_DATE;
+
+                    exinterest.BalCcy = lc.PURCHASE_AMT;
+
+                    exinterest.IntCode = "CCY";
+                    exinterest.IntRate = lc.CURRENT_INT_RATE;
+                    exinterest.Spread = 0;
+                    exinterest.CurIntRate = lc.CURRENT_INT_RATE;
+                    exinterest.IntDay = lc.OINTDAY;
+                    exinterest.BaseDay = lc.BASE_DAY;
+                    exinterest.IntCCy = lc.PARTIAL_AMT1;
+                    exinterest.IntExchRate = lc.PARTIAL_RATE1;
+                    exinterest.IntAmt = lc.PARTIAL_AMT1_THB;
+                    exinterest.Ccy =lc.DRAFT_CCY;
+                    
+
+
+                    if (pEXInterests == null)
+                    {
+                        _context.pEXInterests.Add(exinterest);
+                    }
+                    else
+                    {
+                        _context.pEXInterests.Update(exinterest);
+
+                    }
+
+                    _context.SaveChanges();
+
+                    transaction.Complete();
+                    return "OK";
+
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return "ERROR";
+                }
+
+            }
+        }
         public static bool SavePaymentDetail2(ISPTFContext _context, pExlc lc, pPayDetail[] payDetails)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))

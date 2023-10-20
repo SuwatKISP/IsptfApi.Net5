@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using ISPTF.Models.LoginRegis;
 using System.Transactions;
 using System.Reflection;
+using ISPTF.API.Controllers.ExportLC;
 
 namespace ISPTF.API.Controllers.PackingCredit
 {
@@ -191,6 +192,8 @@ namespace ISPTF.API.Controllers.PackingCredit
         public ActionResult<PEXPCPPaymentResponse> Save([FromBody] PEXPCPPaymentRequest pexpcppaymentrequest)
         {
             PEXPCPPaymentResponse response = new();
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             var pExpc = pexpcppaymentrequest.pExpc;
             if (string.IsNullOrEmpty(pExpc.PACKING_NO))
@@ -216,18 +219,19 @@ namespace ISPTF.API.Controllers.PackingCredit
                                                  row.record_type == "MASTER"
                                            select row).AsNoTracking().FirstOrDefault();
                         var event_no = pExpcMaster.event_no + 1;
-                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET event_no = {event_no}, rec_status = 'P' WHERE PACKING_NO = '{pExpcMaster.PACKING_NO}' AND record_type = 'MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET  rec_status = 'P' WHERE PACKING_NO = '{pExpcMaster.PACKING_NO}' AND record_type = 'MASTER'");
                         _context.SaveChanges();
-
+                        pExpc pExpcEvent = pexpcppaymentrequest.pExpc;
                         // 2 - Save Event
-                        var pExpcEvent = (from row in _context.pExpcs
+                        var pExpcEventchk = (from row in _context.pExpcs
                                           where row.PACKING_NO == pExpc.PACKING_NO &&
                                                 row.record_type == "EVENT" &&
                                                 row.event_no == event_no
                                           select row).AsNoTracking().FirstOrDefault();
-                        if (pExpcEvent == null)
+
+                        if (pExpcEventchk == null)
                         {
-                            pExpcEvent = new pExpc();
+                        //    pExpcEvent = new pExpc();
                             pExpcEvent.PACKING_NO = pExpc.PACKING_NO;
                             pExpcEvent.record_type = "EVENT";
                             pExpcEvent.event_no = event_no;
@@ -235,12 +239,16 @@ namespace ISPTF.API.Controllers.PackingCredit
                             _context.pExpcs.Add(pExpcEvent);
                             _context.SaveChanges();
                         }
+                        pExpcEvent.PACKING_NO = pExpc.PACKING_NO;
+                        pExpcEvent.record_type = "EVENT";
+                        pExpcEvent.event_no = event_no;
+                        pExpcEvent.rec_status = "P";
                         pExpcEvent.event_mode = "E";
                         pExpcEvent.event_type = EVENT_TYPE;
                         pExpcEvent.business_type = BUSINESS_TYPE;
                         pExpcEvent.CenterID = CenterID;
                         pExpcEvent.user_id = user_id;
-                        pExpcEvent.update_date = DateTime.Now;
+                        pExpcEvent.update_date = UpdateDateT;
 
                         pExpcEvent.principle_amt_thb1 = pExpcMaster.principle_amt_thb1;
                         pExpcEvent.principle_amt_ccy1 = pExpcMaster.principle_amt_ccy1;
@@ -274,11 +282,47 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcEvent.VALUE_DATE = pExpc.VALUE_DATE;
                         pExpcEvent.PCProfit = pExpc.PCProfit;
                         pExpcEvent.MidRate = pExpc.MidRate;
+                        pExpcEvent.in_Use = "0";
                         _context.pExpcs.Update(pExpcEvent);
 
                         // Commit
                         _context.SaveChanges();
                         transaction.Complete();
+                        transaction.Dispose();
+
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Packing Credit Saved";
+                        response.Data = new();
+                        response.Data.PEXPC = pExpcEvent;
+                        response.Data.PPAYMENT = pexpcppaymentrequest.pPayment;
+
+
+                        bool resGL;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent = response.Data.PEXPC.event_type;
+                        eventDate = response.Data.PEXPC.event_date.Value.ToString("dd/MM/yyyy");
+   
+                    resVoucherID = ISPModule.GeneratrEXP.StartPEXPC(response.Data.PEXPC.PACKING_NO,
+                        eventDate, GLEvent, response.Data.PEXPC.event_no, GLEvent,false,"U");
+
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            response.Data.PEXPC.vouch_id = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+                        if (resGL == false)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L";
+                            response.Data = new();
+                            return BadRequest(response);
+                        }
+                        return Ok(response);
                     }
                     catch (Exception e)
                     {
@@ -288,12 +332,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         response.Message = e.ToString();
                         return BadRequest(response);
                     }
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Packing Credit Saved";
-                    response.Data = new();
-                    response.Data.PEXPC = pexpcppaymentrequest.pExpc;
-                    response.Data.PPAYMENT = pexpcppaymentrequest.pPayment;
-                    return Ok(response);
+
                 }
             }
             catch (Exception e)
@@ -306,12 +345,12 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("delete")]
-        public ActionResult<EXPCResultResponse> Delete(string? PACKING_NO)
+        public ActionResult<EXPCResultResponse> Delete([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
 
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -329,7 +368,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE
                                           select row).AsNoTracking().FirstOrDefault();
@@ -375,7 +414,8 @@ namespace ISPTF.API.Controllers.PackingCredit
         public ActionResult<EXPCResultResponse> Release(string? PACKING_NO)
         {
             EXPCResultResponse response = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (string.IsNullOrEmpty(PACKING_NO))
             {
@@ -406,13 +446,13 @@ namespace ISPTF.API.Controllers.PackingCredit
                             return BadRequest(response);
                         }
 
-                        if (UpdateCustLiab(pExpcEvent))
+                        if (UpdateCustLiab(pExpcEvent, UpdateDateT))
                         {
                             var tmp = "pack_thb = 0";
                             if (pExpcEvent.packing_for == "T")
                                 tmp = "pack_ccy = 0";
-                            _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET {tmp}, rec_status= 'R', event_type = '{EVENT_TYPE}', auth_code = '{USER_ID}', auth_date = '{DateTime.Now}' WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}' AND record_type ='MASTER'");
-                            _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET {tmp} , rec_status= 'R' , event_type = '{EVENT_TYPE}' , auth_code = '{USER_ID}' , auth_date = '{DateTime.Now}' WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}' AND record_type ='EVENT'");
+                            _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET {tmp}, rec_status= 'R', event_type = '{EVENT_TYPE}', auth_code = '{USER_ID}', auth_date = '{UpdateDateT}' WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}' AND record_type ='MASTER'");
+                            _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET {tmp} , rec_status= 'R' , event_type = '{EVENT_TYPE}' , auth_code = '{USER_ID}' , auth_date = '{UpdateDateT}' WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}' AND record_type ='EVENT'");
                             _context.Database.ExecuteSqlRaw($"UPDATE pDailyGL SET SendFlag= 'R' WHERE VouchID = '{pExpcEvent.vouch_id}' AND VouchDate = '{pExpcEvent.LastIntDate}'");
                         }
 
@@ -442,7 +482,7 @@ namespace ISPTF.API.Controllers.PackingCredit
             return BadRequest(response);
         }
 
-        private void SavePayment(pExpc pExpc, pPayment pPaymentReq)
+        private void SavePayment(pExpc pExpc, pPayment pPaymentReq, DateTime UpdateDateT)
         {
             var pPayment = (from row in _context.pPayments
                             where row.RpReceiptNo == pExpc.received_no
@@ -478,7 +518,7 @@ namespace ISPTF.API.Controllers.PackingCredit
             pPayment.RpStatus = "A";
             pPayment.RpRecStatus = pExpc.rec_status;
             pPayment.UserCode = pExpc.user_id;
-            pPayment.UpdateDate = DateTime.Now;
+            pPayment.UpdateDate = UpdateDateT;
 
             _context.Database.ExecuteSqlRaw($"DELETE FROM pPayDetail WHERE dpReceiptNo = '{pExpc.received_no}'");
 
@@ -642,7 +682,7 @@ namespace ISPTF.API.Controllers.PackingCredit
             }
         }
 
-        private bool UpdateCustLiab(pExpc pExpcEvent)
+        private bool UpdateCustLiab(pExpc pExpcEvent, DateTime UpdateDateT)
         {
             double CCyAmt = 0;
             double BhtAmt = 0;
@@ -699,7 +739,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                 {
                     pCustLiab.EXPC_Book = pCustLiab.EXPC_Book - CCyAmt;
                     pCustLiab.EXPC_Amt = pCustLiab.EXPC_Amt + CCyAmt;
-                    pCustLiab.UpdateDate = DateTime.Now;
+                    pCustLiab.UpdateDate = UpdateDateT;
                 }
                 return true;
             }

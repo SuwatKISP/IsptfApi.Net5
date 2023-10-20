@@ -297,7 +297,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 }
                                 else
                                 {
-                                    eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYP", UpdateDateT, UpdateDateNT);
+                                    eventRow.RECEIVED_NO = ExportLCHelper.GenRefNo(_context, USER_CENTER_ID, USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
                                 }
                             }
 

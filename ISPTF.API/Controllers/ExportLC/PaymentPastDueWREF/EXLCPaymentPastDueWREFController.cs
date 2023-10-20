@@ -27,7 +27,7 @@ namespace ISPTF.API.Controllers.ExportLC
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
 
-        private const string BUSINESS_TYPE = "PAYP";
+        private const string BUSINESS_TYPE = "PAYD";
         private const string EVENT_TYPE = "PAYMENT PAST DUE";
         public EXLCPaymentPastDueWREFController(ISqlDataAccess db, ISPTFContext context)
         {
@@ -372,7 +372,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         responseData.PEXLC = eventRow;
                         responseData.PPAYMENT = data.PPAYMENT;
                         responseData.PEXPAYMENT = data.PEXPAYMENT;
-                        responseData.PPAYDETAILS = data.PPAYDETAILS;
+                      //  responseData.PPAYDETAILS = data.PPAYDETAILS;
 
                         response.Data = responseData;
                         response.Message = "Export L/C Saved";

@@ -549,6 +549,51 @@ namespace ISPTF.API.Controllers.ExportBC
                     param.Add("@CHEQUE_AMT", pexbcppaymentreq.PEXPayment.CHEQUE_AMT);
                     param.Add("@CHEQUE_NO", pexbcppaymentreq.PEXPayment.CHEQUE_NO);
                     param.Add("@CHEQUE_BK_BRN", pexbcppaymentreq.PEXPayment.CHEQUE_BK_BRN);
+
+                    param.Add("@ERECEIVE_PAY_AMT", pexbcppaymentreq.PEXPayment.RECEIVE_PAY_AMT);
+                    param.Add("@EPARTIAL_FULL_RATE", pexbcppaymentreq.PEXPayment.PARTIAL_FULL_RATE);
+
+                    param.Add("@EParTnor_Type1", pexbcppaymentreq.PEXPayment.ParTnor_Type1);
+                    param.Add("@EParTnor_Type2", pexbcppaymentreq.PEXPayment.ParTnor_Type2);
+                    param.Add("@EParTnor_Type3", pexbcppaymentreq.PEXPayment.ParTnor_Type3);
+                    param.Add("@EParTnor_Type4", pexbcppaymentreq.PEXPayment.ParTnor_Type4);
+                    param.Add("@EParTnor_Type5", pexbcppaymentreq.PEXPayment.ParTnor_Type5);
+                    param.Add("@EParTnor_Type6", pexbcppaymentreq.PEXPayment.ParTnor_Type6);
+
+                    param.Add("@EPARTIAL_AMT1", pexbcppaymentreq.PEXPayment.PARTIAL_AMT1);
+                    param.Add("@EPARTIAL_AMT2", pexbcppaymentreq.PEXPayment.PARTIAL_AMT2);
+                    param.Add("@EPARTIAL_AMT3", pexbcppaymentreq.PEXPayment.PARTIAL_AMT3);
+                    param.Add("@EPARTIAL_AMT4", pexbcppaymentreq.PEXPayment.PARTIAL_AMT4);
+                    param.Add("@EPARTIAL_AMT5", pexbcppaymentreq.PEXPayment.PARTIAL_AMT5);
+                    param.Add("@EPARTIAL_AMT6", pexbcppaymentreq.PEXPayment.PARTIAL_AMT6);
+
+                    param.Add("@EPARTIAL_RATE1", pexbcppaymentreq.PEXPayment.PARTIAL_RATE1);
+                    param.Add("@EPARTIAL_RATE2", pexbcppaymentreq.PEXPayment.PARTIAL_RATE2);
+                    param.Add("@EPARTIAL_RATE3", pexbcppaymentreq.PEXPayment.PARTIAL_RATE3);
+                    param.Add("@EPARTIAL_RATE4", pexbcppaymentreq.PEXPayment.PARTIAL_RATE4);
+                    param.Add("@EPARTIAL_RATE5", pexbcppaymentreq.PEXPayment.PARTIAL_RATE5);
+                    param.Add("@EPARTIAL_RATE6", pexbcppaymentreq.PEXPayment.PARTIAL_RATE6);
+
+                    param.Add("@EPARTIAL_AMT1_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT1_THB);
+                    param.Add("@EPARTIAL_AMT2_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT2_THB);
+                    param.Add("@EPARTIAL_AMT3_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT3_THB);
+                    param.Add("@EPARTIAL_AMT4_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT4_THB);
+                    param.Add("@EPARTIAL_AMT5_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT5_THB);
+                    param.Add("@EPARTIAL_AMT6_THB", pexbcppaymentreq.PEXPayment.PARTIAL_AMT6_THB);
+
+                    param.Add("@EFORWARD_CONRACT_NO1", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO1);
+                    param.Add("@EFORWARD_CONRACT_NO2", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO2);
+                    param.Add("@EFORWARD_CONRACT_NO3", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO3);
+                    param.Add("@EFORWARD_CONRACT_NO4", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO4);
+                    param.Add("@EFORWARD_CONRACT_NO5", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO5);
+                    param.Add("@EFORWARD_CONRACT_NO6", pexbcppaymentreq.PEXPayment.FORWARD_CONRACT_NO6);
+
+                    param.Add("@ETOTAL_NEGO_BALANCE", pexbcppaymentreq.PEXPayment.TOTAL_NEGO_BALANCE);
+                    param.Add("@ETOTAL_NEGO_BAL_THB", pexbcppaymentreq.PEXPayment.TOTAL_NEGO_BAL_THB);
+                    param.Add("@ETOTAL_AMOUNT", pexbcppaymentreq.PEXPayment.TOTAL_AMOUNT);
+                    param.Add("@ECURRENT_DIS_RATE", pexbcppaymentreq.PEXPayment.CURRENT_DIS_RATE);
+                    param.Add("@ECURRENT_INT_RATE", pexbcppaymentreq.PEXPayment.CURRENT_INT_RATE);
+                    param.Add("@EBASE_DAY", pexbcppaymentreq.PEXPayment.BASE_DAY);
                 }
                 //PPayment
                 if (pexbcppaymentreq.PPayment != null)

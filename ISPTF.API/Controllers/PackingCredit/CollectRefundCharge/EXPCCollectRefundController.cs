@@ -25,8 +25,8 @@ namespace ISPTF.API.Controllers.PackingCredit
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
 
-        //private const string BUSINESS_TYPE = "4";
-        //private const string EVENT_TYPE = "Accept Due";
+        private const string BUSINESS_TYPE = "6";
+        private const string EVENT_TYPE = "Collect/Refund";
 
         public EXPCCollectRefundController(ISqlDataAccess db, ISPTFContext context)
         {
@@ -112,7 +112,80 @@ namespace ISPTF.API.Controllers.PackingCredit
             return BadRequest(response);
         }
 
+        [HttpGet("select")]
+        public ActionResult<PEXPCPPaymentResponse> Select(string? PACKING_NO)
+        {
+            PEXPCPPaymentResponse response = new();
+            // Validate
+            if (string.IsNullOrEmpty(PACKING_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "PACKING_NO is required";
+                response.Data = new();
+                return BadRequest(response);
+            }
 
+            try
+            {
+                response.Data = new();
+                var event_no = 0;
+                var pExpcMaster = (from row in _context.pExpcs
+                                   where row.PACKING_NO == PACKING_NO &&
+                                           row.record_type == "MASTER"
+                                   select row).AsNoTracking().FirstOrDefault();
+                if (pExpcMaster != null)
+                {
+                    event_no = pExpcMaster.event_no + 1;
+                }
+                var pExpc = (from row in _context.pExpcs
+                             where row.PACKING_NO == PACKING_NO &&
+                                 row.event_type == EVENT_TYPE &&
+                                 row.event_no == event_no &&
+                                 (row.rec_status == "P" || row.rec_status == "W")
+                             select row).AsNoTracking().FirstOrDefault();
+                if (pExpc != null)
+                {
+                    pExpc = (from row in _context.pExpcs
+                             where row.PACKING_NO == PACKING_NO &&
+                                 row.event_type == EVENT_TYPE &&
+                                 row.record_type == "EVENT" &&
+                                 (row.rec_status == "P" || row.rec_status == "W")
+                             select row).AsNoTracking().FirstOrDefault();
+                }
+                else
+                {
+                    pExpc = pExpcMaster;
+                }
+
+                if (pExpc == null)
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "record not Found !";
+                    response.Data = new();
+                }
+                if (pExpc.pay_instruc == "1")
+                {
+                    var pPayment = (from row in _context.pPayments
+                                    where row.RpReceiptNo == pExpc.received_no &&
+                                          row.RpDocNo == pExpc.PACKING_NO
+                                    select row).AsNoTracking().FirstOrDefault();
+                    if (pPayment != null)
+                    {
+                        response.Data.PPAYMENT = pPayment;
+                    }
+                }
+                response.Code = Constants.RESPONSE_OK;
+                response.Data.PEXPC = pExpc;
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new();
+            }
+            return BadRequest(response);
+        }
 
 
 
