@@ -637,6 +637,18 @@ namespace ISPTF.API.Controllers.ImportTR
                         response.Data = jsonResponse;
                         return BadRequest(response);
                     }
+                    string resQuote = "";
+                    if (response.Data.pIMTR.RecStatus == "N" )
+                    {
+                        resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("IMTR", response.Data.pIMTR.TRNumber,
+                             response.Data.pIMTR.TRSeqno, response.Data.pIMTR.Event, "", response.Data.pIMTR.UserCode);
+                    }
+                    if (resQuote == "ERROR")
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for Quote Rate";
+                        return BadRequest(response);
+                    }
                     return Ok(response);
                     //string resPayDetail;
 

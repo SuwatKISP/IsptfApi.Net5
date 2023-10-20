@@ -505,6 +505,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             resVoucherID = "";
 
                         }
+                        response.Data.PEXLC.VOUCH_ID = resVoucherID;
                         if (resVoucherID != "ERROR")
                         {
                             resGL = true;
@@ -520,7 +521,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         string resPayDetail;
                         if (response.Data.PPAYMENT!= null)
                         {
-                            resPayDetail = ISPModule.PayDetailEXBC.PayDetail_CollectPay(response.Data.PEXLC.EXPORT_LC_NO, targetEventNo, response.Data.PEXLC.RECEIVED_NO);
+                            resPayDetail = ISPModule.PayDetailEXLC.PayDetail_CollectPay(response.Data.PEXLC.EXPORT_LC_NO, targetEventNo, response.Data.PEXLC.RECEIVED_NO);
                             if (resPayDetail != "ERROR")
                             {
                                 resPayD = true;
