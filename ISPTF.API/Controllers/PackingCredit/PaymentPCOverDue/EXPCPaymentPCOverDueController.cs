@@ -479,7 +479,7 @@ namespace ISPTF.API.Controllers.PackingCredit
             return BadRequest(response);
         }
 
-        private void SavePayment(pExpc pExpc, pPayment pPaymentReq)
+        private void SavePayment(pExpc pExpc, pPayment pPaymentReq, DateTime UpdateDateT)
         {
             var pPayment = (from row in _context.pPayments
                             where row.RpReceiptNo == pExpc.received_no
@@ -515,7 +515,7 @@ namespace ISPTF.API.Controllers.PackingCredit
             pPayment.RpStatus = "A";
             pPayment.RpRecStatus = pExpc.rec_status;
             pPayment.UserCode = pExpc.user_id;
-            pPayment.UpdateDate = DateTime.Now;
+            pPayment.UpdateDate = UpdateDateT;
 
             _context.Database.ExecuteSqlRaw($"DELETE FROM pPayDetail WHERE dpReceiptNo = '{pExpc.received_no}'");
 

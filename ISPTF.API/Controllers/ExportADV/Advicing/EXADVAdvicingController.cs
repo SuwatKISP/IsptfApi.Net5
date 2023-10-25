@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using ISPTF.Models.LoginRegis;
 using System.Transactions;
 using Microsoft.AspNetCore.Http;
+using ISPTF.API.Controllers.ExportLC;
 
 namespace ISPTF.API.Controllers.ExportADV
 {
@@ -271,7 +272,8 @@ namespace ISPTF.API.Controllers.ExportADV
         {
             PEXADPPaymentORIResponse response = new();
             response.Data = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (pexadppaymentrequest.pExad == null)
             {
@@ -297,7 +299,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         {
                             AdviceType = "ORIGINAL";
                         }
-                        else if (pexadppaymentrequest.pExad.EVENT_TYPE == "Pre Advice")
+                        else if (pexadppaymentrequest.pExad.EVENT_TYPE == "Amend")
                         {
                             AdviceType = "AMEND";
                         }
@@ -306,10 +308,11 @@ namespace ISPTF.API.Controllers.ExportADV
                             AdviceType = "MAILCONFIRM";
                         }
                         //Get RECEIPT_NO pexadreq.RECEIPT_NO = ?
+                        pExad pExadEvent = new pExad();
                         if (pexadppaymentrequest.pExad.EVENT_TYPE == "Full Advice" || pexadppaymentrequest.pExad.EVENT_TYPE == "Pre Advice")
                         {
                             seq = 1;
-                            var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq,"EVENT", pexadppaymentrequest.pExad.EVENT_TYPE,"P");
+                            pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq,"EVENT", pexadppaymentrequest.pExad.EVENT_TYPE,"P", UpdateDateT, UpdateDateNT);
                             SaveDBM(pExadEvent);
                             UpdateExadSWIn(pexadppaymentrequest.pExad, pexadppaymentrequest.pExad.REC_STATUS);
                             KeepDocRegister(pexadppaymentrequest.pExad, "N", "P", "I");
@@ -317,12 +320,46 @@ namespace ISPTF.API.Controllers.ExportADV
                         else if (pexadppaymentrequest.pExad.EVENT_TYPE == "Amend" || pexadppaymentrequest.pExad.EVENT_TYPE == "Advice Mail")
                         {
                             seq = EXADVHelper.GetSeqNo(_context, pexadppaymentrequest.pExad.EXPORT_ADVICE_NO);
-                            var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq,"EVENT", pexadppaymentrequest.pExad.EVENT_TYPE,"P");
+                            pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq,"EVENT", pexadppaymentrequest.pExad.EVENT_TYPE,"P", UpdateDateT, UpdateDateNT);
                         }
 
                         // Commit
                         _context.SaveChanges();
                         transaction.Complete();
+                        transaction.Dispose();
+
+                        bool resGL;
+                        bool resPayD;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent = pExadEvent.EVENT_TYPE;
+                        eventDate = pExadEvent.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        if (pExadEvent.PAYMENT_INSTRU == "1")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXAD(pExadEvent.EXPORT_ADVICE_NO,
+                                eventDate, GLEvent, pExadEvent.EVENT_NO, "ADVICE");
+                        }
+                        else
+                        {
+                            resVoucherID = "";
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            pExadEvent.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+                        if (resGL == false)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L";
+                            response.Data = new();
+                            return BadRequest(response);
+                        }
+
                     }
                     catch (Exception e)
                     {
@@ -580,7 +617,7 @@ namespace ISPTF.API.Controllers.ExportADV
             return BadRequest(response);
         }
 
-        private pExad SaveUser(pExad pExad, pPayment pPayment, int seqNo, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS)
+        private pExad SaveUser(pExad pExad, pPayment pPayment, int seqNo, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
             var pExadEvent = (from row in _context.pExads
                               where
@@ -589,26 +626,80 @@ namespace ISPTF.API.Controllers.ExportADV
                                     row.REC_STATUS == REC_STATUS &&
                                     row.EVENT_NO == seqNo
                               select row).AsNoTracking().FirstOrDefault();
+            string AddNEW = "";
             if (pExadEvent == null)
             {
-                pExadEvent = pExad;
-                pExadEvent.RECORD_TYPE = RECORD_TYPE;
-                pExadEvent.EVENT_TYPE = EVENT_TYPE;
-                pExadEvent.REC_STATUS = REC_STATUS;
-                pExadEvent.EVENT_NO = seqNo;
-                pExadEvent.EVENT_MODE = "E";
-                _context.Add(pExadEvent);
+                AddNEW = "Y";
             }
             else
             {
-                pExadEvent = pExad;
-                pExadEvent.EVENT_MODE = "E";
+                AddNEW = "N";
+            }
+            pExadEvent = pExad;
+            pExadEvent.RECORD_TYPE = RECORD_TYPE;
+            pExadEvent.EVENT_TYPE = EVENT_TYPE;
+            pExadEvent.REC_STATUS = REC_STATUS;
+            pExadEvent.EVENT_NO = seqNo;
+            pExadEvent.EVENT_MODE = "E";
+            if (EVENT_TYPE == "Full Advice")
+            {
+                pExadEvent.BUSINESS_TYPE = "1";
+                pExadEvent.TRANSACTION_TYPE = "1";
+            }
+                else if (EVENT_TYPE== "Amend")
+            {
+                pExadEvent.BUSINESS_TYPE = "3";
+                pExadEvent.TRANSACTION_TYPE = "2";
+            }
+            else
+            {
+                pExadEvent.BUSINESS_TYPE = "4";
+                pExadEvent.TRANSACTION_TYPE = "3";
+            }
+            if (pExadEvent.INCREASE_AMT>0 || pExadEvent.DECREASE_AMT >0)
+            {
+                pExadEvent.FLAG_TRANSFER = "Y";
+            }
+            else
+            {
+                pExadEvent.FLAG_TRANSFER = "N";
+            }
+
+            pExadEvent.AUTH_CODE = "";
+            pExadEvent.GENACC_FLAG = "Y";
+            pExadEvent.GENACC_DATE = UpdateDateNT;
+            pExadEvent.UPDATE_DATE = UpdateDateT;
+            string FileSWName = "";
+            if (pExadEvent.SwiftMT!="N")
+            {
+                FileSWName = "TFF" + pExadEvent.EXPORT_ADVICE_NO + seqNo + "-" + pExadEvent.EVENT_DATE.Value.ToString("MMdd") + DateTime.Now.ToString("hhmm");
+            }
+            pExadEvent.SwifInID = FileSWName;
+            if (AddNEW == "Y")
+            {
+                _context.Add(pExadEvent);
+                _context.SaveChanges();
+            }
+            else
+            {
                 _context.Update(pExadEvent);
                 _context.SaveChanges();
             }
-            if(pExadEvent.PAYMENT_INSTRU == "1")
+
+                //If as_rectype = "EVENT" And(OpMT768.Value = True Or OpMT730.Value = True) And Trim(FileSWName) = "" Then
+                //   SWDate = Mid(mskEvenDate.Text, 4, 2) & Left(mskEvenDate.Text, 2)
+                //    FileSWName = "TFF" & Replace(Trim(txtLCno.Text), "/", "-") & Format(as_seqno, "#0") _
+                //                                & "-" & SWDate & Replace(Format(Now, "hh:mm"), ":", "")
+                //End If
+
+                //eventType$ = pExadEvent.event_type
+                //If eventType$ = "Full Advice" Or eventType$ = "Pre Advice" Or eventType$ = "Amend" Or eventType$ = "Advice Mail" Then
+                //    EventTran = "ADVICE"
+                //End If
+
+                if (pExadEvent.PAYMENT_INSTRU == "1")
             {
-                PaymentSave(pExad,pPayment);
+                PaymentSave(pExad,pPayment,UpdateDateT,UpdateDateNT);
             }
             else
             {
@@ -639,41 +730,43 @@ namespace ISPTF.API.Controllers.ExportADV
                 }
 
                 // Save SWIFT
-                var pSWExportEvent =  (from row in _context.pSWExports
-                                 where row.DocNo == pExadEvent.EXPORT_ADVICE_NO &&
-                                       row.Event_No == pExadEvent.EVENT_NO
-                                 select row).AsNoTracking().FirstOrDefault();
-                if (pSWExportEvent == null)
+                if (pExadEvent.SwiftMT != "N")
                 {
-                    pSWExportEvent = new();
-                    pSWExportEvent.AutoNum = EXHelper.GenSWNo(_context);
-                    pSWExportEvent.DocNo = pExadEvent.EXPORT_ADVICE_NO;
-                    pSWExportEvent.Event_No = pExadEvent.EVENT_NO;
-                    pSWExportEvent.Event = pExadEvent.EVENT_TYPE;
-                    pSWExportEvent.SwiftFile = "TFF" + pExadEvent.EXPORT_ADVICE_NO + seqNo + "-" + pExadEvent.EVENT_DATE.Value.ToString("MMdd") + DateTime.Now.ToString("hhmm");
-                    pSWExportEvent.RemitCcy = pExadEvent.LC_CURRENCY;
-                    pSWExportEvent.RemitAmt = pExadEvent.LC_AMOUNT;
-                    pSWExportEvent.ValueDate = pExadEvent.ADVISING_DATE;
-                    pSWExportEvent.F20 = pExadEvent.EXPORT_ADVICE_NO;
-                    pSWExportEvent.F21 = pExadEvent.EXPORT_ADVICE_NO;
-                    pSWExportEvent.BankID = pExadEvent.ISSUE_BANK_ID;
-                    pSWExportEvent.BankInFo = pExadEvent.ISSUE_BANK_NAME;
-                    pSWExportEvent.F31 = pExadEvent.EVENT_DATE.Value.ToString("yyMMdd");
-                    _context.pSWExports.Add(pSWExportEvent);
+                    var pSWExportEvent = (from row in _context.pSWExports
+                                          where row.DocNo == pExadEvent.EXPORT_ADVICE_NO &&
+                                                row.Event_No == pExadEvent.EVENT_NO
+                                          select row).AsNoTracking().FirstOrDefault();
+                    if (pSWExportEvent == null)
+                    {
+                        pSWExportEvent = new();
+                        pSWExportEvent.AutoNum = EXHelper.GenSWNo(_context);
+                        pSWExportEvent.DocNo = pExadEvent.EXPORT_ADVICE_NO;
+                        pSWExportEvent.Event_No = pExadEvent.EVENT_NO;
+                        pSWExportEvent.Event = pExadEvent.EVENT_TYPE;
+                        pSWExportEvent.SwiftFile = FileSWName;
+                        pSWExportEvent.RemitCcy = pExadEvent.LC_CURRENCY;
+                        pSWExportEvent.RemitAmt = pExadEvent.LC_AMOUNT;
+                        pSWExportEvent.ValueDate = pExadEvent.ADVISING_DATE;
+                        pSWExportEvent.F20 = pExadEvent.EXPORT_ADVICE_NO;
+                        pSWExportEvent.F21 = pExadEvent.EXPORT_ADVICE_NO;
+                        pSWExportEvent.BankID = pExadEvent.ISSUE_BANK_ID;
+                        pSWExportEvent.BankInFo = pExadEvent.ISSUE_BANK_NAME;
+                        pSWExportEvent.F31 = pExadEvent.EVENT_DATE.Value.ToString("yyMMdd");
+                        _context.pSWExports.Add(pSWExportEvent);
+                    }
+                    else
+                    {
+                        pSWExportEvent.RemitCcy = pExadEvent.LC_CURRENCY;
+                        pSWExportEvent.RemitAmt = pExadEvent.LC_AMOUNT;
+                        pSWExportEvent.ValueDate = pExadEvent.ADVISING_DATE;
+                        pSWExportEvent.F20 = pExadEvent.EXPORT_ADVICE_NO;
+                        pSWExportEvent.F21 = pExadEvent.EXPORT_ADVICE_NO;
+                        pSWExportEvent.BankID = pExadEvent.ISSUE_BANK_ID;
+                        pSWExportEvent.BankInFo = pExadEvent.ISSUE_BANK_NAME;
+                        pSWExportEvent.F31 = pExadEvent.EVENT_DATE.Value.ToString("yyMMdd");
+                        _context.pSWExports.Update(pSWExportEvent);
+                    }
                 }
-                else
-                {
-                    pSWExportEvent.RemitCcy = pExadEvent.LC_CURRENCY;
-                    pSWExportEvent.RemitAmt = pExadEvent.LC_AMOUNT;
-                    pSWExportEvent.ValueDate = pExadEvent.ADVISING_DATE;
-                    pSWExportEvent.F20 = pExadEvent.EXPORT_ADVICE_NO;
-                    pSWExportEvent.F21 = pExadEvent.EXPORT_ADVICE_NO;
-                    pSWExportEvent.BankID = pExadEvent.ISSUE_BANK_ID;
-                    pSWExportEvent.BankInFo = pExadEvent.ISSUE_BANK_NAME;
-                    pSWExportEvent.F31 = pExadEvent.EVENT_DATE.Value.ToString("yyMMdd");
-                    _context.pSWExports.Update(pSWExportEvent);
-                }
-
                 // Update Master
                  _context.Database.ExecuteSqlRaw($"UPDATE pExad SET REC_STATUS = 'P' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
             }
@@ -877,11 +970,12 @@ namespace ISPTF.API.Controllers.ExportADV
             }
         }
 
-        private void PaymentSave(pExad exad, pPayment pPaymentReq)
+        private void PaymentSave(pExad exad, pPayment pPaymentReq, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
             if (exad.RECEIPT_NO == null)
             {
-                exad.RECEIPT_NO = EXHelper.GetReceiptNo(_context,exad.USER_ID,exad.CenterID);
+                exad.RECEIPT_NO = ExportLCHelper.GenRefNo(_context, exad.CenterID, exad.USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
+
             }
 
             var pPaymentEvent = (from row in _context.pPayments
@@ -896,8 +990,16 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentEvent.RpEvent = "1";
                 pPaymentEvent.RpPayDate = exad.EVENT_DATE;
                 pPaymentEvent.RpStatus = "A";
+                pPaymentEvent.RpRecStatus = "P";
                 pPaymentEvent.UserCode = exad.USER_ID;
-                pPaymentEvent.UpdateDate = DateTime.Now;
+                pPaymentEvent.UpdateDate = UpdateDateT;
+                pPaymentEvent.RpNote = "";
+                if (pPaymentEvent.RpCustAc1 == null) pPaymentEvent.RpCustAc1 = "";
+                if (pPaymentEvent.RpCustAc2 == null) pPaymentEvent.RpCustAc2 = "";
+                if (pPaymentEvent.RpCustAc3 == null) pPaymentEvent.RpCustAc3 = "";
+                if (pPaymentEvent.RpChqNo == null) pPaymentEvent.RpChqNo = "";
+                if (pPaymentEvent.RpChqBank == null) pPaymentEvent.RpChqBank = "";
+                if (pPaymentEvent.RpChqBranch == null) pPaymentEvent.RpChqBranch = "";
                 _context.pPayments.Add(pPaymentEvent);
             }
             else
@@ -906,8 +1008,16 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentReq.RpEvent = "1";
                 pPaymentReq.RpPayDate = exad.EVENT_DATE;
                 pPaymentReq.RpStatus = "A";
+                pPaymentEvent.RpRecStatus = "P";
                 pPaymentReq.UserCode = exad.USER_ID;
-                pPaymentReq.UpdateDate = DateTime.Now;
+                pPaymentReq.UpdateDate = UpdateDateT;
+                pPaymentEvent.RpNote = "";
+                if (pPaymentEvent.RpCustAc1 == null) pPaymentEvent.RpCustAc1 = "";
+                if (pPaymentEvent.RpCustAc2 == null) pPaymentEvent.RpCustAc2 = "";
+                if (pPaymentEvent.RpCustAc3 == null) pPaymentEvent.RpCustAc3 = "";
+                if (pPaymentEvent.RpChqNo == null) pPaymentEvent.RpChqNo = "";
+                if (pPaymentEvent.RpChqBank == null) pPaymentEvent.RpChqBank = "";
+                if (pPaymentEvent.RpChqBranch == null) pPaymentEvent.RpChqBranch = "";
                 _context.pPayments.Update(pPaymentReq);
             }
 

@@ -536,37 +536,44 @@ namespace ISPTF.API.Controllers.ImportTR
                 param.Add("@PurposeCode", saveissue.pIMTR.PurposeCode);
 
                 //pPayment
-                param.Add("@RpReceiptNo", saveissue.pPayment.RpReceiptNo);
-                param.Add("@RpModule", saveissue.pPayment.RpModule);
-                param.Add("@RpEvent", saveissue.pPayment.RpEvent);
-                param.Add("@RpDocNo", saveissue.pPayment.RpDocNo);
-                param.Add("@RpCustCode", saveissue.pPayment.RpCustCode);
-                param.Add("@RpPayDate", saveissue.pPayment.RpPayDate);
-                param.Add("@RpPayBy", saveissue.pPayment.RpPayBy);
-                param.Add("@RpNote", saveissue.pPayment.RpNote);
-                param.Add("@RpCashAmt", saveissue.pPayment.RpCashAmt);
-                param.Add("@RpChqAmt", saveissue.pPayment.RpChqAmt);
-                param.Add("@RpChqNo", saveissue.pPayment.RpChqNo);
-                param.Add("@RpChqBank", saveissue.pPayment.RpChqBank);
-                param.Add("@RpChqBranch", saveissue.pPayment.RpChqBranch);
-                param.Add("@RpCustAc1", saveissue.pPayment.RpCustAc1);
-                param.Add("@RpCustAmt1", saveissue.pPayment.RpCustAmt1);
-                param.Add("@RpCustAc2", saveissue.pPayment.RpCustAc2);
-                param.Add("@RpCustAmt2", saveissue.pPayment.RpCustAmt2);
-                param.Add("@RpCustAc3", saveissue.pPayment.RpCustAc3);
-                param.Add("@RpCustAmt3", saveissue.pPayment.RpCustAmt3);
-                param.Add("@RpRefer1", saveissue.pPayment.RpRefer1);
-                param.Add("@RpRefer2", saveissue.pPayment.RpRefer2);
-                param.Add("@RpApplicant", saveissue.pPayment.RpApplicant);
-                param.Add("@RpIssBank", saveissue.pPayment.RpIssBank);
-                param.Add("@RpStatus", saveissue.pPayment.RpStatus);
-                param.Add("@RpRecStatus", saveissue.pPayment.RpRecStatus);
-                param.Add("@RpPrint", saveissue.pPayment.RpPrint);
+                if (saveissue.pPayment != null)
+                {
+                    param.Add("@RpReceiptNo", saveissue.pPayment.RpReceiptNo);
+                    param.Add("@RpModule", saveissue.pPayment.RpModule);
+                    param.Add("@RpEvent", saveissue.pPayment.RpEvent);
+                    param.Add("@RpDocNo", saveissue.pPayment.RpDocNo);
+                    param.Add("@RpCustCode", saveissue.pPayment.RpCustCode);
+                    param.Add("@RpPayDate", saveissue.pPayment.RpPayDate);
+                    param.Add("@RpPayBy", saveissue.pPayment.RpPayBy);
+                    param.Add("@RpNote", saveissue.pPayment.RpNote);
+                    param.Add("@RpCashAmt", saveissue.pPayment.RpCashAmt);
+                    param.Add("@RpChqAmt", saveissue.pPayment.RpChqAmt);
+                    param.Add("@RpChqNo", saveissue.pPayment.RpChqNo);
+                    param.Add("@RpChqBank", saveissue.pPayment.RpChqBank);
+                    param.Add("@RpChqBranch", saveissue.pPayment.RpChqBranch);
+                    param.Add("@RpCustAc1", saveissue.pPayment.RpCustAc1);
+                    param.Add("@RpCustAmt1", saveissue.pPayment.RpCustAmt1);
+                    param.Add("@RpCustAc2", saveissue.pPayment.RpCustAc2);
+                    param.Add("@RpCustAmt2", saveissue.pPayment.RpCustAmt2);
+                    param.Add("@RpCustAc3", saveissue.pPayment.RpCustAc3);
+                    param.Add("@RpCustAmt3", saveissue.pPayment.RpCustAmt3);
+                    param.Add("@RpRefer1", saveissue.pPayment.RpRefer1);
+                    param.Add("@RpRefer2", saveissue.pPayment.RpRefer2);
+                    param.Add("@RpApplicant", saveissue.pPayment.RpApplicant);
+                    param.Add("@RpIssBank", saveissue.pPayment.RpIssBank);
+                    param.Add("@RpStatus", saveissue.pPayment.RpStatus);
+                    param.Add("@RpRecStatus", saveissue.pPayment.RpRecStatus);
+                    param.Add("@RpPrint", saveissue.pPayment.RpPrint);
+                }
+                else
+                {
+                    param.Add("@RpReceiptNo", null);
+                }
                 //param.Add("@UserCode", saveissue.pPayment.UserCode);
                 //param.Add("@UpdateDate", saveissue.pPayment.UpdateDate);
                 //param.Add("@AuthCode", saveissue.pPayment.AuthCode);
                 //param.Add("@AuthDate", saveissue.pPayment.AuthDate);
-
+               
                 param.Add("@Resp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);

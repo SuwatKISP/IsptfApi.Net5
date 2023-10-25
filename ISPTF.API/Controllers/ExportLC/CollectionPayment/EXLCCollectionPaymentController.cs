@@ -324,7 +324,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 if (data.PEXPAYMENT.Debit_credit_flag == "C")
                                 {
-                                    if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
+                                    if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD" || data.PEXPAYMENT.PAYMENT_INSTRU == "MT202")
                                     {
                                         receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDC",UpdateDateT, UpdateDateNT);
                                     }
@@ -335,7 +335,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                 }
                                 else
                                 {
-                                    if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD")
+                                    if (data.PEXPAYMENT.PAYMENT_INSTRU == "FCD" || data.PEXPAYMENT.PAYMENT_INSTRU == "MT202")
                                     {
                                         receiptNo = ExportLCHelper.GetReceiptFCD(_context, USER_CENTER_ID, USER_ID, "FPAIDD",UpdateDateT,UpdateDateNT);
                                     }
@@ -797,9 +797,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         _context.SaveChanges();
 
-                        // 5 - Update Master/Event PK to Release
-                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'R',EVENT_NO ='{targetEventNo}',EVENT_TYPE ='{EVENT_TYPE}'   WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
-                        _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', AUTH_CODE = '{USER_ID}', AUTH_DATE = '{UpdateDateT}' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE ='{EVENT_TYPE}' AND EVENT_NO ='{pExlcEvent.EVENT_NO}'");
+
 
                         var pPayments = (from row in _context.pPayments
                                          where row.RpReceiptNo == pExlcEvent.RECEIVED_NO
@@ -817,10 +815,11 @@ namespace ISPTF.API.Controllers.ExportLC
                                            row.EVENT_TYPE == EVENT_TYPE && row.EVENT_NO == pExlcEvent.EVENT_NO
                                            select row).ToList();
 
-                        foreach (var row in  pEXPayments)
+                        foreach (var row in pEXPayments)
                         {
                             row.REC_STATUS = "R";
                         }
+                    //    pExPayments.REC_STATUS = "R";
                         _context.SaveChanges();
 
                         // 6 - Update GL Flag
@@ -838,6 +837,10 @@ namespace ISPTF.API.Controllers.ExportLC
                         // var result = ExportLCHelper.UpdateCustomerLiability(_context, data.PEXLC);
                         _context.SaveChanges();
 
+                        // 5 - Update Master/Event PK to Release
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'R',EVENT_NO ='{targetEventNo}',EVENT_TYPE ='{EVENT_TYPE}'   WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        _context.Database.ExecuteSqlRawAsync($"UPDATE pExlc SET REC_STATUS = 'R', AUTH_CODE = '{USER_ID}', AUTH_DATE = '{UpdateDateT}' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_TYPE ='{EVENT_TYPE}' AND EVENT_NO ='{pExlcEvent.EVENT_NO}'");
+                        _context.SaveChanges();
                         transaction.Complete();
 
 

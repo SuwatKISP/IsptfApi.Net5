@@ -301,7 +301,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                     if (pRefNo != null)
                     {
-                        if (pRefNo.InUse != false)
+                        if (pRefNo.InUse != true)
                         {
                             pRefNo.InUse = true;
                             _context.pReferenceNos.Update(pRefNo);
@@ -658,6 +658,125 @@ namespace ISPTF.API.Controllers.ExportLC
             }
         }
 
+        public static string HistInterestPC(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExpc pc)
+        {
+            //  DateTime GetSysDate = ModDate.GetSystemDateTime();
+             IFormatProvider engDateFormat = new System.Globalization.CultureInfo("en-US").DateTimeFormat;
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    int cSeqNo;
+                    int maxSeq = 0;
+                    var maxSeqRow = (from row in _context.pEXInterests
+                                     where row.Login == "EXPC" &&
+                                      row.DocNo == pc.PACKING_NO
+                                     select row).ToList().OrderByDescending(x => x.Seqno);
+                    foreach (var row in maxSeqRow)
+                    {
+                        maxSeq = row.Seqno;
+                        break;
+                    }
+                    if (maxSeq == 0)
+                    {
+                        cSeqNo = 1;
+                    }
+                    else
+                    {
+                        cSeqNo = maxSeq + 1;
+                    }
+                    var pEXInterests = (from row in _context.pEXInterests
+                                        where row.Login == "EXPC" &&
+                                        row.DocNo == pc.PACKING_NO &&
+                                        row.EventNo == pc.event_no &&
+                                        row.Seqno == cSeqNo
+                                        select row).AsNoTracking().FirstOrDefault();
+                    pEXInterest exinterest = new pEXInterest();
+                    if (pEXInterests == null)
+                    {
+                        //  cAddNew = True
+                        exinterest.DocNo = pc.PACKING_NO;
+                        exinterest.Login = "EXPC";
+                        exinterest.Event = pc.event_type;
+                        exinterest.EventNo = pc.event_no;
+                    }
+
+                    exinterest.CenterID = USER_CENTER_ID;
+                    exinterest.Seqno = cSeqNo;
+                    exinterest.CalDate = pc.event_date;
+                    exinterest.IntTo = pc.ValueDate;
+                    if (pc.PcIntType == "0")
+                    {
+                        exinterest.IntDay = (pc.ValueDate - pc.pc_start_date).Value.Days;
+                        exinterest.IntFrom = pc.pc_start_date;
+                    }
+                    else if  (pc.PcIntType == "1")
+                    {
+                        exinterest.IntTo = pc.ValueDate;
+                        exinterest.IntDay = (pc.ValueDate - pc.CalIntDate).Value.Days;
+                        exinterest.IntFrom = pc.CalIntDate;
+                     }
+                    exinterest.CurIntRate = pc.current_intrate;
+                    exinterest.IntRate = pc.pc_int_rate;
+                    exinterest.Spread = pc.spread_rate;
+                    exinterest.IntAmt = pc.interest_thb2;
+                    if (pc.packing_for == "T")
+                    {
+                        exinterest.BaseDay = 365;
+                        if (pc.principle_amt_thb2 == 0)
+                        {
+                            exinterest.BalCcy = pc.principle_amt_thb1;
+                        }
+                        else
+                        {
+                            exinterest.BalCcy = pc.principle_amt_thb2;
+                        }
+
+                        exinterest.IntExchRate = 1;
+                        exinterest.Ccy = "THB";
+                        exinterest.IntCCy = pc.interest_thb2;
+                    }
+                    else
+                    {
+                        exinterest.BaseDay = 360;
+                        if (pc.principle_amt_ccy2 == 0)
+                        {
+                            exinterest.BalCcy = pc.principle_amt_ccy1;
+                        }
+                        else
+                        {
+                            exinterest.BalCcy = pc.principle_amt_ccy2;
+                        }
+
+                        exinterest.IntExchRate = pc.exch_rate3;
+                        exinterest.Ccy = pc.doc_ccy;
+                        exinterest.IntCCy = pc.interest_ccy2;
+                    }
+
+                    if (pEXInterests == null)
+                    {
+                        _context.pEXInterests.Add(exinterest);
+                    }
+                    else
+                    {
+                        _context.pEXInterests.Update(exinterest);
+
+                    }
+
+                    _context.SaveChanges();
+
+                    transaction.Complete();
+                    return "OK";
+
+                }
+                catch (Exception e)
+                {
+                    // Rollback
+                    return "ERROR";
+                }
+
+            }
+        }
         public static string HistInterestODU(ISPTFContext _context, string USER_CENTER_ID, string USER_ID, pExlc lc, pExPayment payment)
         {
             //  DateTime GetSysDate = ModDate.GetSystemDateTime();
