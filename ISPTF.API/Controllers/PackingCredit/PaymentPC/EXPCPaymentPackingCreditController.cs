@@ -226,164 +226,165 @@ namespace ISPTF.API.Controllers.PackingCredit
                         _context.SaveChanges();
 
                         // 2 - Save Event
-                        var pExpcEventchk = (from row in _context.pExpcs
+                        var pExpcEvent = (from row in _context.pExpcs
                                           where row.PACKING_NO == pExpc.PACKING_NO &&
                                                 row.record_type == "EVENT" &&
                                                 row.event_no == event_no
                                           select row).AsNoTracking().FirstOrDefault();
 
-                        pExpc pExpcEvent = pexpcppaymentrequest.pExpc;
+                       //pExpc pExpcEvent = pexpcppaymentrequest.pExpc;
 
-                        if (pExpcEventchk == null)
+                        if (pExpcEvent == null)
                         {
                          //   pExpcEvent = new pExpc();
-                            pExpcEvent.PACKING_NO = pExpc.PACKING_NO;
-                            pExpcEvent.record_type = "EVENT";
-                            pExpcEvent.event_no = event_no;
-                            pExpcEvent.rec_status = "P";
-                            _context.pExpcs.Add(pExpcEvent);
+                            pExpc.PACKING_NO = pExpc.PACKING_NO;
+                            pExpc.record_type = "EVENT";
+                            pExpc.event_no = event_no;
+                            pExpc.rec_status = "P";
+                            _context.pExpcs.Add(pExpc);
                             _context.SaveChanges();
 
                         }
-                        pExpcEvent.PACKING_NO = pExpc.PACKING_NO;
-                        pExpcEvent.record_type = "EVENT";
-                        pExpcEvent.event_no = event_no;
-                        pExpcEvent.rec_status = "P";
-                        pExpcEvent.event_mode = "E";
-                        pExpcEvent.event_type = EVENT_TYPE;
-                        pExpcEvent.business_type = BUSINESS_TYPE;
-                        pExpcEvent.PurposeCode = pExpc.PurposeCode;
-                        pExpcEvent.CenterID = CenterID;
-                        pExpcEvent.user_id = user_id;
-                        pExpcEvent.update_date = UpdateDateT;
-                        pExpcEvent.event_date = pExpc.event_date;
-                        pExpcEvent.cnty_code = pExpc.cnty_code;
-                        pExpcEvent.cust_id = pExpc.cust_id;
-                        pExpcEvent.cust_info = pExpc.cust_info;
-                        pExpcEvent.applicant_name = pExpc.applicant_name;
-                        pExpcEvent.good_code = pExpc.good_code;
-                        pExpcEvent.Rel_code = pExpc.Rel_code;
-                        pExpcEvent.good_desc = pExpc.good_desc;
-                        pExpcEvent.PayNo = pExpc.PayNo;
-                        pExpcEvent.packing_for = pExpc.packing_for;
-                        pExpcEvent.pack_under = pExpc.pack_under;
-                        pExpcEvent.shipmentFr = pExpc.shipmentFr;
-                        pExpcEvent.shipmentTo = pExpc.shipmentTo;
-                        pExpcEvent.refer_lcno = pExpc.refer_lcno;
-                        pExpcEvent.doc_ccy = pExpc.doc_ccy;
-                        pExpcEvent.doc_amount = pExpc.doc_amount;
-                        pExpcEvent.rate = pExpc.rate;
-                        pExpcEvent.pack_ccy = pExpc.pack_ccy;
-                        pExpcEvent.pack_thb = pExpc.pack_thb;
-                        pExpcEvent.pn_no = pExpc.pn_no;
-                        pExpcEvent.FlagBack = pExpc.FlagBack;
-                        pExpcEvent.doc_expiry_date = pExpc.doc_expiry_date;
-                        pExpcEvent.pc_start_date = pExpc.pc_start_date;
-                        pExpcEvent.current_pc_due = pExpc.current_pc_due;
-                        pExpcEvent.tot_pc_day = pExpc.tot_pc_day;
-                        pExpcEvent.current_60_daydue = pExpc.current_60_daydue;
-                        pExpcEvent.pc_int_rate = pExpc.pc_int_rate;
-                        pExpcEvent.spread_rate = pExpc.spread_rate;
-                        pExpcEvent.current_intrate = pExpc.current_intrate;
-                        pExpcEvent.total_date = pExpc.total_date;
-                        pExpcEvent.PcIntType = pExpc.PcIntType;
-                        pExpcEvent.FixDate = pExpc.FixDate;
-                        pExpcEvent.ValueDate = pExpc.ValueDate;
-                        pExpcEvent.exch_rate1 = pExpc.exch_rate1;
-                        pExpcEvent.principle_amt_ccy1 = pExpc.principle_amt_ccy1;
-                        pExpcEvent.principle_amt_thb1 = pExpc.principle_amt_thb1;
-                        pExpcEvent.interest_ccy1 = pExpc.interest_ccy1;
-                        pExpcEvent.interest_thb1 = pExpc.interest_thb1;
-                        pExpcEvent.exch_rate = pExpc.exch_rate;
-                        pExpcEvent.principle_amt_ccy4 = pExpc.principle_amt_ccy4;
-                        pExpcEvent.principle_amt_thb4 = pExpc.principle_amt_thb4;
-                        pExpcEvent.RevAccru = pExpc.RevAccru;
-                        pExpcEvent.exch_rate2 = pExpc.exch_rate2;
-                        pExpcEvent.principle_amt_ccy2 = pExpc.principle_amt_ccy2;
-                        pExpcEvent.principle_amt_thb2 = pExpc.principle_amt_thb2;
-                        pExpcEvent.exch_rate3 = pExpc.exch_rate3;
-                        pExpcEvent.interest_ccy2 = pExpc.interest_ccy2;
-                        pExpcEvent.interest_thb2 = pExpc.interest_thb2;
-                        pExpcEvent.exch_rate5 = pExpc.exch_rate5;
-                        pExpcEvent.Com_Lieu = pExpc.Com_Lieu;
-                        pExpcEvent.partial_amt_thb5 = pExpc.partial_amt_thb5;
-                        pExpcEvent.PCProfit = pExpc.PCProfit;
-                        pExpcEvent.MidRate = pExpc.MidRate;
-                        pExpcEvent.prev_contra_bal = pExpc.prev_contra_bal;
-                        pExpcEvent.contra_bal = pExpc.contra_bal;
-                        pExpcEvent.deduct_export_thb = pExpc.deduct_export_thb;
-                        pExpcEvent.contra_date = pExpc.contra_date;
-                        pExpcEvent.remark = pExpc.remark;
-                        pExpcEvent.FcdAcc = pExpc.FcdAcc;
-                        pExpcEvent.BahtNet = pExpc.BahtNet;
-                        pExpcEvent.CalIntDate = pExpcMaster.CalIntDate;
-                        pExpcEvent.in_Use = "0";
-                        pExpcEvent.pay_instruc = pExpc.pay_instruc;
-                        pExpcEvent.received_no = pExpc.received_no;
+                        pExpc.PACKING_NO = pExpc.PACKING_NO;
+                        pExpc.record_type = "EVENT";
+                        pExpc.event_no = event_no;
+                        pExpc.rec_status = "P";
+                        pExpc.event_mode = "E";
+                        pExpc.event_type = EVENT_TYPE;
+                        pExpc.business_type = BUSINESS_TYPE;
+                        pExpc.PurposeCode = pExpc.PurposeCode;
+                        pExpc.CenterID = CenterID;
+                        pExpc.user_id = user_id;
+                        pExpc.update_date = UpdateDateT;
+                        pExpc.event_date = pExpc.event_date;
+                        pExpc.cnty_code = pExpc.cnty_code;
+                        pExpc.cust_id = pExpc.cust_id;
+                        pExpc.cust_info = pExpc.cust_info;
+                        pExpc.applicant_name = pExpc.applicant_name;
+                        pExpc.good_code = pExpc.good_code;
+                        pExpc.Rel_code = pExpc.Rel_code;
+                        pExpc.good_desc = pExpc.good_desc;
+                        pExpc.PayNo = pExpc.PayNo;
+                        pExpc.packing_for = pExpc.packing_for;
+                        pExpc.pack_under = pExpc.pack_under;
+                        pExpc.shipmentFr = pExpc.shipmentFr;
+                        pExpc.shipmentTo = pExpc.shipmentTo;
+                        pExpc.refer_lcno = pExpc.refer_lcno;
+                        pExpc.doc_ccy = pExpc.doc_ccy;
+                        pExpc.doc_amount = pExpc.doc_amount;
+                        pExpc.rate = pExpc.rate;
+                        pExpc.pack_ccy = pExpc.pack_ccy;
+                        pExpc.pack_thb = pExpc.pack_thb;
+                        pExpc.pn_no = pExpc.pn_no;
+                        pExpc.FlagBack = pExpc.FlagBack;
+                        pExpc.doc_expiry_date = pExpc.doc_expiry_date;
+                        pExpc.pc_start_date = pExpc.pc_start_date;
+                        pExpc.current_pc_due = pExpc.current_pc_due;
+                        pExpc.tot_pc_day = pExpc.tot_pc_day;
+                        pExpc.current_60_daydue = pExpc.current_60_daydue;
+                        pExpc.pc_int_rate = pExpc.pc_int_rate;
+                        pExpc.spread_rate = pExpc.spread_rate;
+                        pExpc.current_intrate = pExpc.current_intrate;
+                        pExpc.total_date = pExpc.total_date;
+                        pExpc.PcIntType = pExpc.PcIntType;
+                        pExpc.FixDate = pExpc.FixDate;
+                        pExpc.ValueDate = pExpc.ValueDate;
+                        pExpc.exch_rate1 = pExpc.exch_rate1;
+                        pExpc.principle_amt_ccy1 = pExpc.principle_amt_ccy1;
+                        pExpc.principle_amt_thb1 = pExpc.principle_amt_thb1;
+                        pExpc.interest_ccy1 = pExpc.interest_ccy1;
+                        pExpc.interest_thb1 = pExpc.interest_thb1;
+                        pExpc.exch_rate = pExpc.exch_rate;
+                        pExpc.principle_amt_ccy4 = pExpc.principle_amt_ccy4;
+                        pExpc.principle_amt_thb4 = pExpc.principle_amt_thb4;
+                        pExpc.RevAccru = pExpc.RevAccru;
+                        pExpc.exch_rate2 = pExpc.exch_rate2;
+                        pExpc.principle_amt_ccy2 = pExpc.principle_amt_ccy2;
+                        pExpc.principle_amt_thb2 = pExpc.principle_amt_thb2;
+                        pExpc.exch_rate3 = pExpc.exch_rate3;
+                        pExpc.interest_ccy2 = pExpc.interest_ccy2;
+                        pExpc.interest_thb2 = pExpc.interest_thb2;
+                        pExpc.exch_rate5 = pExpc.exch_rate5;
+                        pExpc.Com_Lieu = pExpc.Com_Lieu;
+                        pExpc.partial_amt_thb5 = pExpc.partial_amt_thb5;
+                        pExpc.PCProfit = pExpc.PCProfit;
+                        pExpc.MidRate = pExpc.MidRate;
+                        pExpc.prev_contra_bal = pExpc.prev_contra_bal;
+                        pExpc.contra_bal = pExpc.contra_bal;
+                        pExpc.deduct_export_thb = pExpc.deduct_export_thb;
+                        pExpc.contra_date = pExpc.contra_date;
+                        pExpc.remark = pExpc.remark;
+                        pExpc.FcdAcc = pExpc.FcdAcc;
+                        pExpc.BahtNet = pExpc.BahtNet;
+                        pExpc.CalIntDate = pExpcMaster.CalIntDate;
+                        pExpc.in_Use = "0";
+                        pExpc.pay_instruc = pExpc.pay_instruc;
+                        pExpc.received_no = pExpc.received_no;
 
-                        if (pExpcEvent.pay_instruc == "1")
+                        if (pExpc.pay_instruc == "1")
                         {
-                            pExpcEvent.method = pExpc.method;
-                            //pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
-                            //if (pExpcEvent.received_no == "")
+                            pExpc.method = pExpc.method;
+                            //pExpc.received_no = EXHelper.GetReceivedNo(_context, pExpc.PACKING_NO, pExpc.event_no.ToString());
+                            //if (pExpc.received_no == "")
                             //{
-                            //    pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                            //    pExpc.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
                             //}
 
-                            if (pExpcEvent.received_no == "" || pExpcEvent.received_no == null)
+                            if (pExpc.received_no == "" || pExpc.received_no == null)
                             {
-                                pExpcEvent.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
+                                pExpc.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
                             }
 
-                            SavePayment(pExpcEvent, pexpcppaymentrequest.pPayment,UpdateDateT);
+                            SavePayment(pExpc, pexpcppaymentrequest.pPayment,UpdateDateT);
                         }
-                        else if (pExpcEvent.pay_instruc == "2")
+                        else if (pExpc.pay_instruc == "2")
                         {
-                            pExpcEvent.method = "";
-                            _context.Database.ExecuteSqlRaw($"DELETE FROM pPayment WHERE RpReceiptNo = '{pExpcEvent.received_no}'");
-                            _context.Database.ExecuteSqlRaw($"DELETE FROM pPayDetail WHERE DpReceiptNo = '{pExpcEvent.received_no}'");
-                            pExpcEvent.received_no = "";
+                            pExpc.method = "";
+                            pExpc.vouch_id = "";
+                            _context.Database.ExecuteSqlRaw($"DELETE FROM pPayment WHERE RpReceiptNo = '{pExpc.received_no}'");
+                            _context.Database.ExecuteSqlRaw($"DELETE FROM pPayDetail WHERE DpReceiptNo = '{pExpc.received_no}'");
+                            pExpc.received_no = "";
                         }
-                        else if (pExpcEvent.pay_instruc == "3")
+                        else if (pExpc.pay_instruc == "3")
                         {
-                            //pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
-                            //if (pExpcEvent.received_no == "")
+                            //pExpc.received_no = EXHelper.GetReceivedNo(_context, pExpc.PACKING_NO, pExpc.event_no.ToString());
+                            //if (pExpc.received_no == "")
                             //{
-                            //    pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                            //    pExpc.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
                             //}
-                            if (pExpcEvent.received_no == "" || pExpcEvent.received_no == null)
+                            if (pExpc.received_no == "" || pExpc.received_no == null)
                             {
-                                pExpcEvent.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
+                                pExpc.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
                             }
 
-                            pExpcEvent.BahtNet = pExpc.BahtNet;
-                            SavePayment(pExpcEvent, pexpcppaymentrequest.pPayment,UpdateDateT);
+                            pExpc.BahtNet = pExpc.BahtNet;
+                            SavePayment(pExpc, pexpcppaymentrequest.pPayment,UpdateDateT);
                         }
-                        else if (pExpcEvent.pay_instruc == "4")
+                        else if (pExpc.pay_instruc == "4")
                         {
-                            pExpcEvent.method = "";
-                            //pExpcEvent.received_no = EXHelper.GetReceivedNo(_context, pExpcEvent.PACKING_NO, pExpcEvent.event_no.ToString());
-                            //if (pExpcEvent.received_no == "")
+                            pExpc.method = "";
+                            //pExpc.received_no = EXHelper.GetReceivedNo(_context, pExpc.PACKING_NO, pExpc.event_no.ToString());
+                            //if (pExpc.received_no == "")
                             //{
-                            //    pExpcEvent.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
+                            //    pExpc.received_no = EXHelper.GenRefNo(_context, "PAYD", user_id, CenterID);
                             //}
-                            if (pExpcEvent.received_no == "" || pExpcEvent.received_no == null)
+                            if (pExpc.received_no == "" || pExpc.received_no == null)
                             {
-                                pExpcEvent.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
+                                pExpc.received_no = ExportLCHelper.GenRefNo(_context, CenterID, user_id, "PAYD", UpdateDateT, UpdateDateNT);
                             }
 
-                            pExpcEvent.FcdAcc = pExpc.FcdAcc;
-                            pExpcEvent.FcdAmt = pExpc.FcdAmt;
-                            SavePayment(pExpcEvent, pexpcppaymentrequest.pPayment,UpdateDateT);
+                            pExpc.FcdAcc = pExpc.FcdAcc;
+                            pExpc.FcdAmt = pExpc.FcdAmt;
+                            SavePayment(pExpc, pexpcppaymentrequest.pPayment,UpdateDateT);
                         }
-                        pExpcEvent.total_charge = pExpc.total_charge;
-                        pExpcEvent.total_credit_ac = pExpc.total_credit_ac;
-                        pExpcEvent.total_amount = pExpc.total_amount;
-                        pExpcEvent.TaxRefund = pExpc.TaxRefund;
-                        pExpcEvent.refund_tax_amt = pExpc.refund_tax_amt;
-                        pExpcEvent.LastPayDate = pExpc.LastPayDate;
-                        pExpcEvent.ALLOCATION = pExpc.ALLOCATION;
-                        _context.pExpcs.Update(pExpcEvent);
+                        pExpc.total_charge = pExpc.total_charge;
+                        pExpc.total_credit_ac = pExpc.total_credit_ac;
+                        pExpc.total_amount = pExpc.total_amount;
+                        pExpc.TaxRefund = pExpc.TaxRefund;
+                        pExpc.refund_tax_amt = pExpc.refund_tax_amt;
+                        pExpc.LastPayDate = pExpc.LastPayDate;
+                        pExpc.ALLOCATION = pExpc.ALLOCATION;
+                        _context.pExpcs.Update(pExpc);
 
                         // Commit
                         _context.SaveChanges();
@@ -393,8 +394,11 @@ namespace ISPTF.API.Controllers.PackingCredit
                         response.Code = Constants.RESPONSE_OK;
                         response.Message = "Packing Credit Saved";
                         response.Data = new();
-                        response.Data.PEXPC = pexpcppaymentrequest.pExpc;
-                        response.Data.PPAYMENT = pexpcppaymentrequest.pPayment;
+                        response.Data.PEXPC = pExpc;// pexpcppaymentrequest.pExpc;
+                        var pPaymentEvent = (from row in _context.pPayments
+                                             where row.RpReceiptNo == pExpc.received_no
+                                             select row).AsNoTracking().FirstOrDefault();
+                        response.Data.PPAYMENT = pPaymentEvent;// pexpcppaymentrequest.pPayment;
      
 
                         bool resGL;
@@ -403,7 +407,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         string resVoucherID;
                         string GLEvent = response.Data.PEXPC.event_type;
                         eventDate = response.Data.PEXPC.event_date.Value.ToString("dd/MM/yyyy",engDateFormat);
-                        if (pExpcEvent.pay_instruc == "4")
+                        if (pExpc.pay_instruc == "4")
                         {
                             resVoucherID = ISPModule.GeneratrEXP.StartPEXPC(response.Data.PEXPC.PACKING_NO,
                             eventDate, GLEvent, response.Data.PEXPC.event_no, "PAYMENT-FCD");
@@ -543,13 +547,13 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("release")]
-        public ActionResult<EXPCResultResponse> Release(string? PACKING_NO)
+        public ActionResult<EXPCResultResponse> Release([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
             var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -567,7 +571,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcMaster = (from row in _context.pExpcs
-                                           where row.PACKING_NO == PACKING_NO &&
+                                           where row.PACKING_NO == data.PACKING_NO &&
                                                  row.record_type == "MASTER"
                                            select row).FirstOrDefault();
                         var event_no = pExpcMaster.event_no + 1;
@@ -579,7 +583,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                             return BadRequest(response);
                         }
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE &&
                                                 row.event_no ==event_no
@@ -749,7 +753,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         if (pExpcEvent.ValueDate == pExpcEvent.event_date)
                         {
                             pMonAccrueds = (from row in _context.pMonAccrueds
-                                               where row.DocNumber == PACKING_NO &&
+                                               where row.DocNumber == data.PACKING_NO &&
                                                      row.Login == "EXPC"
                                                select row).FirstOrDefault();
                             if (pMonAccrueds != null)
@@ -761,7 +765,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         {
                             //  order by seqno desc 
                             var maxSeqRow = (from row in _context.pMonAccrueds
-                                             where row.DocNumber == PACKING_NO &&
+                                             where row.DocNumber == data.PACKING_NO &&
                                                        row.Login == "EXPC" &&
                                                        row.CalDate < pExpcEvent.ValueDate
                                              select row).ToList().OrderByDescending(x => x.Seqno);
@@ -802,7 +806,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpcMaster.RevAccru = 0;
                         _context.SaveChanges();
                         _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET  rec_status= 'R', event_type = '{EVENT_TYPE}', auth_code = '{USER_ID}', auth_date = '{UpdateDateT}',event_no ={pExpcEvent.event_no} WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}' AND record_type ='MASTER'");
-
+                        //Update Event
                         pExpcEvent.auth_code = USER_ID;
                         pExpcEvent.auth_date = UpdateDateT;
                         pExpcEvent.genacc_flag = "Y";

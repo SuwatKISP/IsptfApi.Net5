@@ -162,54 +162,24 @@ namespace ISPTF.API.Controllers.DomesticLC
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
             // Class validate
-            //if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
-            //{
-            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-            //    response.Message = "ListType should be NEW or EDIT";
-            //    response.Data = new IMLC_SaveAmend_JSON_rsp();
-            //    return BadRequest(response);
-            //}
-
             try
             {
                 DynamicParameters param = new DynamicParameters();
-
-                ////ListType
-                param.Add("@LoadLC", save.ListType.LoadLC);
-
-
-                param.Add("@Resp", dbType: DbType.Int32,
-                           direction: System.Data.ParameterDirection.Output,
-                           size: 12800);
-
-                await _db.SaveData(
-                  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
                 var resp = param.Get<int>("@Resp");
 
                 if (resp > 0)
                 {
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Release Complete";
                     return Ok(response);
                 }
                 else
                 {
-                    response.Code = Constants.RESPONSE_ERROR;
-                    try
-                    {
-                        response.Message = resp.ToString();
-                    }
-                    catch (Exception)
-                    {
-                        response.Message = "Release Error";
-                    }
                     return BadRequest(response);
                 }
             }
             catch (Exception e)
             {
-                response.Code = Constants.RESPONSE_ERROR;
-                response.Message = e.ToString();
                 return BadRequest(response);
             }
         }

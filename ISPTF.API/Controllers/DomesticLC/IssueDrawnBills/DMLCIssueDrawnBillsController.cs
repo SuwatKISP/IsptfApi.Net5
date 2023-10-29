@@ -2,6 +2,7 @@
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
 using ISPTF.Models.DomesticLC;
+using ISPTF.Models.ImportLC;
 using ISPTF.Models.PackingCredit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -191,6 +192,89 @@ namespace ISPTF.API.Controllers.DomesticLC
             return BadRequest(response);
         }
 
+        [HttpGet("newSelect")]
+        public async Task<ActionResult<Q_DMLC_IssueDBE_NewSelect_Response>> NewSelect(string? ListType, string? LoadBL, string? DLCNumber, double? DLCBal, string? CustCode)
+        {
+            Q_DMLC_IssueDBE_NewSelect_Response response = new Q_DMLC_IssueDBE_NewSelect_Response();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(LoadBL))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType, LoadBL is required";
+                response.Data = new Q_DMLC_IssueDBE_NewSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+            if (LoadBL != "BEISSUE")
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "LoadBL shoud be BEISSUE";
+                response.Data = new Q_DMLC_IssueDBE_NewSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+            if (ListType != "NEW")
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType shoud be NEW";
+                response.Data = new Q_DMLC_IssueDBE_NewSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@ListType", ListType);
+                param.Add("@LoadBL", LoadBL);
+                param.Add("@DLCNumber", DLCNumber);
+                param.Add("@DLCBal", DLCBal);
+                param.Add("@CustCode", CustCode);
+
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                   direction: System.Data.ParameterDirection.Output,
+                   size: 12800);
+
+                param.Add("@IssueResp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
+
+
+                var results = await _db.LoadData<Q_DMLC_IssueDBE_NewSelect_JSON_rsp, dynamic>(
+                            storedProcedure: "[usp_q_DMLC_IssueDBENewSelect]",
+                            param);
+
+                var Resp = param.Get<dynamic>("@Resp");
+                var IssueResp = param.Get<dynamic>("@IssueResp");
+
+                if (Resp == 1)
+                {
+                    Q_DMLC_IssueDBE_NewSelect_JSON_rsp jsonResponse = JsonSerializer.Deserialize<Q_DMLC_IssueDBE_NewSelect_JSON_rsp>(IssueResp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse; // (List<Q_Inq_CreditLimit_SumAndTotal_rsp>)results;
+                    return Ok(response);
+                }
+                else
+                {
+
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "No Data";
+                    response.Data = new Q_DMLC_IssueDBE_NewSelect_JSON_rsp();
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new Q_DMLC_IssueDBE_NewSelect_JSON_rsp();
+                return BadRequest(response);
+            }
+        }
 
 
 
@@ -198,6 +282,37 @@ namespace ISPTF.API.Controllers.DomesticLC
 
 
 
+
+        [HttpHead("listSelect/ Use DMLCIFormDBEIssue/select  ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> Remark([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
 
 
 

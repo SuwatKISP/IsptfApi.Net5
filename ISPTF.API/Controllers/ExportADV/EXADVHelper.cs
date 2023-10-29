@@ -33,6 +33,20 @@ namespace ISPTF.API.Controllers.ExportADV
                     ).FirstOrDefaultAsync();
         }
 
+        public async static Task<pExad> GetExadAmend(ISPTFContext _context, string EXPORT_ADVICE_NO)
+        {
+            int AmdSeq;
+            AmdSeq = GetSeqNoAmend(_context,EXPORT_ADVICE_NO);
+            return await (
+                    from row in _context.pExads
+                    where
+                    row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
+                    row.RECORD_TYPE == "EVENT" &&
+                    row.EVENT_NO == AmdSeq
+                    select row
+                    ).FirstOrDefaultAsync();
+        }
+
         public async static Task<int> TestUpdate(ISPTFContext _context, string EXPORT_ADVICE_NO, string RECORD_TYPE, string REC_STATUS, int? EVENT_NO)
         {
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -86,6 +100,25 @@ namespace ISPTF.API.Controllers.ExportADV
             else
             {
                 return 1;
+            }
+        }
+
+        public static int GetSeqNoAmend(ISPTFContext _context, string EXPORT_ADVICE_NO)
+        {
+            var exad = (
+                from row in _context.pExads
+                where
+                row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
+                row.RECORD_TYPE == "EVENT" &&  row.EVENT_TYPE == "Amend"
+                orderby row.EVENT_NO descending
+                select row).AsNoTracking().FirstOrDefault();
+            if (exad != null)
+            {
+                return exad.EVENT_NO ;
+            }
+            else
+            {
+                return 0;
             }
         }
 

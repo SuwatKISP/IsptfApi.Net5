@@ -303,20 +303,20 @@ namespace ISPTF.API.Controllers.ExportLC
                             { 
 
                                 if (data.PEXPAYMENT.Debit_credit_flag == "C")
-                            {
-                                if (!eventRow.RECEIVED_NO.Contains("DCR"))
                                 {
-                                    eventRow.RECEIVED_NO = "";
+                                    if (!eventRow.RECEIVED_NO.Contains("DCR"))
+                                    {
+                                        eventRow.RECEIVED_NO = "";
+                                    }
+                                 }
+                                else
+                                {
+                                    if (!eventRow.RECEIVED_NO.Contains("DDR"))
+                                    {
+                                        eventRow.RECEIVED_NO = "";
+                                    }
                                 }
                             }
-                            else
-                            {
-                                if (!eventRow.RECEIVED_NO.Contains("DDR"))
-                                {
-                                    eventRow.RECEIVED_NO = "";
-                                }
-                            }
-                                }
                             string PayFlag;
                             //    var receiptNo = "[MOCK]" + ExportLCHelper.GenerateRandomReceiptNo(5);
                             string receiptNo;

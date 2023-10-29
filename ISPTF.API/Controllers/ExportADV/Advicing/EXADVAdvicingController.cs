@@ -267,6 +267,42 @@ namespace ISPTF.API.Controllers.ExportADV
             return BadRequest(response);
         }
 
+        [HttpGet("GetAmend")]
+        public async Task<ActionResult<PEXADPPaymentORIResponse>> GetAmend(string  EXPORT_ADVICE_NO)
+        {
+            PEXADPPaymentORIResponse response = new();
+            response.Data = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_ADVICE_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_ADVICE_NO is required";
+                return BadRequest(response);
+            }
+
+            try
+            {
+                // pExad
+                var exad = await EXADVHelper.GetExadAmend(_context, EXPORT_ADVICE_NO );
+
+                if (exad != null)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Data.PEXAD = exad;
+                   // response.Data.ADVICE_Type = ADVICE_TYPE;
+                    return Ok(response);
+                }
+                response.Message = "Export Advice L/C does not exist";
+            }
+            catch (Exception e)
+            {
+                response.Message = e.ToString();
+            }
+            response.Code = Constants.RESPONSE_ERROR;
+            return BadRequest(response);
+        }
+
         [HttpPost("save")] 
         public ActionResult<PEXADPPaymentORIResponse> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
         {
@@ -359,7 +395,18 @@ namespace ISPTF.API.Controllers.ExportADV
                             response.Data = new();
                             return BadRequest(response);
                         }
+                        var pPaymentEvent = (from row in _context.pPayments
+                                             where row.RpReceiptNo == pExadEvent.RECEIPT_NO
+                                             select row).AsNoTracking().FirstOrDefault();
 
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Export Advice Saved";
+                        // response.Data.PEXAD = pexadppaymentrequest.pExad;
+                        response.Data.PPAYMENT = pexadppaymentrequest.pPayment;
+                        response.Data.PEXAD = pExadEvent;
+                        response.Data.PPAYMENT = pPaymentEvent;
+                        response.Data.ADVICE_Type = AdviceType;
+                        return Ok(response);
                     }
                     catch (Exception e)
                     {
@@ -369,13 +416,6 @@ namespace ISPTF.API.Controllers.ExportADV
                         response.Message = e.ToString();
                         return BadRequest(response);
                     }
-
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Export Advice Saved";
-                    response.Data.PEXAD = pexadppaymentrequest.pExad;
-                    response.Data.PPAYMENT = pexadppaymentrequest.pPayment;
-                   response.Data.ADVICE_Type = AdviceType;
-                    return Ok(response);
                 }
             }
             catch (Exception e)
@@ -675,7 +715,11 @@ namespace ISPTF.API.Controllers.ExportADV
                 FileSWName = "TFF" + pExadEvent.EXPORT_ADVICE_NO + seqNo + "-" + pExadEvent.EVENT_DATE.Value.ToString("MMdd") + DateTime.Now.ToString("hhmm");
             }
             pExadEvent.SwifInID = FileSWName;
-            if (AddNEW == "Y")
+            if (pExadEvent.PAYMENT_INSTRU != "1")
+            {
+                pExadEvent.VOUCH_ID = "";
+            }
+                if (AddNEW == "Y")
             {
                 _context.Add(pExadEvent);
                 _context.SaveChanges();
@@ -697,7 +741,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 //    EventTran = "ADVICE"
                 //End If
 
-                if (pExadEvent.PAYMENT_INSTRU == "1")
+             if (pExadEvent.PAYMENT_INSTRU == "1")
             {
                 PaymentSave(pExad,pPayment,UpdateDateT,UpdateDateNT);
             }
@@ -768,8 +812,8 @@ namespace ISPTF.API.Controllers.ExportADV
                     }
                 }
                 // Update Master
-                 _context.Database.ExecuteSqlRaw($"UPDATE pExad SET REC_STATUS = 'P' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
             }
+            _context.Database.ExecuteSqlRaw($"UPDATE pExad SET REC_STATUS = 'P' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
             return pExadEvent;
         }
 

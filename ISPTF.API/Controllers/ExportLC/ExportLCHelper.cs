@@ -318,6 +318,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             genRefNo = USER_CENTER_ID + pRefNo.pRefPrefix + currentYear.Substring(currentYear.Length - 2) + runNo.ToString("000000");
 
                             pRefNo.pRefSeq = runNo;
+                            pRefNo.InUse =false;
                             pRefNo.LastUpdate = UpdateDateT;
                             pRefNo.UserCode = USER_ID;
 
