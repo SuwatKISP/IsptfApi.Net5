@@ -276,9 +276,32 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = UpdateDateNT; // Without Time
                         eventRow.VOUCH_ID = "COVERING";
-
+                        if (eventRow.NET_PROCEED_CLAIM == null)
+                        {
+                            eventRow.NET_PROCEED_CLAIM = 0;
+                        }
+                        if (eventRow.ADJ_TOT_NEGO_AMOUNT == null)
+                        {
+                            eventRow.ADJ_TOT_NEGO_AMOUNT = 0;
+                        }
+                        if (eventRow.ADJ_LESS_CHARGE_AMT == null)
+                        {
+                            eventRow.ADJ_LESS_CHARGE_AMT = 0;
+                        }
+                        if (eventRow.LESS_AGENT == null)
+                        {
+                            eventRow.LESS_AGENT = 0;
+                        }
+                        if (eventRow.BANK_CHARGE_AMT == null)
+                        {
+                            eventRow.BANK_CHARGE_AMT = 0;
+                        }
+                        if (eventRow.NEGO_AMT == null)
+                        {
+                            eventRow.NEGO_AMT = 0;
+                        }
                         // Call Save pExDoc
-                        
+
 
                         bool savepEXDocResult = ExportLCHelper.SaveExDoc(_context, eventRow, data.PEXDOC);
 

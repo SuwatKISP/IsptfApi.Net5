@@ -235,7 +235,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                             pExpc.PACKING_NO = pExpcMaster.PACKING_NO;
                             pExpc.record_type = "EVENT";
                             pExpc.event_no = event_no;
-                            _context.pExpcs.Add(pExpcEvent);
+                            _context.pExpcs.Add(pExpc);
                             _context.SaveChanges();
                         }
 
@@ -327,7 +327,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         //pExpc.PCProfit = pExpc.PCProfit;
                         //pExpc.MidRate = pExpc.MidRate;
                         pExpc.in_Use = "0";
-                        _context.pExpcs.Update(pExpcEvent);
+                        _context.pExpcs.Update(pExpc);
 
                         // Commit
                         _context.SaveChanges();
@@ -455,13 +455,13 @@ namespace ISPTF.API.Controllers.PackingCredit
         }
 
         [HttpPost("release")]
-        public ActionResult<EXPCResultResponse> Release(string? PACKING_NO)
+        public ActionResult<EXPCResultResponse> Release([FromBody] PEXPCRelaseReq data)
         {
             EXPCResultResponse response = new();
             var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
             var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
-            if (string.IsNullOrEmpty(PACKING_NO))
+            if (string.IsNullOrEmpty(data.PACKING_NO))
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "PACKING_NO is required";
@@ -479,7 +479,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     try
                     {
                         var pExpcMaster = (from row in _context.pExpcs
-                                           where row.PACKING_NO == PACKING_NO &&
+                                           where row.PACKING_NO == data.PACKING_NO &&
                                                  row.record_type == "MASTER"
                                            select row).FirstOrDefault();
                         var event_no = pExpcMaster.event_no + 1;
@@ -491,7 +491,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                             return BadRequest(response);
                         }
                         var pExpcEvent = (from row in _context.pExpcs
-                                          where row.PACKING_NO == PACKING_NO &&
+                                          where row.PACKING_NO == data.PACKING_NO &&
                                                 row.event_type == EVENT_TYPE &&
                                                 row.business_type == BUSINESS_TYPE &&
                                                 row.event_no == event_no
@@ -634,7 +634,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         eventDate = pExpcEvent.event_date.Value.ToString("dd/MM/yyyy", engDateFormat);
                         resCustLiab = ISPModule.CustLiabEXPC.EXPC_Overdue(eventDate, "ISSUE", pExpcEvent.PACKING_NO, pExpcEvent.cust_id,
                         pExpcEvent.doc_ccy, pExpcEvent.principle_amt_ccy2.ToString(), pExpcEvent.principle_amt_thb2.ToString(), pExpcEvent.packing_for);
-                        if (resCustLiab != "ERROR")
+                        if (resCustLiab == "ERROR")
                         {
                             response.Code = Constants.RESPONSE_ERROR;
                             response.Message = "Error for Update Liability";

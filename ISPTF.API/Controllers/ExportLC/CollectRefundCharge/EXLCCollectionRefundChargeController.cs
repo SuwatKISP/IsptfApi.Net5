@@ -455,6 +455,8 @@ namespace ISPTF.API.Controllers.ExportLC
         public ActionResult<EXLCResultResponse> Release([FromBody] PEXLCSaveRequest data)
         {
             EXLCResultResponse response = new();
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Class validate
 
             try
@@ -503,28 +505,81 @@ namespace ISPTF.API.Controllers.ExportLC
                         var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
 
                         pExlc eventRow = pExlcEvent;
-
-              
-
                         // 4 - Update Master
+
+                        //-------- Check Event Revese --------------------------------------
+                        bool Revese = false;
+                        string MasterStat;
+                        var pExlcRevese = (from row in _context.pExlcs
+                                          where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO &&
+                                                row.EVENT_TYPE == "REVERSE" 
+                                          select row).AsNoTracking().FirstOrDefault();
+                        if (pExlcRevese !=null)
+                        {
+                            Revese = true;
+                        }
+                        if (Revese==true)
+                        {
+                            MasterStat = "C";
+                        }
+                        else
+                        {
+                            MasterStat = "R";
+                        }
+                        pExlcMaster.GENACC_FLAG = "Y";
+                        pExlcMaster.GENACC_DATE = UpdateDateNT;
+                        pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
+                        pExlcMaster.EVENT_MODE = "E";
+                        pExlcMaster.EVENT_TYPE = EVENT_TYPE;
+                       // pExlcMaster.EVENT_NO = targetEventNo;
+                        pExlcMaster.VOUCH_ID = eventRow.VOUCH_ID;
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
+                        pExlcMaster.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
+                        pExlcMaster.CHARGE_ACC = eventRow.CHARGE_ACC;
+                        pExlcMaster.DRAFT = eventRow.DRAFT;
+                        pExlcMaster.MT202 = eventRow.MT202;
+                        pExlcMaster.FB_CURRENCY = eventRow.FB_CURRENCY;
+                        pExlcMaster.FB_AMT = eventRow.FB_AMT;
+                        pExlcMaster.FB_AMT_THB = eventRow.FB_AMT_THB;
+                        pExlcMaster.FB_RATE = eventRow.FB_RATE;
 
+                        pExlcMaster.NEGO_AMT = eventRow.NEGO_AMT;
+                        pExlcMaster.TELEX_SWIFT = eventRow.TELEX_SWIFT;
+                        pExlcMaster.COURIER_POSTAGE = eventRow.COURIER_POSTAGE;
+                        pExlcMaster.STAMP_FEE = eventRow.STAMP_FEE;
+                        pExlcMaster.BE_STAMP = eventRow.BE_STAMP;
+                        pExlcMaster.COMM_OTHER = eventRow.COMM_OTHER;
+                        pExlcMaster.HANDING_FEE = eventRow.HANDING_FEE;
+                        pExlcMaster.INT_AMT_THB = eventRow.INT_AMT_THB;
+                        pExlcMaster.COMMONTT = eventRow.COMMONTT;
+                        pExlcMaster.TOTAL_CHARGE = eventRow.TOTAL_CHARGE;
+                        pExlcMaster.REFUND_TAX_YN = eventRow.REFUND_TAX_YN;
+                        pExlcMaster.REFUND_TAX_AMT = eventRow.REFUND_TAX_AMT;
+                        pExlcMaster.TOTAL_AMOUNT = eventRow.TOTAL_AMOUNT;
 
+                        pExlcMaster.COLLECT_REFUND = eventRow.COLLECT_REFUND;
+                        pExlcMaster.PAYMENT_INSTRU = eventRow.PAYMENT_INSTRU;
+                        pExlcMaster.METHOD = eventRow.METHOD;
+                        pExlcMaster.RECEIVED_NO = eventRow.RECEIVED_NO;
+                        pExlcMaster.NARRATIVE = eventRow.NARRATIVE;
 
                         _context.SaveChanges();
 
                         // 5 - Update Master/Event PK to Release
-                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = 'R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS = '{MasterStat}',EVENT_NO ='{targetEventNo}' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='MASTER'");
 
+                        //update Event
+                        pExlcEvent.GENACC_FLAG = "Y";
+                        pExlcEvent.GENACC_DATE = UpdateDateNT;
+                        pExlcEvent.AUTH_CODE = USER_ID;
+                        pExlcEvent.AUTH_DATE = UpdateDateT; // With Time
+                        pExlcEvent.UPDATE_DATE = UpdateDateT; // With Time
+                        _context.SaveChanges();
 
-                        /*
-                         * FRONT OR BACK LOGIC
-                         If Duplicate = True Then
-                            If ChkReleaseMaster("EXLC", Trim(TxtExLcCode.Text)) = True Then CmdDel.Enabled = False: framRelease.Visible = False: CmdSave.Enabled = False: Exit Sub
-                         End If
-                         */
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExlc SET REC_STATUS ='R' WHERE EXPORT_LC_NO = '{data.PEXLC.EXPORT_LC_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO ='{targetEventNo}'");
+
+  
 
                         // 6 - Update GL Flag
                         var gls = (from row in _context.pDailyGLs
@@ -536,6 +591,16 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             row.SendFlag = "R";
                         }
+                        _context.SaveChanges();
+                        //Update Payment
+                        var pPayments = (from row in _context.pPayments
+                                         where row.RpReceiptNo == eventRow.RECEIVED_NO
+                                         select row).ToList();
+                        foreach (var row in pPayments)
+                        {
+                            row.RpRecStatus = "R";
+                        }
+                        _context.SaveChanges();
 
                         transaction.Complete();
 

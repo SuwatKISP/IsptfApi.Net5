@@ -868,7 +868,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         eventDate = pExpcEvent.event_date.Value.ToString("dd/MM/yyyy",engDateFormat);
                         resCustLiab = ISPModule.CustLiabEXPC.EXPC_Payment(eventDate, "ISSUE", pExpcEvent.PACKING_NO, pExpcEvent.cust_id,
                         pExpcEvent.doc_ccy, pExpcEvent.principle_amt_ccy2.ToString(), pExpcEvent.principle_amt_thb2.ToString(), pExpcEvent.packing_for);
-                        if (resCustLiab != "ERROR")
+                        if (resCustLiab == "ERROR")
                         {
                             response.Code = Constants.RESPONSE_ERROR;
                             response.Message = "Error for Update Liability";
