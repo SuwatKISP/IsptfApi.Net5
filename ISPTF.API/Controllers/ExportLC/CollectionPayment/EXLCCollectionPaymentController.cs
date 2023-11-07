@@ -290,6 +290,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.IN_USE = 0;
                         eventRow.GENACC_FLAG = "Y";
                         eventRow.GENACC_DATE = UpdateDateNT; // Without Time
+                        if (eventRow.FB_AMT == null) eventRow.FB_AMT = 0;
+                        if (eventRow.RECEIVE_PAY_AMT == null) eventRow.RECEIVE_PAY_AMT = 0;
 
                         if (eventRow.PAYMENT_INSTRU == "PAID" ||
                             eventRow.PAYMENT_INSTRU == "BAHTNET" ||

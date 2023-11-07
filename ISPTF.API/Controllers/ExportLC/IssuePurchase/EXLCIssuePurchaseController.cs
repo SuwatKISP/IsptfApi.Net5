@@ -403,6 +403,8 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 pExlc.REC_STATUS = "P";
                             }
+                            if (pExlc.FB_AMT == null) pExlc.FB_AMT = 0;
+                            if (pExlc.RECEIVE_PAY_AMT == null) pExlc.RECEIVE_PAY_AMT = 0;
                             //    pExlc.REC_STATUS = "P";
                             pExlc.RECORD_TYPE = "MASTER";
                             _context.pExlcs.Add(pExlc);
@@ -431,7 +433,8 @@ namespace ISPTF.API.Controllers.ExportLC
                             pExlc.UPDATE_DATE = UpdateDateT; // With Time
                             pExlc.FACNO = appvFac;
                             pExlc.APPVNO = appvNo;
-
+                            if (pExlc.FB_AMT == null) pExlc.FB_AMT = 0;
+                            if (pExlc.RECEIVE_PAY_AMT == null) pExlc.RECEIVE_PAY_AMT = 0;
                             _context.pExlcs.Update(pExlc);
                             _context.SaveChanges();
                         }
@@ -521,6 +524,8 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
                         }
                         eventRow.RECORD_TYPE = "EVENT";
+                        if (eventRow.FB_AMT == null) eventRow.FB_AMT = 0;
+                        if (eventRow.RECEIVE_PAY_AMT == null) eventRow.RECEIVE_PAY_AMT = 0;
                         // Commit
                         if (pExlcEvent ==null)
                         {

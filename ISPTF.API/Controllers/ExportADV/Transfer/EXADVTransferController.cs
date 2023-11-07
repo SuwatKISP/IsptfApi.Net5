@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using ISPTF.Models.LoginRegis;
 using System.Transactions;
 using Microsoft.AspNetCore.Http;
+using ISPTF.API.Controllers.ExportLC;
 
 namespace ISPTF.API.Controllers.ExportADV
 {
@@ -24,6 +25,7 @@ namespace ISPTF.API.Controllers.ExportADV
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+        public IFormatProvider engDateFormat = new System.Globalization.CultureInfo("en-US").DateTimeFormat;
         public EXADVTransferController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -115,30 +117,306 @@ namespace ISPTF.API.Controllers.ExportADV
             return BadRequest(response);
         }
 
+        //[HttpGet("listTransfer")]
+        //public async Task<ActionResult<TransferLCListPageResponse>> ListTransfer(string? TypeLC, string? ListType, string? CenterID, string? EXPORT_ADVICE_NO, string? LC_NO, string? BENEFICIARY_ID, string? BENEFICIARY_INFO, string? Page, string? PageSize)
+        //{
+        //    TransferLCListPageResponse response = new TransferLCListPageResponse();
+        //    var USER_ID = User.Identity.Name;
+        //    //var USER_ID = "API";
+        //    // Validate
+        //    if (string.IsNullOrEmpty(TypeLC) || string.IsNullOrEmpty(ListType) || string.IsNullOrEmpty(CenterID) || string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+        //    {
+        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+        //        response.Message = "TypeLC, ListType, CenterID, Page, PageSize is required";
+        //        response.Data = new List<Q_TransferLCListPageRsp>();
+        //        return BadRequest(response);
+        //    }
+        //    if (ListType == "RELEASE" && string.IsNullOrEmpty(USER_ID))
+        //    {
+        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+        //        response.Message = "USER_ID is required";
+        //        response.Data = new List<Q_TransferLCListPageRsp>();
+        //        return BadRequest(response);
+        //    }
+
+        //    // Call Store Procedure
+        //    try
+        //    {
+        //        DynamicParameters param = new();
+        //        param.Add("@TypeLC", TypeLC);
+        //        param.Add("@ListType", ListType);
+        //        param.Add("@CenterID", CenterID);
+        //        param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
+        //        param.Add("@LC_NO", LC_NO);
+        //        param.Add("@BENEFICIARY_ID", BENEFICIARY_ID);
+        //        param.Add("@BENEFICIARY_INFO", BENEFICIARY_INFO);
+        //        param.Add("@UserCode", USER_ID);
+        //        param.Add("@Page", Page);
+        //        param.Add("@PageSize", PageSize);
+
+        //        if (EXPORT_ADVICE_NO == null)
+        //        {
+        //            param.Add("@EXPORT_ADVICE_NO", "");
+        //        }
+        //        if (LC_NO == null)
+        //        {
+        //            param.Add("@LC_NO", "");
+        //        }
+        //        if (BENEFICIARY_ID == null)
+        //        {
+        //            param.Add("@BENEFICIARY_ID", "");
+        //        }
+        //        if (BENEFICIARY_INFO == null)
+        //        {
+        //            param.Add("@BENEFICIARY_INFO", "");
+        //        }
+
+        //        var results = await _db.LoadData<Q_TransferLCListPageRsp, dynamic>(
+        //                    storedProcedure: "usp_q_EXAD_TransferLCListPage",
+        //                    param);
+
+        //        response.Code = Constants.RESPONSE_OK;
+        //        response.Message = "Success";
+        //        response.Data = (List<Q_TransferLCListPageRsp>)results;
+
+        //        try
+        //        {
+        //            response.Page = int.Parse(Page);
+        //            response.Total = response.Data[0].RCount;
+        //            response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+        //        }
+        //        catch (Exception)
+        //        {
+        //            response.Page = 0;
+        //            response.Total = 0;
+        //            response.TotalPage = 0;
+        //        }
+        //        return Ok(response);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        response.Code = Constants.RESPONSE_ERROR;
+        //        response.Message = e.ToString();
+        //        response.Data = new List<Q_TransferLCListPageRsp>();
+        //    }
+        //    return BadRequest(response);
+        //}
+        [HttpGet("listtransfer")]
+        public async Task<ActionResult<TransferLCListPageResp>> ListTransfer(string? EXPORT_ADVICE_NO, string? RECORD_TYPE,string REC_STATUS, int? EVENT_NO, string? Page, string? PageSize)
+        {
+            TransferLCListPageResp response = new TransferLCListPageResp();
+            var USER_ID = User.Identity.Name;
+            //var USER_ID = "API";
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO  ==null|| string.IsNullOrEmpty(Page) || string.IsNullOrEmpty(PageSize))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE,REC_STATUS, EVENT_NO, Page, PageSize is required";
+                response.Data = new List<Q_TransferLCListPageResp>();
+                return BadRequest(response);
+            }
+
+            // Call Store Procedure
+            try
+            {
+                DynamicParameters param = new();
+                param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
+                param.Add("@RECORD_TYPE", RECORD_TYPE);
+                param.Add("@REC_STATUS", REC_STATUS);
+                param.Add("@EVENT_NO", EVENT_NO);
+                param.Add("@Page", Page);
+                param.Add("@PageSize", PageSize);
+
+                var results = await _db.LoadData<Q_TransferLCListPageResp, dynamic>(
+                            storedProcedure: "[usp_q_EXAD_TransferLCListUnder]",
+                            param);
+
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_TransferLCListPageResp>)results;
+
+                try
+                {
+                    response.Page = int.Parse(Page);
+                    response.Total = response.Data[0].RCount;
+                    response.TotalPage = Convert.ToInt32(Math.Ceiling(response.Total / decimal.Parse(PageSize)));
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_TransferLCListPageResp>();
+            }
+            return BadRequest(response);
+        }
+
+
 
         [HttpGet("select")]
-        public async Task<ActionResult<PEXADResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
+        public async Task<ActionResult<PEXADPTransferResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO, string ADVICE_TYPE)
         {
-            PEXADResponse response = new();
+            PEXADPTransferResponse response = new();
             response.Data = new();
 
             // Validate
-            if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO == null)
+            if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO == null || ADVICE_TYPE == null)
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
-                response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO is required";
+                response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS,ADVICE_TYPE, EVENT_NO is required";
                 return BadRequest(response);
             }
 
             try
             {
                 // pExad
-                var exad = await EXADVHelper.GetExad(_context, EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO);
+                var pExadMaster = (from row in _context.pExads
+                                   where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
+                                         row.RECORD_TYPE == "MASTER"
+                                   select row).AsNoTracking().FirstOrDefault();
+                pExad exad = new pExad();
+                if (RECORD_TYPE=="MASTER")
+                {
+                     exad = await EXADVHelper.GetExad(_context, EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, pExadMaster.EVENT_NO);
 
+                }
+                else
+                {
+                    if (REC_STATUS=="P")
+                    {
+                         exad = await EXADVHelper.GetExad(_context, EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, pExadMaster.EVENT_NO + 1);
+
+                    }
+                    else
+                    {
+                         exad = await EXADVHelper.GetExad(_context, EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO + 1);
+
+                    }
+                }
                 if (exad != null)
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Data.PEXAD = exad;
+                    response.Data.ADVICE_TYPE = ADVICE_TYPE;
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Export Advice L/C does not exist";
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = e.ToString();
+            }
+            response.Code = Constants.RESPONSE_ERROR;
+            return BadRequest(response);
+        }
+
+        //[HttpGet("select")]
+        //public async Task<ActionResult<PEXADPTransferResponse>> Select(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO, string ADVICE_TYPE)
+        //{
+        //    //PEXADPTransferResponse response = new();
+        //    //response.Data = new();
+        //    PEXADPTransferResponse response = new PEXADPTransferResponse();
+
+        //    // Validate
+        //    if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO == null || ADVICE_TYPE == null)
+        //    {
+        //        response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+        //        response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS,ADVICE_TYPE, EVENT_NO is required";
+        //        return BadRequest(response);
+        //    }
+
+        //    // Call Store Procedure
+        //    try
+        //    {
+        //        DynamicParameters param = new();
+
+        //        param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
+        //        param.Add("@EVENT_NO", EVENT_NO);
+        //        param.Add("@ADVICE_TYPE", ADVICE_TYPE);
+
+        //        param.Add("@TranRsp", dbType: DbType.Int32,
+        //           direction: System.Data.ParameterDirection.Output,
+        //           size: 12800);
+        //        param.Add("@TranSONRsp", dbType: DbType.String,
+        //           direction: System.Data.ParameterDirection.Output,
+        //           size: 5215585);
+
+
+        //        var results = await _db.LoadData<PEXADPTransferDataContainer, dynamic>(
+        //                       storedProcedure: "usp_pExad_Transfer_Select",
+        //                       param);  
+
+        //        var TranRsp = param.Get<dynamic>("@TranRsp");
+        //        var Tranjsonrsp = param.Get<dynamic>("@TranSONRsp");
+
+        //        if (TranRsp > 0 && !string.IsNullOrEmpty(Tranjsonrsp))
+        //        {
+        //            PEXADPTransferDataContainer jsonResponse = JsonSerializer.Deserialize<PEXADPTransferDataContainer>(Tranjsonrsp);
+        //            response.Code = Constants.RESPONSE_OK;
+        //            response.Message = "Success";
+        //            response.Data = jsonResponse;
+        //            response.Data.ADVICE_TYPE = ADVICE_TYPE;
+        //            return Ok(response);
+        //        }
+        //        else
+        //        {
+
+        //            response.Code = Constants.RESPONSE_ERROR;
+        //            response.Message = "Error selecting Transfer";
+        //            response.Data = new PEXADPTransferDataContainer();
+        //            return BadRequest(response);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        response.Code = Constants.RESPONSE_ERROR;
+        //        response.Message = e.ToString();
+        //        response.Data = new PEXADPTransferDataContainer();
+        //    }
+        //    return BadRequest(response);
+        //}
+
+        [HttpGet("selecttransfer")]
+        public async Task<ActionResult<PEXADSelectPTransferResponse>> SelectTransfer(string? EXPORT_ADVICE_NO, int? SEQ_TRANSFER, int? EVENT_NO,string ADVICE_TYPE)
+        {
+            PEXADSelectPTransferResponse response = new();
+            response.Data = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || SEQ_TRANSFER ==null || EVENT_NO == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_ADVICE_NO, SEQ_TRANSFER, EVENT_NO is required";
+                return BadRequest(response);
+            }
+
+            try
+            {
+                // pExad
+                var exadtran = await EXADVHelper.SelectTransafer(_context, EXPORT_ADVICE_NO, SEQ_TRANSFER, EVENT_NO);
+                if (exadtran != null)
+                {
+                    var pPaymentEvent = (from row in _context.pPayments
+                                         where row.RpReceiptNo == exadtran.RECEIPT_NO
+                                         select row).AsNoTracking().FirstOrDefault();
+
+                    response.Code = Constants.RESPONSE_OK;
+                    //response.Data.PEXAD = exad;
+                    response.Data.PTRANSFER = exadtran;
+                    response.Data.PPAYMENT = pPaymentEvent;
+                    response.Data.ADVICE_Type = ADVICE_TYPE;
                     return Ok(response);
                 }
                 response.Message = "Export Advice L/C does not exist";
@@ -152,11 +430,12 @@ namespace ISPTF.API.Controllers.ExportADV
         }
 
         [HttpPost("save")]
-        public ActionResult<PEXADPPaymentResponse> Save([FromBody] PEXADPPaymentRequest pexadppaymentrequest)
+        public ActionResult<PEXADPPaymentTranResponse> Save([FromBody] PEXADPTransferPaymentRequest pexadppaymentrequest)
         {
-            PEXADPPaymentResponse response = new();
+            PEXADPPaymentTranResponse response = new();
             response.Data = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (pexadppaymentrequest.pExad == null)
             {
@@ -169,6 +448,8 @@ namespace ISPTF.API.Controllers.ExportADV
             // Get USER_ID, CenterID
             pexadppaymentrequest.pExad.USER_ID = User.Identity.Name;
             pexadppaymentrequest.pExad.CenterID = HttpContext.User.FindFirst("UserBranch").Value.ToString();
+            pexadppaymentrequest.pTransfer.USER_ID = User.Identity.Name;
+            pexadppaymentrequest.pTransfer.CenterID = HttpContext.User.FindFirst("UserBranch").Value.ToString();
 
             try
             {
@@ -177,18 +458,89 @@ namespace ISPTF.API.Controllers.ExportADV
                     try
                     {
                         // Get Requirement
-                        if(pexadppaymentrequest.pExad.TRANSACTION_TYPE=="5")
+                        int GetSeqNo = EXADVHelper.GetSeqNo(_context, pexadppaymentrequest.pExad.EXPORT_ADVICE_NO);
+                        pTransfer pTransferEvent = new pTransfer();
+                        pExad pExadEvent = new pExad();
+                        if (pexadppaymentrequest.pExad.TRANSACTION_TYPE=="5")
                         {
-                            var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, pexadppaymentrequest.pExad.EVENT_NO, "EVENT", "Transfer", "P");
+                             pTransferEvent = Transfer_save(pexadppaymentrequest.pTransfer, pexadppaymentrequest.pPayment, GetSeqNo, "EVENT", "Transfer", "P", UpdateDateT, UpdateDateNT);
+                            if (pTransferEvent == null)
+                            {
+                                transaction.Dispose();
+                                response.Code = Constants.RESPONSE_ERROR;
+                                response.Message = "Error for pTranser";
+                                return BadRequest(response);
+                            }
+                            else
+                            {
+                                 pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, GetSeqNo, "EVENT", "Transfer", "P", UpdateDateT, UpdateDateNT);
+                                pExadEvent.RECEIPT_NO = pTransferEvent.RECEIPT_NO;
+                                pExadEvent.VOUCH_ID = pTransferEvent.VOUCH_ID;
+                            }
                         }
                         else if (pexadppaymentrequest.pExad.TRANSACTION_TYPE == "6")
                         {
-                            var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, pexadppaymentrequest.pExad.EVENT_NO, "EVENT", "Amend Transfer", "P");
+
+                             pTransferEvent = Transfer_save(pexadppaymentrequest.pTransfer, pexadppaymentrequest.pPayment, GetSeqNo, "EVENT", "Amend Transfer", "P", UpdateDateT, UpdateDateNT);
+                            if (pTransferEvent == null)
+                            {
+                                transaction.Dispose();
+                                response.Code = Constants.RESPONSE_ERROR;
+                                response.Message = "Error for pTranser";
+                                return BadRequest(response);
+                            }
+                            else
+                            {
+                                 pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, GetSeqNo, "EVENT", "Amend Transfer", "P", UpdateDateT, UpdateDateNT);
+                            }
                         }
 
                         // Commit
                         _context.SaveChanges();
                         transaction.Complete();
+                        transaction.Dispose();
+
+                        bool resGL;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent = pTransferEvent.EVENT_TYPE;
+                        eventDate = pTransferEvent.EVENT_DATE.Value.ToString("dd/MM/yyyy",engDateFormat);
+                        if (pExadEvent.PAYMENT_INSTRU == "1")
+                        {
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXAD(pTransferEvent.EXPORT_ADVICE_NO,
+                                eventDate, GLEvent, pTransferEvent.EVENT_NO, "TRANSFER");
+                        }
+                        else
+                        {
+                            resVoucherID = "";
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            pTransferEvent.VOUCH_ID = resVoucherID;
+                            pExadEvent.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+                        if (resGL == false)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L";
+                            response.Data = new();
+                            return BadRequest(response);
+                        }
+
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Export Advice Saved";
+                        response.Data.PEXAD = pExadEvent;
+                        var pPaymentEvent = (from row in _context.pPayments
+                                             where row.RpReceiptNo == pExadEvent.RECEIPT_NO
+                                             select row).AsNoTracking().FirstOrDefault();
+                        response.Data.PPAYMENT = pPaymentEvent;
+                        response.Data.PTRANSFER = pTransferEvent;
+                        return Ok(response);
                     }
                     catch (Exception e)
                     {
@@ -199,11 +551,6 @@ namespace ISPTF.API.Controllers.ExportADV
                         return BadRequest(response);
                     }
 
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Export Advice Saved";
-                    response.Data.PEXAD = pexadppaymentrequest.pExad;
-                    response.Data.PPAYMENT = pexadppaymentrequest.pPayment;
-                    return Ok(response);
                 }
             }
             catch (Exception e)
@@ -271,6 +618,69 @@ namespace ISPTF.API.Controllers.ExportADV
                             response.Message = "Can not delete MASTER of EVENT record is rec_status = R";
                             return BadRequest(response);
                         }
+
+                        // Commit
+                        await _context.SaveChangesAsync();
+                        transaction.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        transaction.Dispose();
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Export Advice Deleted";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = e.ToString();
+            }
+            response.Code = Constants.RESPONSE_ERROR;
+            return BadRequest(response);
+        }
+
+        [HttpPost("deletetransfer")]
+        public async Task<ActionResult<EXADVResultResponse>> DeleteTransfer(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO,int? SEQ_TRANSFER)
+        {
+            EXADVResultResponse response = new();
+
+            // Validate
+            if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO==null  || SEQ_TRANSFER ==null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "EXPORT_ADVICE_NO, RECORD_TYPE, REC_STATUS, EVENT_NO,SEQ_TRANSFER is required";
+                return BadRequest(response);
+            }
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        var pTranser = (from row in _context.pTransfers
+                                          where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
+                                                row.RECORD_TYPE == RECORD_TYPE &&
+                                                row.EVENT_NO == EVENT_NO &&
+                                                row.REC_STATUS == "P" &&
+                                                row.SEQ_TRANSFER== SEQ_TRANSFER
+                                        select row).AsNoTracking().FirstOrDefault();
+
+                        if (pTranser == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Transfer Advice no does not exist.";
+                            return BadRequest(response);
+                        }
+
+                       await _context.Database.ExecuteSqlRawAsync($"Delete pTransfer  where EXPORT_ADVICE_NO= '{pTranser.EXPORT_ADVICE_NO}' AND RECORD_TYPE = '{RECORD_TYPE}' AND REC_STATUS='P' AND EVENT_NO = {EVENT_NO} and SEQ_TRANSFER ={SEQ_TRANSFER} ");
+
 
                         // Commit
                         await _context.SaveChangesAsync();
@@ -402,8 +812,9 @@ namespace ISPTF.API.Controllers.ExportADV
             return BadRequest(response);
         }
 
-        private pExad SaveUser(pExad pExad, pPayment pPayment, int seqNo, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS)
+        private pExad SaveUser(pExad pExad, pPayment pPayment, int seqNo, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
+
             var pExadEvent = (from row in _context.pExads
                               where
                                     row.EXPORT_ADVICE_NO == pExad.EXPORT_ADVICE_NO &&
@@ -422,8 +833,9 @@ namespace ISPTF.API.Controllers.ExportADV
                 pExadEvent.BUSINESS_TYPE = "6";
                 pExadEvent.VOUCH_ID = "ADVICE LC";
                 pExadEvent.AUTH_CODE = "";
-                pExadEvent.UPDATE_DATE = DateTime.Now;
+                pExadEvent.UPDATE_DATE =UpdateDateT;
                 _context.Add(pExadEvent);
+                _context.SaveChanges();
             }
             else
             {
@@ -432,76 +844,151 @@ namespace ISPTF.API.Controllers.ExportADV
                 pExadEvent.BUSINESS_TYPE = "6";
                 pExadEvent.VOUCH_ID = "ADVICE LC";
                 pExadEvent.AUTH_CODE = "";
-                pExadEvent.UPDATE_DATE = DateTime.Now;
+                pExadEvent.UPDATE_DATE = UpdateDateT;
                 _context.Update(pExadEvent);
                 _context.SaveChanges();
             }
-            if (pExadEvent.PAYMENT_INSTRU == "1")
-            {
-                PaymentSave(pExad, pPayment);
-            }
-            else
-            {
-                // Delete pPayment
-                var pPaymentDel = (from row in _context.pPayments
-                                   where row.RpReceiptNo == pExadEvent.RECEIPT_NO
-                                   select row).ToList();
-                foreach (var row in pPaymentDel)
-                {
-                    _context.pPayments.Remove(row);
-                }
-                // Delete pPayDetail
-                var pPayDetailDel = (from row in _context.pPayDetails
-                                     where row.DpReceiptNo == pExadEvent.RECEIPT_NO
-                                     select row).ToList();
-                foreach (var row in pPayDetailDel)
-                {
-                    _context.pPayDetails.Remove(row);
-                }
-                // Delete pDailyGL
-                var pDailyGLDel = (from row in _context.pDailyGLs
-                                   where row.VouchID == pExadEvent.VOUCH_ID &&
-                                         row.VouchDate == pExadEvent.EVENT_DATE
-                                   select row).ToList();
-                foreach (var row in pDailyGLDel)
-                {
-                    _context.pDailyGLs.Remove(row);
-                }
-            }
+
             return pExadEvent;
         }
 
-        private void PaymentSave(pExad exad, pPayment pPaymentReq)
+        private pTransfer Transfer_save(pTransfer pTransfer, pPayment pPayment, int EVENT_NO, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
-            if (exad.RECEIPT_NO == null)
+            int Seqno;
+            var pTransferMax = (
+                from row in _context.pTransfers
+                where row.EXPORT_ADVICE_NO == pTransfer.EXPORT_ADVICE_NO
+                orderby row.EVENT_NO descending
+                select row).AsNoTracking().FirstOrDefault();
+            if (pTransferMax != null)
             {
-                exad.RECEIPT_NO = EXHelper.GetReceiptNo(_context, exad.USER_ID, exad.CenterID);
+                Seqno =pTransferMax.SEQ_TRANSFER;
             }
+            else
+            {
+                Seqno =0;
+            }
+            Seqno = Seqno + 1;
 
+            var pTransferEvent = (from row in _context.pTransfers
+                              where
+                                    row.EXPORT_ADVICE_NO == pTransfer.EXPORT_ADVICE_NO &&
+                                    row.SEQ_TRANSFER == Seqno &&
+                                    row.EVENT_NO == EVENT_NO
+                                  select row).AsNoTracking().FirstOrDefault();
+
+                pTransferEvent = pTransfer;
+                pTransferEvent.SEQ_TRANSFER = Seqno;
+                pTransferEvent = pTransfer;
+                pTransferEvent.EVENT_TYPE = EVENT_TYPE;
+                pTransferEvent.EVENT_NO = EVENT_NO;
+                if (pTransferEvent.EVENT_TYPE == "Transfer")
+                {
+                    pTransferEvent.TRANSFER_TYPE = "T";
+                }
+                else
+                {
+                    pTransferEvent.TRANSFER_TYPE = "A";
+                }
+
+                //eventType$ = pTransferEvent.event_type
+                //EventTran = "TRANSFER"
+                pTransferEvent.RECORD_TYPE = "EVENT";
+                pTransferEvent.BUSINESS_TYPE = "6";
+                pTransferEvent.REC_STATUS = "P";
+                // ' ---------------------------------------------------------Tab Transfer/History
+
+
+                pTransferEvent.VOUCH_ID = "ADVICE LC";
+               // pTransferEvent.user_id = cUserCode;
+                pTransferEvent.STATUS = "A";
+                if (pTransferEvent.PAYMENT_INSTRU == "1")
+                {
+                    if (pTransferEvent.RECEIPT_NO == null)
+                    {
+                        pTransferEvent.RECEIPT_NO = ExportLCHelper.GenRefNo(_context, pTransferEvent.CenterID, pTransferEvent.USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
+
+                    }
+                    PaymentSave(pTransferEvent, pPayment, UpdateDateT, UpdateDateNT);
+                }
+                else
+                {
+                    pTransferEvent.VOUCH_ID = "";
+                    pTransferEvent.RECEIPT_NO = "";
+                    // Delete pPayment
+                    var pPaymentDel = (from row in _context.pPayments
+                                       where row.RpReceiptNo == pTransferEvent.RECEIPT_NO
+                                       select row).ToList();
+                    foreach (var row in pPaymentDel)
+                    {
+                        _context.pPayments.Remove(row);
+                    }
+                    // Delete pPayDetail
+                    var pPayDetailDel = (from row in _context.pPayDetails
+                                         where row.DpReceiptNo == pTransferEvent.RECEIPT_NO
+                                         select row).ToList();
+                    foreach (var row in pPayDetailDel)
+                    {
+                        _context.pPayDetails.Remove(row);
+                    }
+                    // Delete pDailyGL
+                    var pDailyGLDel = (from row in _context.pDailyGLs
+                                       where row.VouchID == pTransferEvent.VOUCH_ID &&
+                                             row.VouchDate == pTransferEvent.EVENT_DATE
+                                       select row).ToList();
+                    foreach (var row in pDailyGLDel)
+                    {
+                        _context.pDailyGLs.Remove(row);
+                    }
+
+                }
+
+                //cRecpt = pTransferEvent.RECEIPT_NO
+
+                pTransferEvent.UPDATE_DATE = UpdateDateT;
+                // pTransferEvent.centerID = cBran
+                pTransferEvent.GENACC_FLAG = "";
+                pTransferEvent.GENACC_DATE =UpdateDateNT;
+                pTransferEvent.IN_Use = "0";
+
+            if (pTransferEvent == null)
+            {
+                _context.Add(pTransferEvent);
+            }
+            else
+            {
+                _context.Update(pTransferEvent);
+            }
+                return pTransferEvent;
+        }
+        private void PaymentSave(pTransfer exad, pPayment pPaymentReq, DateTime UpdateDateT, DateTime UpdateDateNT)
+        {
+ 
             var pPaymentEvent = (from row in _context.pPayments
                                  where row.RpReceiptNo == exad.RECEIPT_NO
                                  select row).AsNoTracking().FirstOrDefault();
+            pPaymentEvent = new();
+            pPaymentEvent = pPaymentReq;
+            pPaymentEvent.RpReceiptNo = exad.RECEIPT_NO;
+            pPaymentReq.RpDocNo = exad.EXPORT_ADVICE_NO;
+            pPaymentReq.RpRefer1 = exad.LC_NO;
+            pPaymentReq.RpModule = "EXAD";
+            pPaymentReq.RpEvent = "1";
+            pPaymentReq.RpPayDate = exad.EVENT_DATE;
+            pPaymentReq.RpPayBy = exad.METHOD;
+            pPaymentReq.RpNote = "";
+            pPaymentReq.RpStatus = "A";
+            pPaymentReq.RpRecStatus = "P";
+            pPaymentReq.UserCode = exad.USER_ID;
+            pPaymentReq.UpdateDate = UpdateDateT;
+
             if (pPaymentEvent == null)
             {
-                pPaymentEvent = new();
-                pPaymentEvent = pPaymentReq;
-                pPaymentEvent.RpReceiptNo = exad.RECEIPT_NO;
-                pPaymentEvent.RpModule = "EXAD";
-                pPaymentEvent.RpEvent = "1";
-                pPaymentEvent.RpPayDate = exad.EVENT_DATE;
-                pPaymentEvent.RpStatus = "A";
-                pPaymentEvent.UserCode = exad.USER_ID;
-                pPaymentEvent.UpdateDate = DateTime.Now;
+
                 _context.pPayments.Add(pPaymentEvent);
             }
             else
             {
-                pPaymentReq.RpModule = "EXAD";
-                pPaymentReq.RpEvent = "1";
-                pPaymentReq.RpPayDate = exad.EVENT_DATE;
-                pPaymentReq.RpStatus = "A";
-                pPaymentReq.UserCode = exad.USER_ID;
-                pPaymentReq.UpdateDate = DateTime.Now;
                 _context.pPayments.Update(pPaymentReq);
             }
 
