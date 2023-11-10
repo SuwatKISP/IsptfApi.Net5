@@ -253,7 +253,21 @@ namespace ISPTF.API.Controllers.ExportLC
                                                 row.EVENT_NO == targetEventNo
                                           select row).AsNoTracking().FirstOrDefault();
 
-
+                        //if (EVENT_TYPE == "Accept Due")
+                        //{
+                        //    eventRow.AcceptDate = eventRow.CONFIRM_DATE;
+                        //}
+                        //else
+                        //{
+                        //    eventRow.AcceptDate = null;
+                        //}
+                        if (pExlcEvent == null)
+                        {
+                            eventRow.VOUCH_ID = "";
+                            eventRow.RECEIVED_NO = "";
+                        }
+                        eventRow.APPLICANT_NAME = pExlcMaster.APPLICANT_NAME;
+                        eventRow.AGENT_BANK_REF = pExlcMaster.AGENT_BANK_REF;
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
@@ -262,10 +276,10 @@ namespace ISPTF.API.Controllers.ExportLC
                         eventRow.EVENT_TYPE = EVENT_TYPE;
                         //eventRow.EVENT_DATE = DateTime.Today; // Without Time
                         eventRow.USER_ID = USER_ID;
-                        eventRow.UPDATE_DATE = UpdateDateNT; // With Time
+                        eventRow.UPDATE_DATE = UpdateDateT; // With Time
                         eventRow.IN_USE = 0;
                         eventRow.GENACC_FLAG = "Y";
-                        eventRow.GENACC_DATE = UpdateDateT; // Without Time
+                        eventRow.GENACC_DATE = UpdateDateNT; // Without Time
                         eventRow.REC_STATUS = "P";
                         if (eventRow.FB_AMT == null) eventRow.FB_AMT = 0;
                         if (eventRow.RECEIVE_PAY_AMT == null) eventRow.RECEIVE_PAY_AMT = 0;
@@ -314,7 +328,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-                            eventRow.RECEIVED_NO = "";
                             eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
@@ -331,6 +344,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 _context.pPayDetails.Remove(row);
                             }
+                            eventRow.RECEIVED_NO = "";
 
                         }
 
@@ -338,6 +352,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (pExlcEvent == null)
                         {
                             // Insert
+                            eventRow.VOUCH_ID = "";
                             _context.pExlcs.Add(eventRow);
                         }
                         else

@@ -588,7 +588,7 @@ namespace ISPTF.API.Controllers.ImportTR
 
                 var Resp = param.Get<int>("@Resp");
                 var IssueTRSaveResp = param.Get<dynamic>("@IssueTRSaveResp");
-
+                
                 //var Resp = param.Get<int>("@Resp");
                 if (Resp > 0)
                 {

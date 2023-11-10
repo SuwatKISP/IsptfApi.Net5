@@ -387,7 +387,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                     {
                         if (pExpcMaster != null)
                         {
-                            targetEventNo = pExpcMaster.event_no + 1;
+                            targetEventNo = pExpcMaster.event_no ;
                         }
 
                     }

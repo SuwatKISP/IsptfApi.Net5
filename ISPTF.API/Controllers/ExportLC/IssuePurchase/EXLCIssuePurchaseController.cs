@@ -453,6 +453,12 @@ namespace ISPTF.API.Controllers.ExportLC
                                        select row).AsNoTracking().FirstOrDefault();
 
                         pExlc eventRow = data.PEXLC;
+
+                        if (pExlcEvent == null)
+                        {
+                            eventRow.VOUCH_ID = "";
+                            eventRow.RECEIVED_NO = "";
+                        }
                         eventRow.CenterID = USER_CENTER_ID;
                         //eventRow.RECORD_TYPE = "EVENT";
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
@@ -505,7 +511,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-                            eventRow.RECEIVED_NO = "";
                             eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
@@ -522,6 +527,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 _context.pPayDetails.Remove(row);
                             }
+                            eventRow.RECEIVED_NO = "";
                         }
                         eventRow.RECORD_TYPE = "EVENT";
                         if (eventRow.FB_AMT == null) eventRow.FB_AMT = 0;
@@ -529,6 +535,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         // Commit
                         if (pExlcEvent ==null)
                         {
+                            eventRow.VOUCH_ID = "";
                             _context.pExlcs.Add(eventRow);
                             _context.SaveChanges();
 
