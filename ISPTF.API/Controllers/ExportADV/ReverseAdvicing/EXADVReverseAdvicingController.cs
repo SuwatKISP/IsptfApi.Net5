@@ -340,7 +340,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         // Get Requirement
                         var pExadEvent_temp = (from row in _context.pExads
                                                where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                     row.EVENT_TYPE == "EVENT" &&
+                                                     row.RECORD_TYPE == "EVENT" &&
                                                      row.EVENT_NO == EVENT_NO
                                                select row).AsNoTracking().FirstOrDefault();
 
@@ -356,7 +356,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         var pExadEvent = (from row in _context.pExads
                                           where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                              row.EVENT_TYPE == "EVENT" &&
+                                              row.RECORD_TYPE == "EVENT" &&
                                               row.EVENT_NO == seq
                                           select row).AsNoTracking().FirstOrDefault();
                         if (pExadEvent != null)
@@ -369,8 +369,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         var pExadMaster = (from row in _context.pExads
                                            where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                   row.EVENT_TYPE == "MASTER" &&
-                                                   row.EVENT_NO == seq
+                                                   row.RECORD_TYPE == "MASTER" 
                                            select row).AsNoTracking().FirstOrDefault();
                         if (pExadMaster != null)
                         {

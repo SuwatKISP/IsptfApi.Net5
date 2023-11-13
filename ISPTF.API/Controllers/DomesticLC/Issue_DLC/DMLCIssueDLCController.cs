@@ -268,7 +268,7 @@ namespace ISPTF.API.Controllers.DomesticLC
 
         [HttpHead("listSelect/ Use DMLCFormIssueDLC/select  ")]
 
-        public async Task<ActionResult<IMLCResultResponse>> Remark([FromBody] IMLC_RemarkAmend_JSON_req save)
+        public async Task<ActionResult<IMLCResultResponse>> RemarkList([FromBody] IMLC_RemarkAmend_JSON_req save)
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
@@ -296,6 +296,101 @@ namespace ISPTF.API.Controllers.DomesticLC
                 return BadRequest(response);
             }
         }
+
+        [HttpHead("save/ Use ​api​/DMLCFormIssueDLC​/save LoadLC = ISSUE ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkSave([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpHead("release/ Use ​api​/DMLCFormIssueDLC​/release LoadLC = ISSUE ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkRelease([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpHead("delete/ Use ​api​/DMLCFormIssueDLC​/delete LoadLC = ISSUE ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkDelete([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+
 
 
 

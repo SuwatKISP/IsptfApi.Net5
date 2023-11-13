@@ -322,7 +322,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         // Get Requirement
                         var pExadEvent_temp = (from row in _context.pExads
                                                where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                     row.EVENT_TYPE == "EVENT" &&
+                                                     row.RECORD_TYPE == "EVENT" &&
                                                      row.EVENT_NO == EVENT_NO
                                                select row).AsNoTracking().FirstOrDefault();
 
@@ -338,7 +338,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         var pExadEvent = (from row in _context.pExads
                                           where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                              row.EVENT_TYPE == "EVENT" &&
+                                              row.RECORD_TYPE == "EVENT" &&
                                               row.EVENT_NO == seq
                                           select row).AsNoTracking().FirstOrDefault();
                         if (pExadEvent != null)
@@ -351,8 +351,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         var pExadMaster = (from row in _context.pExads
                                            where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                   row.EVENT_TYPE == "MASTER" &&
-                                                   row.EVENT_NO == seq
+                                                   row.RECORD_TYPE == "MASTER" 
                                            select row).AsNoTracking().FirstOrDefault();
                         if (pExadMaster != null)
                         {
@@ -545,7 +544,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "AMENDMENT L/C COMM.";
-                paydetail.DpPayAmt = exad.ADVICE_COM;
+                paydetail.DpPayAmt = exad.AMENDTRN_COM;
                 _context.pPayDetails.Add(paydetail);
                 dpSeq++;
             }
@@ -555,7 +554,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "TRANSFER L/C COMM.";
-                paydetail.DpPayAmt = exad.ADVICE_COM;
+                paydetail.DpPayAmt = exad.TRANSFER_COM;
                 _context.pPayDetails.Add(paydetail);
                 dpSeq++;
             }
@@ -565,7 +564,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "AMEND TRANSFER L/C COMM.";
-                paydetail.DpPayAmt = exad.ADVICE_COM;
+                paydetail.DpPayAmt = exad.AMENDTRN_COM;
                 _context.pPayDetails.Add(paydetail);
                 dpSeq++;
             }
@@ -575,7 +574,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "CABLE CHARGE";
-                paydetail.DpPayAmt = exad.ADVICE_COM;
+                paydetail.DpPayAmt = exad.CABLE_COM;
                 _context.pPayDetails.Add(paydetail);
                 dpSeq++;
             }
@@ -585,7 +584,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "CONFIRM L/C COMM";
-                paydetail.DpPayAmt = exad.ADVICE_COM;
+                paydetail.DpPayAmt = exad.CONFIRM_COM;
                 _context.pPayDetails.Add(paydetail);
                 dpSeq++;
             }
@@ -595,7 +594,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "OTHER CHARGE";
-                paydetail.DpPayAmt = exad.ADVICE_COM;
+                paydetail.DpPayAmt = exad.OTHER_CHARGE;
                 _context.pPayDetails.Add(paydetail);
                 dpSeq++;
             }
@@ -605,7 +604,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "REFUND TAX AMT.";
-                paydetail.DpPayAmt = exad.ADVICE_COM;
+                paydetail.DpPayAmt = exad.REFUND_TAX * -1;
                 _context.pPayDetails.Add(paydetail);
             }
         }

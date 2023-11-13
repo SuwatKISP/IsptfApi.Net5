@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using ISPTF.Models.LoginRegis;
 using System.Transactions;
 using Microsoft.AspNetCore.Http;
+using ISPTF.API.Controllers.ExportLC;
 
 namespace ISPTF.API.Controllers.ExportADV
 {
@@ -159,7 +160,8 @@ namespace ISPTF.API.Controllers.ExportADV
         {
             PEXADPPaymentResponse response = new();
             response.Data = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (pexadppaymentrequest.pExad == null)
             {
@@ -181,7 +183,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     {
                         // Get Requirement
                         var seq = EXADVHelper.GetSeqNo(_context, pexadppaymentrequest.pExad.EXPORT_ADVICE_NO);
-                        var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq, "EVENT", "REVERSE CONFIRM L/C", "P");
+                        var pExadEvent = SaveUser(pexadppaymentrequest.pExad, pexadppaymentrequest.pPayment, seq, "EVENT", "REVERSE CONFIRM L/C", "P",UpdateDateT, UpdateDateNT);
 
                         // Commit
                         _context.SaveChanges();
@@ -316,7 +318,8 @@ namespace ISPTF.API.Controllers.ExportADV
         public async Task<ActionResult<EXADVResultResponse>> Release(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
         {
             EXADVResultResponse response = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             // Validate
             if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO == null)
@@ -339,7 +342,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         // Get Requirement
                         var pExadEvent_temp = (from row in _context.pExads
                                                where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                     row.EVENT_TYPE == "EVENT" &&
+                                                     row.RECORD_TYPE == "EVENT" &&
                                                      row.EVENT_NO == EVENT_NO
                                                select row).AsNoTracking().FirstOrDefault();
 
@@ -355,21 +358,20 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         var pExadEvent = (from row in _context.pExads
                                           where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                              row.EVENT_TYPE == "EVENT" &&
+                                              row.RECORD_TYPE == "EVENT" &&
                                               row.EVENT_NO == seq
                                           select row).AsNoTracking().FirstOrDefault();
                         if (pExadEvent != null)
                         {
                             pExadEvent.USER_ID = USER_ID;
                             pExadEvent.CenterID = CenterID;
-                            pExadEvent = SaveSup(pExadEvent);
+                            pExadEvent = SaveSup(pExadEvent, UpdateDateT);
                             _context.pExads.Update(pExadEvent);
                         }
 
                         var pExadMaster = (from row in _context.pExads
                                            where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
-                                                   row.EVENT_TYPE == "MASTER" &&
-                                                   row.EVENT_NO == seq
+                                                   row.RECORD_TYPE == "MASTER" 
                                            select row).AsNoTracking().FirstOrDefault();
                         if (pExadMaster != null)
                         {
@@ -410,7 +412,7 @@ namespace ISPTF.API.Controllers.ExportADV
             return BadRequest(response);
         }
 
-        private pExad SaveUser(pExad pExad, pPayment pPayment, int seqNo, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS)
+        private pExad SaveUser(pExad pExad, pPayment pPayment, int seqNo, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
             var pExadEvent = (from row in _context.pExads
                               where
@@ -419,31 +421,95 @@ namespace ISPTF.API.Controllers.ExportADV
                                     row.REC_STATUS == REC_STATUS &&
                                     row.EVENT_NO == seqNo
                               select row).AsNoTracking().FirstOrDefault();
+
+            bool AddNew = false;
             if (pExadEvent == null)
             {
-                pExadEvent = pExad;
-                pExadEvent.RECORD_TYPE = RECORD_TYPE;
-                pExadEvent.EVENT_TYPE = EVENT_TYPE;
-                pExadEvent.REC_STATUS = REC_STATUS;
-                pExadEvent.EVENT_NO = seqNo;
-                pExadEvent.EVENT_MODE = "E";
+                AddNew = true;
+            }
+            //if (pExadEvent == null)
+            //{
+            //    pExadEvent = pExad;
+            //    pExadEvent.RECORD_TYPE = RECORD_TYPE;
+            //    pExadEvent.EVENT_TYPE = EVENT_TYPE;
+            //    pExadEvent.REC_STATUS = REC_STATUS;
+            //    pExadEvent.EVENT_NO = seqNo;
+            //    pExadEvent.EVENT_MODE = "E";
+            //    _context.Add(pExadEvent);
+            //}
+            //else
+            //{
+            //    pExadEvent = pExad;
+            //    pExadEvent.EVENT_MODE = "E";
+            //    _context.Update(pExadEvent);
+            //    _context.SaveChanges();
+            //}
+            pExadEvent = pExad;
+            pExadEvent.RECORD_TYPE = RECORD_TYPE;
+            pExadEvent.EVENT_TYPE = EVENT_TYPE;
+            pExadEvent.REC_STATUS = REC_STATUS;
+            pExadEvent.EVENT_NO = seqNo;
+            pExadEvent.EVENT_MODE = "E";
+            pExadEvent.AUTH_CODE = "";
+            pExadEvent.GENACC_FLAG = "Y";
+            pExadEvent.GENACC_DATE = UpdateDateNT;
+            pExadEvent.UPDATE_DATE = UpdateDateT;
+            if (AddNew == true)
+            {
+                pExadEvent.VOUCH_ID = "";
+                pExadEvent.RECEIPT_NO = "";
+            }
+
+            if (pExadEvent.PAYMENT_INSTRU == "1")
+            {
+                PaymentSave(pExad, pPayment, UpdateDateT, UpdateDateNT);
+            }
+            else
+            {
+                // Delete pPayment
+                var pPaymentDel = (from row in _context.pPayments
+                                   where row.RpReceiptNo == pExadEvent.RECEIPT_NO
+                                   select row).ToList();
+                foreach (var row in pPaymentDel)
+                {
+                    _context.pPayments.Remove(row);
+                }
+                // Delete pPayDetail
+                var pPayDetailDel = (from row in _context.pPayDetails
+                                     where row.DpReceiptNo == pExadEvent.RECEIPT_NO
+                                     select row).ToList();
+                foreach (var row in pPayDetailDel)
+                {
+                    _context.pPayDetails.Remove(row);
+                }
+                // Delete pDailyGL
+                var pDailyGLDel = (from row in _context.pDailyGLs
+                                   where row.VouchID == pExadEvent.VOUCH_ID &&
+                                         row.VouchDate == pExadEvent.EVENT_DATE
+                                   select row).ToList();
+                foreach (var row in pDailyGLDel)
+                {
+                    _context.pDailyGLs.Remove(row);
+                }
+                pExadEvent.VOUCH_ID = "";
+                pExadEvent.RECEIPT_NO = "";
+            }
+
+            if (AddNew == true)
+            {
                 _context.Add(pExadEvent);
             }
             else
             {
-                pExadEvent = pExad;
-                pExadEvent.EVENT_MODE = "E";
-                pExadEvent.RECEIPT_NO = "";
                 _context.Update(pExadEvent);
-                _context.SaveChanges();
+                //_context.SaveChanges();
             }
-
             // Update Master
             _context.Database.ExecuteSqlRaw($"UPDATE pExad SET REC_STATUS = 'P' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
             return pExadEvent;
         }
 
-        private pExad SaveSup(pExad pExadEvent)
+        private pExad SaveSup(pExad pExadEvent, DateTime UpdateDateT)
         {
             if (pExadEvent.INCREASE_AMT > 0 || pExadEvent.DECREASE_AMT > 0)
             {
@@ -465,7 +531,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     pExadEvent.UNOTHER_CHARGE = pExadEvent.UNOTHER_CHARGE + pExadEvent.OTHER_CHARGE;
                 }
             }
-            pExadEvent.AUTH_DATE = DateTime.Now;
+            pExadEvent.AUTH_DATE = UpdateDateT;
 
             // Update pPayment
             var pPayment = (from row in _context.pPayments
@@ -474,9 +540,10 @@ namespace ISPTF.API.Controllers.ExportADV
             if (pPayment != null)
             {
                 pPayment.RpRecStatus = "R";
-                pPayment.AuthDate = DateTime.Now;
+                pPayment.AuthDate = UpdateDateT;
                 pPayment.AuthCode = pExadEvent.USER_ID;
             }
+
 
             // Update pDailyGL
             var pDailyGL = (from row in _context.pDailyGLs
@@ -490,7 +557,6 @@ namespace ISPTF.API.Controllers.ExportADV
             }
             return pExadEvent;
         }
-
         private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE)
         {
             var vch = pExadTemp.VOUCH_ID; // ???????
@@ -554,6 +620,131 @@ namespace ISPTF.API.Controllers.ExportADV
 
             }
             return pExadMaster;
+        }
+        private void PaymentSave(pExad exad, pPayment pPaymentReq, DateTime UpdateDateT, DateTime UpdateDateNT)
+        {
+            if (exad.RECEIPT_NO == null || exad.RECEIPT_NO == "")
+            {
+                exad.RECEIPT_NO = ExportLCHelper.GenRefNo(_context, exad.CenterID, exad.USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
+            }
+
+            var pPaymentEvent = (from row in _context.pPayments
+                                 where row.RpReceiptNo == exad.RECEIPT_NO
+                                 select row).AsNoTracking().FirstOrDefault();
+            if (pPaymentEvent == null)
+            {
+                pPaymentEvent = new();
+                pPaymentEvent = pPaymentReq;
+                pPaymentEvent.RpReceiptNo = exad.RECEIPT_NO;
+                pPaymentEvent.RpModule = "EXAD";
+                pPaymentEvent.RpEvent = "1";
+                pPaymentEvent.RpPayDate = exad.EVENT_DATE;
+                pPaymentEvent.RpStatus = "A";
+                pPaymentEvent.UserCode = exad.USER_ID;
+                pPaymentEvent.UpdateDate = UpdateDateT;
+                _context.pPayments.Add(pPaymentEvent);
+            }
+            else
+            {
+                pPaymentReq.RpModule = "EXAD";
+                pPaymentReq.RpEvent = "1";
+                pPaymentReq.RpPayDate = exad.EVENT_DATE;
+                pPaymentReq.RpStatus = "A";
+                pPaymentReq.UserCode = exad.USER_ID;
+                pPaymentReq.UpdateDate = UpdateDateT;
+                _context.pPayments.Update(pPaymentReq);
+            }
+
+            // Delete pPayDetail
+            var pPayDetailDel = (from row in _context.pPayDetails
+                                 where row.DpReceiptNo == exad.RECEIPT_NO
+                                 select row).ToList();
+            foreach (var row in pPayDetailDel)
+            {
+                _context.pPayDetails.Remove(row);
+            }
+
+            pPayDetail paydetail;
+            var dpSeq = 1;
+            if (exad.ADVICE_COM != null)
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "ADVICE L/C COMM.";
+                paydetail.DpPayAmt = exad.ADVICE_COM;
+                _context.pPayDetails.Add(paydetail);
+                dpSeq++;
+            }
+            if (exad.AMEND_COM != null)
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "AMENDMENT L/C COMM.";
+                paydetail.DpPayAmt = exad.AMEND_COM;
+                _context.pPayDetails.Add(paydetail);
+                dpSeq++;
+            }
+            if (exad.TRANSFER_COM != null)
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "TRANSFER L/C COMM.";
+                paydetail.DpPayAmt = exad.TRANSFER_COM;
+                _context.pPayDetails.Add(paydetail);
+                dpSeq++;
+            }
+            if (exad.AMENDTRN_COM != null)
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "AMEND TRANSFER L/C COMM.";
+                paydetail.DpPayAmt = exad.AMENDTRN_COM;
+                _context.pPayDetails.Add(paydetail);
+                dpSeq++;
+            }
+            if (exad.CABLE_COM != null)
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "CABLE CHARGE";
+                paydetail.DpPayAmt = exad.CABLE_COM;
+                _context.pPayDetails.Add(paydetail);
+                dpSeq++;
+            }
+            if (exad.CONFIRM_COM != null)
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "CONFIRM_COM L/C COMM";
+                paydetail.DpPayAmt = exad.ADVICE_COM;
+                _context.pPayDetails.Add(paydetail);
+                dpSeq++;
+            }
+            if (exad.OTHER_CHARGE != null)
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "OTHER CHARGE";
+                paydetail.DpPayAmt = exad.OTHER_CHARGE;
+                _context.pPayDetails.Add(paydetail);
+                dpSeq++;
+            }
+            if (exad.PAY_REFUND == "Y")
+            {
+                paydetail = new();
+                paydetail.DpReceiptNo = exad.RECEIPT_NO;
+                paydetail.DpSeq = dpSeq;
+                paydetail.DpPayName = "REFUND TAX AMT.";
+                paydetail.DpPayAmt = exad.REFUND_TAX * -1;
+                _context.pPayDetails.Add(paydetail);
+            }
         }
     }
 }

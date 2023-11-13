@@ -1216,7 +1216,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 paydetail.DpReceiptNo = exad.RECEIPT_NO;
                 paydetail.DpSeq = dpSeq;
                 paydetail.DpPayName = "REFUND TAX AMT.";
-                paydetail.DpPayAmt = exad.REFUND_TAX;
+                paydetail.DpPayAmt = exad.REFUND_TAX * -1;
                 _context.pPayDetails.Add(paydetail);
             }
         }
