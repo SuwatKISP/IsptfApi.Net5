@@ -363,7 +363,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                           select row).AsNoTracking().FirstOrDefault();
                         if (pExadEvent != null)
                         {
-                            pExadEvent.USER_ID = USER_ID;
+                            pExadEvent.AUTH_CODE = USER_ID;
                             pExadEvent.CenterID = CenterID;
                             pExadEvent = SaveSup(pExadEvent, UpdateDateT);
                             _context.pExads.Update(pExadEvent);
@@ -375,9 +375,9 @@ namespace ISPTF.API.Controllers.ExportADV
                                            select row).AsNoTracking().FirstOrDefault();
                         if (pExadMaster != null)
                         {
-                            pExadMaster.USER_ID = USER_ID;
+                            pExadMaster.AUTH_CODE = USER_ID;
                             pExadMaster.CenterID = CenterID;
-                            pExadMaster = SaveMaster(pExadMaster, pExadEvent, "REVERSE CONFIRM L/C");
+                            pExadMaster = SaveMaster(pExadMaster, pExadEvent, "REVERSE CONFIRM L/C",UpdateDateT);
                             _context.pExads.Update(pExadMaster);
                         }
 
@@ -386,7 +386,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         // Update REC_STATUS
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO = {seq}");
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER' AND EVENT_NO = {seq}");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R',EVENT_NO ={seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER' ");
 
                         transaction.Complete();
                     }
@@ -557,14 +557,14 @@ namespace ISPTF.API.Controllers.ExportADV
             }
             return pExadEvent;
         }
-        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE)
+        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE, DateTime UpdateDateNT)
         {
             var vch = pExadTemp.VOUCH_ID; // ???????
             pExadMaster.AUTH_CODE = pExadTemp.AUTH_CODE;
             pExadMaster.EVENT_TYPE = EVENT_TYPE;
             pExadMaster.LC_TYPE = "1";
             pExadMaster.GENACC_FLAG = "Y";
-            pExadMaster.GENACC_DATE = DateTime.Now;
+            pExadMaster.GENACC_DATE = UpdateDateNT;
             pExadMaster.EVENT_MODE = "E";
             pExadMaster.VOUCH_ID = vch;
 

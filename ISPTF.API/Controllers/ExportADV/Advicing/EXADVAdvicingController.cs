@@ -596,7 +596,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                                     row.RECORD_TYPE == "EVENT" &&
                                                     row.EVENT_NO == 1
                                               select row).AsNoTracking().FirstOrDefault();
-                            pExadEvent.USER_ID = USER_ID;
+                            pExadEvent.AUTH_CODE = USER_ID;
                             pExadEvent.CenterID = CenterID;
                             pExadEvent = SaveSup(pExadEvent,UpdateDateT);
                             _context.pExads.Update(pExadEvent);
@@ -606,7 +606,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                                      row.RECORD_TYPE == "MASTER" &&
                                                      row.EVENT_NO == 1
                                                select row).AsNoTracking().FirstOrDefault();
-                            pExadMaster.USER_ID = USER_ID;
+                            pExadMaster.AUTH_CODE = USER_ID;
                             pExadMaster.CenterID = CenterID;
                             pExadMaster = SaveSup(pExadMaster,UpdateDateT);
                             _context.pExads.Update(pExadMaster);
@@ -623,7 +623,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                                     row.RECORD_TYPE == "EVENT" &&
                                                     row.EVENT_NO == seq
                                               select row).AsNoTracking().FirstOrDefault();
-                            pExadEvent.USER_ID = USER_ID;
+                            pExadEvent.AUTH_CODE = USER_ID;
                             pExadEvent.CenterID = CenterID;
                             pExadEvent = SaveSup(pExadEvent,UpdateDateT);
                             _context.pExads.Update(pExadEvent);
@@ -632,7 +632,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                                where row.EXPORT_ADVICE_NO == EXPORT_ADVICE_NO &&
                                                      row.RECORD_TYPE == "MASTER" 
                                                select row).AsNoTracking().FirstOrDefault();
-                            pExadMaster.USER_ID = USER_ID;
+                            pExadMaster.AUTH_CODE = USER_ID;
                             pExadMaster.CenterID = CenterID;
                             pExadMaster = SaveMaster(pExadMaster,pExadEvent,UpdateDateNT);
                             _context.pExads.Update(pExadMaster);

@@ -403,7 +403,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                           select row).AsNoTracking().FirstOrDefault();
                         if(pExadEvent!=null)
                         {
-                            pExadEvent.USER_ID = USER_ID;
+                            pExadEvent.AUTH_CODE = USER_ID;
                             pExadEvent.CenterID = CenterID;
                             pExadEvent = SaveSup(pExadEvent, UpdateDateT);
                             _context.pExads.Update(pExadEvent);
@@ -415,7 +415,7 @@ namespace ISPTF.API.Controllers.ExportADV
                                            select row).AsNoTracking().FirstOrDefault();
                         if(pExadMaster!=null)
                         {
-                            pExadMaster.USER_ID = USER_ID;
+                            pExadMaster.AUTH_CODE = USER_ID;
                             pExadMaster.CenterID = CenterID;
                             pExadMaster = SaveMaster(pExadMaster, pExadEvent, "Confirm L/C",UpdateDateT);
                             _context.pExads.Update(pExadMaster);

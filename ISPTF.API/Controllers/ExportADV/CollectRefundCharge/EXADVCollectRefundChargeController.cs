@@ -192,7 +192,6 @@ namespace ISPTF.API.Controllers.ExportADV
                         transaction.Complete();
                         transaction.Dispose();
                         bool resGL;
-                        bool resPayD;
                         string eventDate;
                         string resVoucherID;
                         string GLEvent = pExadEvent.EVENT_TYPE;
@@ -364,7 +363,8 @@ namespace ISPTF.API.Controllers.ExportADV
         public async Task<ActionResult<EXADVResultResponse>> Release(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
         {
             EXADVResultResponse response = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO == null)
             {
@@ -407,9 +407,9 @@ namespace ISPTF.API.Controllers.ExportADV
                                           select row).AsNoTracking().FirstOrDefault();
                         if (pExadEvent != null)
                         {
-                            pExadEvent.USER_ID = USER_ID;
+                            pExadEvent.AUTH_CODE = USER_ID;
                             pExadEvent.CenterID = CenterID;
-                            pExadEvent = SaveSup(pExadEvent);
+                            pExadEvent = SaveSup(pExadEvent,UpdateDateT);
                             _context.pExads.Update(pExadEvent);
                         }
 
@@ -419,9 +419,9 @@ namespace ISPTF.API.Controllers.ExportADV
                                            select row).AsNoTracking().FirstOrDefault();
                         if (pExadMaster != null)
                         {
-                            pExadMaster.USER_ID = USER_ID;
+                            pExadMaster.AUTH_CODE = USER_ID;
                             pExadMaster.CenterID = CenterID;
-                            pExadMaster = SaveMaster(pExadMaster, pExadEvent, "Collect/Refund");
+                            pExadMaster = SaveMaster(pExadMaster, pExadEvent, "Collect/Refund",UpdateDateT);
                             _context.pExads.Update(pExadMaster);
                         }
 
@@ -664,10 +664,10 @@ namespace ISPTF.API.Controllers.ExportADV
             }
         }
 
-        private pExad SaveSup(pExad pExadEvent)
+        private pExad SaveSup(pExad pExadEvent, DateTime UpdateDateNT)
         {
 
-            pExadEvent.AUTH_DATE = DateTime.Now;
+            pExadEvent.AUTH_DATE = UpdateDateNT;
 
             // Update pPayment
             var pPayment = (from row in _context.pPayments
@@ -676,7 +676,7 @@ namespace ISPTF.API.Controllers.ExportADV
             if (pPayment != null)
             {
                 pPayment.RpRecStatus = "R";
-                pPayment.AuthDate = DateTime.Now;
+                pPayment.AuthDate = UpdateDateNT;
                 pPayment.AuthCode = pExadEvent.USER_ID;
             }
 
@@ -704,13 +704,13 @@ namespace ISPTF.API.Controllers.ExportADV
             return pExadEvent;
         }
 
-        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE)
+        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE, DateTime UpdateDateNT)
         {
             var vch = pExadTemp.VOUCH_ID; // ???????
             pExadMaster.EVENT_TYPE = EVENT_TYPE;
             pExadMaster.LC_TYPE = "1";
             pExadMaster.GENACC_FLAG = "Y";
-            pExadMaster.GENACC_DATE = DateTime.Now;
+            pExadMaster.GENACC_DATE = UpdateDateNT;
             pExadMaster.EVENT_MODE = "E";
             pExadMaster.VOUCH_ID = "";
             pExadMaster.BUSINESS_TYPE = "5";

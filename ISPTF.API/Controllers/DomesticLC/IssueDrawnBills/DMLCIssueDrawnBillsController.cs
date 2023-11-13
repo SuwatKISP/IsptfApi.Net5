@@ -317,6 +317,100 @@ namespace ISPTF.API.Controllers.DomesticLC
 
 
 
+        [HttpHead("save/ Use /api/DMLCIFormDBEIssue/save LoadBL = BEISSUE ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkSave([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpHead("release/ Use /api/DMLCIFormDBEIssue/release LoadBL = BEISSUE ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkRelease([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpHead("delete/ Use /api/DMLCIFormDBEIssue/delete LoadBL = BEISSUE ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkDelete([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+
 
 
     }

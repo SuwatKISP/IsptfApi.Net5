@@ -25,6 +25,7 @@ namespace ISPTF.API.Controllers.ExportADV
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+        public IFormatProvider engDateFormat = new System.Globalization.CultureInfo("en-US").DateTimeFormat;
         public EXADVCancelController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -188,6 +189,48 @@ namespace ISPTF.API.Controllers.ExportADV
                         // Commit
                         _context.SaveChanges();
                         transaction.Complete();
+                        transaction.Dispose();
+
+                        bool resGL;
+                        string eventDate;
+                        string resVoucherID;
+                        string GLEvent = pExadEvent.EVENT_TYPE;
+                        eventDate = pExadEvent.EVENT_DATE.Value.ToString("dd/MM/yyyy", engDateFormat);
+                        if (pExadEvent.PAYMENT_INSTRU == "1")
+                        {
+
+                            resVoucherID = ISPModule.GeneratrEXP.StartPEXAD(pExadEvent.EXPORT_ADVICE_NO,
+                                eventDate, GLEvent, pExadEvent.EVENT_NO, "CANCEL LC");
+                        }
+                        else
+                        {
+                            resVoucherID = "";
+                        }
+                        if (resVoucherID != "ERROR")
+                        {
+                            resGL = true;
+                            pExadEvent.VOUCH_ID = resVoucherID;
+                        }
+                        else
+                        {
+                            resGL = false;
+                        }
+                        if (resGL == false)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L";
+                            response.Data = new();
+                            return BadRequest(response);
+                        }
+                        response.Code = Constants.RESPONSE_OK;
+                        response.Message = "Export Advice Saved";
+                        response.Data.PEXAD = pExadEvent; //pexadppaymentrequest.pExad;
+                        var pPaymentEvent = (from row in _context.pPayments
+                                             where row.RpReceiptNo == pExadEvent.RECEIPT_NO
+                                             select row).AsNoTracking().FirstOrDefault();
+                        response.Data.PPAYMENT = pPaymentEvent;// pexadppaymentrequest.pPayment;
+
+                        return Ok(response);
                     }
                     catch (Exception e)
                     {
@@ -197,12 +240,6 @@ namespace ISPTF.API.Controllers.ExportADV
                         response.Message = e.ToString();
                         return BadRequest(response);
                     }
-
-                    response.Code = Constants.RESPONSE_OK;
-                    response.Message = "Export Advice Saved";
-                    response.Data.PEXAD = pexadppaymentrequest.pExad;
-                    response.Data.PPAYMENT = pexadppaymentrequest.pPayment;
-                    return Ok(response);
                 }
             }
             catch (Exception e)
@@ -279,7 +316,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         if (pExadRelesed == null)
                         {
                             await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'T' WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE ='EVENT' AND REC_STATUS IN ('P','W') AND EVENT_NO = {seq}");
-                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' AND EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE ='MASTER'");
+                            await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' , EVENT_NO = {seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE ='MASTER'");
                         }
                         else
                         {
@@ -318,7 +355,8 @@ namespace ISPTF.API.Controllers.ExportADV
         public async Task<ActionResult<EXADVResultResponse>> Release(string? EXPORT_ADVICE_NO, string? RECORD_TYPE, string? REC_STATUS, int? EVENT_NO)
         {
             EXADVResultResponse response = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (string.IsNullOrEmpty(EXPORT_ADVICE_NO) || string.IsNullOrEmpty(RECORD_TYPE) || string.IsNullOrEmpty(REC_STATUS) || EVENT_NO == null)
             {
@@ -361,9 +399,9 @@ namespace ISPTF.API.Controllers.ExportADV
                                           select row).AsNoTracking().FirstOrDefault();
                         if (pExadEvent != null)
                         {
-                            pExadEvent.USER_ID = USER_ID;
+                            pExadEvent.AUTH_CODE = USER_ID;
                             pExadEvent.CenterID = CenterID;
-                            pExadEvent = SaveSup(pExadEvent);
+                            pExadEvent = SaveSup(pExadEvent,UpdateDateT);
                             _context.pExads.Update(pExadEvent);
                         }
 
@@ -373,9 +411,9 @@ namespace ISPTF.API.Controllers.ExportADV
                                            select row).AsNoTracking().FirstOrDefault();
                         if (pExadMaster != null)
                         {
-                            pExadMaster.USER_ID = USER_ID;
+                            pExadMaster.AUTH_CODE = USER_ID;
                             pExadMaster.CenterID = CenterID;
-                            pExadMaster = SaveMaster(pExadMaster, pExadEvent, "Cancel L/C");
+                            pExadMaster = SaveMaster(pExadMaster, pExadEvent, "Cancel L/C",UpdateDateT);
                             _context.pExads.Update(pExadMaster);
                         }
 
@@ -384,7 +422,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         // Update REC_STATUS
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO = {seq}");
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'C' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER' AND EVENT_NO = {seq}");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'C',EVENT_NO ={seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
 
                         transaction.Complete();
                     }
@@ -511,7 +549,7 @@ namespace ISPTF.API.Controllers.ExportADV
         {
             if (exad.RECEIPT_NO == null)
             {
-                exad.RECEIPT_NO = EXHelper.GetReceiptNo(_context, exad.USER_ID, exad.CenterID);
+                exad.RECEIPT_NO = ExportLCHelper.GenRefNo(_context, exad.CenterID, exad.USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
             }
 
             var pPaymentEvent = (from row in _context.pPayments
@@ -633,14 +671,17 @@ namespace ISPTF.API.Controllers.ExportADV
             }
         }
 
-        private pExad SaveSup(pExad pExadEvent)
+        private pExad SaveSup(pExad pExadEvent, DateTime UpdateDateT)
         {
-            var eventTran = "COLLECT";
-            pExadEvent.AUTH_DATE = DateTime.Now;
-            if(pExadEvent.COLLECT_TYPE == "2")
+            if (pExadEvent.INCREASE_AMT > 0 || pExadEvent.DECREASE_AMT > 0)
             {
-                eventTran = "REFUND";
+                pExadEvent.FLAG_TRANSFER = "Y";
             }
+            else
+            { 
+                pExadEvent.FLAG_TRANSFER = "N";
+            }
+            pExadEvent.AUTH_DATE = UpdateDateT;
 
             // Update pPayment
             var pPayment = (from row in _context.pPayments
@@ -649,24 +690,14 @@ namespace ISPTF.API.Controllers.ExportADV
             if (pPayment != null)
             {
                 pPayment.RpRecStatus = "R";
-                pPayment.AuthDate = DateTime.Now;
+                pPayment.AuthDate = UpdateDateT;
                 pPayment.AuthCode = pExadEvent.USER_ID;
             }
 
-            // Update pDailyGL
-            var pDailyGL = (from row in _context.pDailyGLs
-                            where row.TranDocNo == pExadEvent.EXPORT_ADVICE_NO &&
-                                  row.TranEvent == eventTran &&
-                                  row.VouchDate == pExadEvent.EVENT_DATE
-                            select row).ToList();
-            foreach (var row in pDailyGL)
-            {
-                row.SendFlag = "R";
-            }
             return pExadEvent;
         }
 
-        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE)
+        private pExad SaveMaster(pExad pExadMaster, pExad pExadTemp, string EVENT_TYPE, DateTime UpdateDateNT)
         {
             var vch = pExadTemp.VOUCH_ID; // ???????
             pExadMaster.EVENT_TYPE = EVENT_TYPE;
