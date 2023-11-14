@@ -46,6 +46,13 @@ namespace ISPTF.API.Controllers.ImportLC
                 response.Data = new IMLC_SaveNOTIssue_JSON_rsp();
                 return BadRequest(response);
             }
+            if (save.ListType.LoadLC != "CANCEL" && save.ListType.LoadLC != "REFUSE")
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "LoadLC should be CANCEL, REFUSE";
+                response.Data = new IMLC_SaveNOTIssue_JSON_rsp();
+                return BadRequest(response);
+            }
             try
             {
                 DynamicParameters param = new DynamicParameters();
@@ -53,7 +60,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 //ListType
                 param.Add("@ListType", save.ListType.ListType);
                 param.Add("@LoadLC", save.ListType.LoadLC);
-                param.Add("@MT", save.ListType.MT);
+                //param.Add("@MT", save.ListType.MT);
 
                 //pIMTR
                 param.Add("@LCNumber", save.pIMLC.LCNumber);

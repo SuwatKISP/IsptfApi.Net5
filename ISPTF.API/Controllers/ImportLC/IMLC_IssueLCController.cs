@@ -331,6 +331,21 @@ namespace ISPTF.API.Controllers.ImportLC
                 response.Data = new IMLC_SaveIssue_JSON_rsp();
                 return BadRequest(response);
             }
+            if (save.ListType.LoadLC != "ISSUE")
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "LoadLC should be ISSUE";
+                response.Data = new IMLC_SaveIssue_JSON_rsp();
+                return BadRequest(response);
+            }
+            //if (save.ListType.MT != "700")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "MT Should be 700";
+            //    response.Data = new IMLC_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
             try
             {
                 DynamicParameters param = new DynamicParameters();
@@ -338,7 +353,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 //ListType
                 param.Add("@ListType", save.ListType.ListType);
                 param.Add("@LoadLC", save.ListType.LoadLC);
-                param.Add("@MT", save.ListType.MT);
+                //param.Add("@MT", save.ListType.MT);
 
                 //pIMTR
                 param.Add("@LCNumber", save.pIMLC.LCNumber);
