@@ -559,6 +559,8 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentEvent.RpStatus = "A";
                 pPaymentEvent.UserCode = exad.USER_ID;
                 pPaymentEvent.UpdateDate =UpdateDateT;
+                pPaymentEvent.AuthCode = "";
+                pPaymentEvent.AuthDate = null;
                 _context.pPayments.Add(pPaymentEvent);
             }
             else
@@ -569,6 +571,8 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentReq.RpStatus = "A";
                 pPaymentReq.UserCode = exad.USER_ID;
                 pPaymentReq.UpdateDate = UpdateDateT;
+                pPaymentReq.AuthCode = "";
+                pPaymentReq.AuthDate = null;
                 _context.pPayments.Update(pPaymentReq);
             }
 

@@ -1101,6 +1101,8 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentEvent.RpRecStatus = "P";
                 pPaymentEvent.UserCode = exad.USER_ID;
                 pPaymentEvent.UpdateDate = UpdateDateT;
+                pPaymentEvent.AuthCode = "";
+                pPaymentEvent.AuthDate = null;
                 pPaymentEvent.RpNote = "";
                 if (pPaymentEvent.RpCustAc1 == null) pPaymentEvent.RpCustAc1 = "";
                 if (pPaymentEvent.RpCustAc2 == null) pPaymentEvent.RpCustAc2 = "";
@@ -1119,6 +1121,8 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentEvent.RpRecStatus = "P";
                 pPaymentReq.UserCode = exad.USER_ID;
                 pPaymentReq.UpdateDate = UpdateDateT;
+                pPaymentReq.AuthCode = "";
+                pPaymentReq.AuthDate = null;
                 pPaymentEvent.RpNote = "";
                 if (pPaymentEvent.RpCustAc1 == null) pPaymentEvent.RpCustAc1 = "";
                 if (pPaymentEvent.RpCustAc2 == null) pPaymentEvent.RpCustAc2 = "";

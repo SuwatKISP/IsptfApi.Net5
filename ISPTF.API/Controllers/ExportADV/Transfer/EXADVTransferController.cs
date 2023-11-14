@@ -981,6 +981,8 @@ namespace ISPTF.API.Controllers.ExportADV
             pPaymentReq.RpRecStatus = "P";
             pPaymentReq.UserCode = exad.USER_ID;
             pPaymentReq.UpdateDate = UpdateDateT;
+            pPaymentReq.AuthCode = "";
+            pPaymentReq.AuthDate = null;
 
             if (pPaymentEvent == null)
             {

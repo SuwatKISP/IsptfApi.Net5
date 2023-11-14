@@ -490,6 +490,7 @@ namespace ISPTF.API.Controllers.ExportADV
             pExadEvent.GENACC_FLAG = "Y";
             pExadEvent.GENACC_DATE = UpdateDateNT;
             pExadEvent.UPDATE_DATE = UpdateDateT;
+            pExadEvent.IN_USE = "0";
             if (AddNew == true)
             {
                 pExadEvent.VOUCH_ID = "";
@@ -565,7 +566,9 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentEvent.RpPayDate = exad.EVENT_DATE;
                 pPaymentEvent.RpStatus = "A";
                 pPaymentEvent.UserCode = exad.USER_ID;
-                pPaymentEvent.UpdateDate = DateTime.Now;
+                pPaymentEvent.UpdateDate = UpdateDateT;
+                pPaymentEvent.AuthCode = "";
+                pPaymentEvent.AuthDate = null;
                 _context.pPayments.Add(pPaymentEvent);
             }
             else
@@ -575,7 +578,9 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentReq.RpPayDate = exad.EVENT_DATE;
                 pPaymentReq.RpStatus = "A";
                 pPaymentReq.UserCode = exad.USER_ID;
-                pPaymentReq.UpdateDate = DateTime.Now;
+                pPaymentReq.UpdateDate = UpdateDateT;
+                pPaymentReq.AuthCode = "";
+                pPaymentReq.AuthDate = null;
                 _context.pPayments.Update(pPaymentReq);
             }
 
@@ -703,7 +708,7 @@ namespace ISPTF.API.Controllers.ExportADV
             pExadMaster.EVENT_TYPE = EVENT_TYPE;
             pExadMaster.LC_TYPE = "1";
             pExadMaster.GENACC_FLAG = "Y";
-            pExadMaster.GENACC_DATE = DateTime.Now;
+            pExadMaster.GENACC_DATE = UpdateDateNT;
             pExadMaster.EVENT_MODE = "E";
             pExadMaster.VOUCH_ID = vch;
 
