@@ -323,6 +323,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLC_SaveIssue_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
             {
@@ -350,6 +352,7 @@ namespace ISPTF.API.Controllers.ImportLC
             {
                 DynamicParameters param = new DynamicParameters();
 
+
                 //ListType
                 param.Add("@ListType", save.ListType.ListType);
                 param.Add("@LoadLC", save.ListType.LoadLC);
@@ -359,7 +362,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@LCNumber", save.pIMLC.LCNumber);
                 param.Add("@RecType", save.pIMLC.RecType);
                 param.Add("@LCSeqno", save.pIMLC.LCSeqno);
-                param.Add("@CenterID", save.pIMLC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@Event", save.pIMLC.Event);
                 param.Add("@EventDate", save.pIMLC.EventDate);
                 param.Add("@EventFlag", save.pIMLC.EventFlag);
@@ -485,7 +488,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@AppvNo", save.pIMLC.AppvNo);
                 param.Add("@FacNo", save.pIMLC.FacNo);
                 //param.Add("@UpdateDate", save.pIMLC.UpdateDate);
-                param.Add("@UserCode", save.pIMLC.UserCode);
+                param.Add("@UserCode", USER_ID);
                 //param.Add("@AuthDate", save.pIMLC.AuthDate);
                 //param.Add("@AuthCode", save.pIMLC.AuthCode);
                 param.Add("@GenAccFlag", save.pIMLC.GenAccFlag);
@@ -511,16 +514,18 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@DocRequire", save.pIMLCDocs.DocRequire);
 
                 //pSWIMLC
-                param.Add("@SwiftFile", save.pSWIMLC.SwiftFile);
-                param.Add("@Flag701", save.pSWIMLC.Flag701);
-                param.Add("@F40E", save.pSWIMLC.F40E);
-                param.Add("@F40F", save.pSWIMLC.F40F);
-                param.Add("@F42M", save.pSWIMLC.F42M);
-                param.Add("@F44D", save.pSWIMLC.F44D);
-                param.Add("@F44E", save.pSWIMLC.F44E);
-                param.Add("@F44F", save.pSWIMLC.F44F);
-                //param.Add("@", save.pSWIMLC.);
-
+                if (save.pSWIMLC != null)
+                {
+                    param.Add("@SwiftFile", save.pSWIMLC.SwiftFile);
+                    param.Add("@Flag701", save.pSWIMLC.Flag701);
+                    param.Add("@F40E", save.pSWIMLC.F40E);
+                    param.Add("@F40F", save.pSWIMLC.F40F);
+                    param.Add("@F42M", save.pSWIMLC.F42M);
+                    param.Add("@F44D", save.pSWIMLC.F44D);
+                    param.Add("@F44E", save.pSWIMLC.F44E);
+                    param.Add("@F44F", save.pSWIMLC.F44F);
+                    //param.Add("@", save.pSWIMLC.);
+                }
 
                 //pPayment
                 //param.Add("@RpReceiptNo", save.pPayment.RpReceiptNo);
@@ -601,6 +606,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -620,9 +627,9 @@ namespace ISPTF.API.Controllers.ImportLC
             param.Add("@LCNumber", release.pIMLC.LCNumber);
             param.Add("@RecType", release.pIMLC.RecType);
             param.Add("@LCSeqno", release.pIMLC.LCSeqno);
-            param.Add("@CenterID", release.pIMLC.CenterID);
+            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@EventDate", release.pIMLC.EventDate);
-            param.Add("@UserCode", release.pIMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@PayFlag", release.pIMLC.PayFlag);
             param.Add("@LCAmt", release.pIMLC.LCAmt);
             param.Add("@LCAvalBal", release.pIMLC.LCAvalBal);
@@ -675,6 +682,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -693,7 +702,7 @@ namespace ISPTF.API.Controllers.ImportLC
             param.Add("@LCNumber", delete.pIMLC.LCNumber);
             param.Add("@LCSeqno", delete.pIMLC.LCSeqno);
             param.Add("@LastReceiptNo", delete.pIMLC.LastReceiptNo);
-            param.Add("@UserCode", delete.pIMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@ConfirmRequest", delete.pIMLC.ConfirmRequest);
             //param.Add("", release.);
 
