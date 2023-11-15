@@ -166,6 +166,8 @@ namespace ISPTF.API.Controllers.DomesticLC
         {
             DMLC_SaveIssueForm_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (string.IsNullOrEmpty(save.ListType.LoadLC))
             {
@@ -271,7 +273,7 @@ namespace ISPTF.API.Controllers.DomesticLC
                 param.Add("@TRAppvNo", save.pDOMLC.TRAppvNo);
                 param.Add("@FacNo", save.pDOMLC.FacNo);
                 //param.Add("@UpdateDate", save.pDOMLC.UpdateDate);
-                param.Add("@UserCode", save.pDOMLC.UserCode);
+                param.Add("@UserCode", USER_ID);
                 //param.Add("@AuthDate", save.pDOMLC.AuthDate);
                 //param.Add("@AuthCode", save.pDOMLC.AuthCode);
                 param.Add("@GenAccFlag", save.pDOMLC.GenAccFlag);
@@ -281,7 +283,7 @@ namespace ISPTF.API.Controllers.DomesticLC
                 param.Add("@Allocation", save.pDOMLC.Allocation);
                 param.Add("@ShipmentFrom", save.pDOMLC.ShipmentFrom);
                 param.Add("@ShipmentTo", save.pDOMLC.ShipmentTo);
-                param.Add("@CenterID", save.pDOMLC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@CCS_ACCT", save.pDOMLC.CCS_ACCT);
                 param.Add("@CCS_LmType", save.pDOMLC.CCS_LmType);
                 param.Add("@CCS_CNUM", save.pDOMLC.CCS_CNUM);
@@ -369,6 +371,8 @@ namespace ISPTF.API.Controllers.DomesticLC
         {
             DMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -392,7 +396,7 @@ namespace ISPTF.API.Controllers.DomesticLC
             param.Add("@Event", release.pDOMLC.Event);
             param.Add("@RecStatus", release.pDOMLC.RecStatus);
             param.Add("@DLCAmt", release.pDOMLC.DLCAmt);
-            param.Add("@UserCode", release.pDOMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             //param.Add("@", release.);
 
             //UpdateAmend
@@ -469,6 +473,8 @@ namespace ISPTF.API.Controllers.DomesticLC
         {
             DMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -487,7 +493,7 @@ namespace ISPTF.API.Controllers.DomesticLC
             param.Add("@DLCNumber", release.pDOMLC.DLCNumber);
             param.Add("@RecType", release.pDOMLC.RecType);
             param.Add("@DLCSeqno", release.pDOMLC.DLCSeqno);
-            param.Add("@UserCode", release.pDOMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             //param.Add("@", release.);
 
             param.Add("@Resp", dbType: DbType.Int32,

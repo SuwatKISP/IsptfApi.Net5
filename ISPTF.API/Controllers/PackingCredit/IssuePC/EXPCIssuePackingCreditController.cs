@@ -1028,17 +1028,10 @@ namespace ISPTF.API.Controllers.PackingCredit
                 pPayment.RpEvent = pExpcMaster.event_no.ToString();
                 _context.pPayments.Add(pPayment);
             }
+            pPayment.RpPayBy = pPaymentReq.RpPayBy;
             pPayment.RpEvent = "1";
             pPayment.RpModule = "EXPC";
             pPayment.RpPayDate = pExpcMaster.event_date;
-            if (pExpcMaster.method == "CASH")
-                pPayment.RpPayBy = "2";
-            else if (pExpcMaster.method == "CREDIT")
-                pPayment.RpPayBy = "1";
-            else
-                pPayment.RpPayBy = "3";
-            if (pExpcMaster.pay_instruc == "3")
-                pPayment.RpPayBy = "4";
             pPayment.RpNote = "";
             pPayment.RpCustCode = pExpcMaster.cust_id;
             if (pPaymentReq.RpApplicant == null)

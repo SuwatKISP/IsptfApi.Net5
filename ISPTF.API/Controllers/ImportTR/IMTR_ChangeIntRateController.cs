@@ -183,6 +183,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTR_SaveChangeIntRate_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
             {
@@ -198,7 +200,7 @@ namespace ISPTF.API.Controllers.ImportTR
                 //ListType
                 param.Add("@ListType", save.ListType.ListType);
                 //pIMTR
-                param.Add("@CenterID", save.pIMTR.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@TRNumber", save.pIMTR.TRNumber);
                 param.Add("@RefNumber", save.pIMTR.RefNumber);
                 param.Add("@RecType", save.pIMTR.RecType);
@@ -445,6 +447,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -515,6 +519,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{

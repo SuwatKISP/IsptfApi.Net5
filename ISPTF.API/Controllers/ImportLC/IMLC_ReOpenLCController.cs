@@ -184,6 +184,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLC_SaveReOpenLC_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
             //{
@@ -214,7 +216,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@LCNumber", save.pIMLC.LCNumber);
                 param.Add("@RecType", save.pIMLC.RecType);
                 param.Add("@LCSeqno", save.pIMLC.LCSeqno);
-                param.Add("@CenterID", save.pIMLC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@Event", save.pIMLC.Event);
                 param.Add("@EventDate", save.pIMLC.EventDate);
                 param.Add("@EventFlag", save.pIMLC.EventFlag);
@@ -340,7 +342,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@AppvNo", save.pIMLC.AppvNo);
                 param.Add("@FacNo", save.pIMLC.FacNo);
                 //param.Add("@UpdateDate", save.pIMLC.UpdateDate);
-                param.Add("@UserCode", save.pIMLC.UserCode);
+                param.Add("@UserCode", USER_ID);
                 //param.Add("@AuthDate", save.pIMLC.AuthDate);
                 //param.Add("@AuthCode", save.pIMLC.AuthCode);
                 param.Add("@GenAccFlag", save.pIMLC.GenAccFlag);
@@ -404,6 +406,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -418,8 +422,8 @@ namespace ISPTF.API.Controllers.ImportLC
             //pIMLC
             param.Add("@LCNumber", release.pIMLC.LCNumber);
             param.Add("@LCSeqno", release.pIMLC.LCSeqno);
-            param.Add("@CenterID", release.pIMLC.CenterID);
-            param.Add("@UserCode", release.pIMLC.UserCode);
+            param.Add("@CenterID", USER_CENTER_ID);
+            param.Add("@UserCode", USER_ID);
             param.Add("@LCAvalBal", release.pIMLC.LCAvalBal);
 
             //param.Add("", release.);
@@ -467,6 +471,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -481,8 +487,8 @@ namespace ISPTF.API.Controllers.ImportLC
             //pIMLC
             param.Add("@LCNumber", delete.pIMLC.LCNumber);
             param.Add("@LCSeqno", delete.pIMLC.LCSeqno);
-            param.Add("@CenterID", delete.pIMLC.CenterID);
-            param.Add("@UserCode", delete.pIMLC.UserCode);
+            param.Add("@CenterID", USER_CENTER_ID);
+            param.Add("@UserCode", USER_ID);
 
             //param.Add("", release.);
 

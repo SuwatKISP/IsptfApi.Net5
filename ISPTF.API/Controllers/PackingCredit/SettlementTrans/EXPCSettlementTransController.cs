@@ -181,27 +181,28 @@ namespace ISPTF.API.Controllers.PackingCredit
                             response.Data.PPAYMENT = pPayment;
                         }
                     }
+                    response.Data.PEXPCORDER = null;
                     var pExPCOrder = (from row in _context.pExpcOrders
                                     where row.DocNo == pExpc.PACKING_NO &&
                                           row.EventNo == targetEventNo
                                       select row).ToList();
-                    int rcont=0 ;
-                    foreach (var rowc in pExPCOrder)
-                    {
-                        rcont ++;
-                    }
-                     pExpcOrder[] xOrder  =new pExpcOrder[rcont] ;
                     if (pExPCOrder != null)
                     {
                         int irow = 0;
-
+                        int rcont = 0;
+                        foreach (var rowc in pExPCOrder)
+                        {
+                            rcont++;
+                        }
+                        pExpcOrder[] xOrder = new pExpcOrder[rcont];
                         foreach (var row in pExPCOrder)
                         {
                             xOrder[irow] = row;
                             irow++;
                         }
+                        response.Data.PEXPCORDER = xOrder;
                     }
-                    response.Data.PEXPCORDER = xOrder;
+
                     response.Code = Constants.RESPONSE_OK;
                     response.Data.PEXPC = pExpc;
                     return Ok(response);

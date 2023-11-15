@@ -162,6 +162,8 @@ namespace ISPTF.API.Controllers.DomesticLC
         {
             DMLC_SaveIssueDBE_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (string.IsNullOrEmpty(save.ListType.LoadBL))
             {
@@ -262,7 +264,7 @@ namespace ISPTF.API.Controllers.DomesticLC
                 param.Add("@AppvNo", save.pDOMBE.AppvNo);
                 param.Add("@FacNo", save.pDOMBE.FacNo);
                 //param.Add("@UpdateDate", save.pDOMBE.UpdateDate);
-                param.Add("@UserCode", save.pDOMBE.UserCode);
+                param.Add("@UserCode", USER_ID);
                 //param.Add("@AuthDate", save.pDOMBE.AuthDate);
                 //param.Add("@AuthCode", save.pDOMBE.AuthCode);
                 param.Add("@GenAccFlag", save.pDOMBE.GenAccFlag);
@@ -294,7 +296,7 @@ namespace ISPTF.API.Controllers.DomesticLC
                 param.Add("@Discrepancy", save.pDOMBE.Discrepancy);
                 param.Add("@Instruction", save.pDOMBE.Instruction);
                 param.Add("@TRFlag", save.pDOMBE.TRFlag);
-                param.Add("@CenterID", save.pDOMBE.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@CCS_ACCT", save.pDOMBE.CCS_ACCT);
                 param.Add("@CCS_LmType", save.pDOMBE.CCS_LmType);
                 param.Add("@CCS_CNUM", save.pDOMBE.CCS_CNUM);
@@ -351,7 +353,7 @@ namespace ISPTF.API.Controllers.DomesticLC
                     for (int i = 0; i < save.pIMBLDocs.Length; i++)
                     {
                         dtCust.Rows.Add(
-                            save.pIMBLDocs[i].CenterID,
+                            USER_CENTER_ID,
                             save.pIMBLDocs[i].ADNumber,
                             save.pIMBLDocs[i].SeqNo,
                             save.pIMBLDocs[i].DocDetails,
@@ -409,6 +411,8 @@ namespace ISPTF.API.Controllers.DomesticLC
         {
             DMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -444,7 +448,7 @@ namespace ISPTF.API.Controllers.DomesticLC
             param.Add("@TaxAmt", release.pDOMBE.TaxAmt);
             param.Add("@PayFlag", release.pDOMBE.PayFlag);
             param.Add("@LastReceiptNo", release.pDOMBE.LastReceiptNo);
-            param.Add("@UserCode", release.pDOMBE.UserCode);
+            param.Add("@UserCode", USER_ID);
 
             param.Add("@Resp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
@@ -490,6 +494,8 @@ namespace ISPTF.API.Controllers.DomesticLC
         {
             DMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -514,7 +520,7 @@ namespace ISPTF.API.Controllers.DomesticLC
             param.Add("@CustCode", delete.pDOMBE.CustCode);
             param.Add("@BECcy", delete.pDOMBE.BECcy);
             param.Add("@BEAmount", delete.pDOMBE.BEAmount);
-            param.Add("@UserCode", delete.pDOMBE.UserCode);
+            param.Add("@UserCode", USER_ID);
 
             param.Add("@Resp", dbType: DbType.Int32,
                        direction: System.Data.ParameterDirection.Output,
