@@ -17,16 +17,16 @@ namespace ISPTF.API.Controllers.ImportBC
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class IMBCCollectRefundController : ControllerBase
+    public class IMBCCollectIssuedController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public IMBCCollectRefundController(ISqlDataAccess db)
+        public IMBCCollectIssuedController(ISqlDataAccess db)
         {
             _db = db;
         }
 
         [HttpGet("listpage")]
-        public async Task<IEnumerable<PIMBCListRsp>> GetAll(string ListType, string CenterID, string BCNumber, string CustCode, string CustName, string UserCode, string Page, string PageSize)
+        public async Task<ActionResult<IEnumerable<object>>> GetAll(string ListType, string CenterID, string BCNumber, string CustCode, string CustName, string UserCode, string Page, string PageSize, string RegDocno)
         {
             DynamicParameters param = new();
 
@@ -39,7 +39,12 @@ namespace ISPTF.API.Controllers.ImportBC
             param.Add("@UserCode", UserCode);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
+            param.Add("@Reg_Docno", RegDocno);
 
+            if (RegDocno == null)
+            {
+                param.Add("@Reg_Docno", "");
+            }
             if (BCNumber == null)
             {
                 param.Add("@BCNumber", "");
@@ -53,28 +58,33 @@ namespace ISPTF.API.Controllers.ImportBC
                 param.Add("@CustName", "");
             }
 
-            var results = await _db.LoadData<PIMBCListRsp, dynamic>(
-                        storedProcedure: "usp_q_IMBC_CollectRefundListPage",
-                        param);
-            return results;
+            IEnumerable<object> results;
+
+            if (ListType == "EDIT" || ListType == "RELEASE")
+            {
+                results = await _db.LoadData<PIMBCListRsp, dynamic>(
+                    storedProcedure: "usp_q_IMBC_IssueIMBCListPage",
+                    param
+                );
+                return Ok(results);
+            }
+            else if (ListType == "NEW")
+            {
+                
+                results = await _db.LoadData<PIMBC_IssueIMBC_New_List, dynamic>(
+                    storedProcedure: "usp_q_IMBC_IssueIMBCListPage",
+                    param
+                );
+                return Ok(results);
+            }
+            else
+            {
+                ReturnResponse response = new();
+                response.StatusCode = "400";
+                response.Message = "Invalid ListType.";
+                return BadRequest(response);
+            }
         }
-        // Old Select
-        //[HttpGet("select")]
-        //public async Task<IEnumerable<PIMBCCollectRefundSelectRsp>> GetAllSelect(string? BCNumber, string? BCSeqno, string? RecType, string? EVENT, string? RecStatus)
-        //{
-        //    DynamicParameters param = new();
-
-        //    param.Add("@BCNumber", BCNumber);
-        //    param.Add("@BCSeqno", BCSeqno);
-        //    param.Add("@RecType", RecType);
-        //    param.Add("@EVENT", EVENT);
-        //    param.Add("@RecStatus", RecStatus);
-
-        //    var results = await _db.LoadData<PIMBCCollectRefundSelectRsp, dynamic>(
-        //                storedProcedure: "usp_pIMBC_CollectRefund_Select",
-        //                param);
-        //    return results;
-        //}
 
         [HttpGet("select")]
         public async Task<ActionResult<PIMBCPPaymentRsp>> GetAllSelect(string BCNumber, string BCSeqno, string RecType, string EVENT, string RecStatus)
@@ -98,7 +108,7 @@ namespace ISPTF.API.Controllers.ImportBC
             try
             {
                 var results = await _db.LoadData<PIMBCPPaymentRsp, dynamic>(
-                           storedProcedure: "usp_pIMBC_CollectRefund_Select",
+                           storedProcedure: "usp_pIMBC_Issued_Select",
                            param);
 
                 var PIMBCRsp = param.Get<dynamic>("@PIMBCRsp");
@@ -122,12 +132,20 @@ namespace ISPTF.API.Controllers.ImportBC
             {
                 return BadRequest(ex.Message);
             }
+        }
 
+        // Select from pDocRegister
+        [HttpGet("newselect")]
+        public async Task<IEnumerable<PDocRegister>> GetNewSelect(string? RegDocNo)
+        {
+            DynamicParameters param = new();
 
-            //var results = await _db.LoadData<PIMBCPPaymentRsp, dynamic>(
-            //            storedProcedure: "usp_pIMBC_CollectRefund_Select",
-            //            param);
-            //return Ok();
+            param.Add("@RegDocNo", RegDocNo);
+
+            var results = await _db.LoadData<PDocRegister, dynamic>(
+                        storedProcedure: "usp_pDocRegisterSelect",
+                        param);
+            return results;
         }
 
         [HttpGet("select/master")]
@@ -138,8 +156,8 @@ namespace ISPTF.API.Controllers.ImportBC
             param.Add("@BCNumber", BCNumber);
 
             param.Add("@PIMBCRsp", dbType: DbType.Int32,
-                       direction: ParameterDirection.Output,
-                       size: 12800);
+                        direction: ParameterDirection.Output,
+                        size: 12800);
 
             param.Add("@PIMBCPPaymentRsp", dbType: DbType.String,
                        direction: ParameterDirection.Output,
@@ -148,7 +166,7 @@ namespace ISPTF.API.Controllers.ImportBC
             try
             {
                 var results = await _db.LoadData<PIMBCMasterRsp, dynamic>(
-                           storedProcedure: "usp_pIMBC_CollectRefund_Select_Master",
+                           storedProcedure: "usp_pIMBC_Issued_Select_Master",
                            param);
 
                 var PIMBCRsp = param.Get<dynamic>("@PIMBCRsp");
@@ -172,9 +190,7 @@ namespace ISPTF.API.Controllers.ImportBC
             {
                 return BadRequest(ex.Message);
             }
-
         }
-
 
         [HttpPost("insert")]
         public async Task<ActionResult<List<PIMBCPPaymentRsp>>> Insert([FromBody] PIMBCPPaymentRsp pimbcrsp)
@@ -382,7 +398,7 @@ namespace ISPTF.API.Controllers.ImportBC
             try
             {
                 var results = await _db.LoadData<PIMBCPPaymentRsp, dynamic>(
-                    storedProcedure: "usp_pIMBC_CollectRefund_Insert",
+                    storedProcedure: "usp_pIMBC_Issued_Insert",
                     param);
 
                 var PIMBCRsp = param.Get<dynamic>("@PIMBCRsp");
@@ -395,27 +411,9 @@ namespace ISPTF.API.Controllers.ImportBC
                     string eventDate;
                     string resVoucherID;
                     eventDate = pimbcrsp.PIMBC.EventDate.ToString("dd/MM/yyyy");
-                     resVoucherID =ISPModuleIMP.GenerateGL.StartPIMBC(pimbcrsp.PIMBC.BCNumber, eventDate, BCSeqNoRsp, pimbcrsp.PIMBC.Event);
-                    if (resVoucherID != "ERROR")
-                    {
-                        PIMBCPPaymentRsp2 resultJson = new();
-
-                        resultJson.VoucherID = resVoucherID;
-
-                        resultJson.PIMBC = JsonConvert.DeserializeObject<PIMBCPPaymentRsp>(PIMBCPPaymentRsp);
-                        return Ok(resultJson);
-                        //ReturnResponse response = new();
-                        //response.StatusCode = "000";
-                        //response.Message = "Gen GL Complete-->" + eventDate+ "-"+ pimbcrsp.PIMBC.Event;
-                        //return BadRequest(response);
-                    }
-                    else
-                    {
-                        ReturnResponse response = new();
-                        response.StatusCode = "400";
-                        response.Message = "Gen GL Error-->" + eventDate;
-                        return BadRequest(response);
-                    }
+                    PIMBCPPaymentRsp2 resultJson = new();
+                    resultJson.PIMBC = JsonConvert.DeserializeObject<PIMBCPPaymentRsp>(PIMBCPPaymentRsp);
+                    return Ok(resultJson);
                 }
                 else
                 {
@@ -633,7 +631,7 @@ namespace ISPTF.API.Controllers.ImportBC
             try
             {
                 var results = await _db.LoadData<PIMBCPPaymentRsp, dynamic>(
-                    storedProcedure: "usp_pIMBC_CollectRefund_Update",
+                    storedProcedure: "usp_pIMBC_Issued_Update",
                     param);
 
                 var PIMBCRsp = param.Get<dynamic>("@PIMBCRsp");
@@ -645,39 +643,9 @@ namespace ISPTF.API.Controllers.ImportBC
                     string eventDate;
                     string resVoucherID;
                     eventDate = pimbcrsp.PIMBC.EventDate.ToString("dd/MM/yyyy");
-                    resVoucherID = ISPModuleIMP.GenerateGL.StartPIMBC(pimbcrsp.PIMBC.BCNumber, eventDate, pimbcrsp.PIMBC.BCSeqno, pimbcrsp.PIMBC.Event);
-                    if (resVoucherID != "ERROR")
-                    {
-                        //var PIMBCPPaymentRspx= new PIMBCPPaymentRsp();
-                        //PIMBCPPaymentRspx = PIMBCPPaymentRsp;
-                        //PIMBCPPaymentRspx.PIMBC.VoucherID = resVoucherID;
-                        //return Ok(PIMBCPPaymentRspx);
-
-                        //PIMBCPPaymentRsp2 resultJson = new();
-                        //resultJson.VoucherID = resVoucherID;
-
-                        //resultJson.PIMBC = JsonConvert.DeserializeObject<PIMBCPPaymentRsp>(PIMBCPPaymentRsp.PIMBC);
-                        //resultJson.PPayment = JsonConvert.DeserializeObject<PIMBCPPaymentRsp>(PIMBCPPaymentRsp.PPayment);
-                        //return Ok(resultJson);
-                        PIMBCPPaymentRsp2 resultJson = new();
-
-                        resultJson.VoucherID = resVoucherID;
-
-                        resultJson.PIMBC = JsonConvert.DeserializeObject<PIMBCPPaymentRsp>(PIMBCPPaymentRsp);
-                        return Ok(resultJson);
-                        //ReturnResponse response = new();
-                        //response.StatusCode = "000";
-                        //response.Message = "Gen GL Complete-->" + eventDate+ "-"+ pimbcrsp.PIMBC.Event;
-                        //return BadRequest(response);
-                    }
-                    else
-                    {
-                        ReturnResponse response = new();
-                        response.StatusCode = "400";
-                        response.Message = "Gen GL Error-->" + eventDate;
-                        return BadRequest(response);
-                    }
-
+                    PIMBCPPaymentRsp2 resultJson = new();
+                    resultJson.PIMBC = JsonConvert.DeserializeObject<PIMBCPPaymentRsp>(PIMBCPPaymentRsp);
+                    return Ok(resultJson);
                 }
                 else
                 {
@@ -718,7 +686,7 @@ namespace ISPTF.API.Controllers.ImportBC
             try
             {
                 var results = await _db.LoadData<PIMBCPPaymentRsp, dynamic>(
-                    storedProcedure: "usp_pIMBC_CollectRefund_Release",
+                    storedProcedure: "usp_pIMBC_Issued_Release",
                     param);
                 var PIMBCRsp = param.Get<dynamic>("@PIMBCRsp");
                 var PIMBCPPaymentRsp = param.Get<dynamic>("@PIMBCPPaymentRsp");
@@ -744,7 +712,7 @@ namespace ISPTF.API.Controllers.ImportBC
         }
 
         [HttpPost("delete")]
-        public async Task<ActionResult<List<PIMBCCollectRefundDeleteReq>>> GetAllDelete(string BCNumber, string BCSeqno, DateTime? EventDate)
+        public async Task<ActionResult<List<PIMBCMasterDeleteReq>>> GetAllDelete(string BCNumber, string BCSeqno, DateTime? EventDate)
         {
             DynamicParameters param = new();
 
@@ -759,7 +727,7 @@ namespace ISPTF.API.Controllers.ImportBC
             try
             {
                 var results = await _db.LoadData<PDocRegister, dynamic>(
-                    storedProcedure: "usp_pIMBC_CollectRefund_Delete",
+                    storedProcedure: "usp_pIMBC_Issued_Delete",
                     param);
                 var resp = param.Get<int>("@Resp");
                 if (resp == 1)
@@ -779,11 +747,5 @@ namespace ISPTF.API.Controllers.ImportBC
                 return BadRequest(ex.Message);
             }
         }
-
-
-
-
-
-
     }
 }

@@ -12,15 +12,16 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using ISPTF.Models.ImportBC;
 
 namespace ISPTF.API.Controllers.ImportBL
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class IMBLAcceptTermDueController : ControllerBase
+    public class IMBLCollectRefundChargeController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public IMBLAcceptTermDueController(ISqlDataAccess db)
+        public IMBLCollectRefundChargeController(ISqlDataAccess db)
         {
             _db = db;
         }
@@ -53,13 +54,13 @@ namespace ISPTF.API.Controllers.ImportBL
                 param.Add("@CustName", "");
             }
             var results = await _db.LoadData<PIMBLListRsp, dynamic>(
-                storedProcedure: "usp_q_IMBL_AcceptTermDueListPage",
+                storedProcedure: "usp_q_IMBL_CollectRefundListPage",
             param);
             return results;
         }
 
         [HttpGet("select")]
-        public async Task<ActionResult<PIMBLPPaymentRsp>> GetAllSelect(string ADNumber, string BLSeqno, string RecType, string EVENT, string RecStatus)
+        public async Task<ActionResult<PIMBLPPaymentRsp>> GetAllSelect(string ADNumber, int BLSeqno, string RecType, string EVENT, string RecStatus)
         {
             DynamicParameters param = new();
 
@@ -80,7 +81,7 @@ namespace ISPTF.API.Controllers.ImportBL
             try
             {
                 var results = await _db.LoadData<PIMBLPPaymentRsp, dynamic>(
-                           storedProcedure: "usp_pIMBL_Accept_Term_Due_Select",
+                           storedProcedure: "usp_pIMBL_CollectRefund_Select",
                            param);
 
                 var PIMBLRsp = param.Get<dynamic>("@PIMBLRsp");
@@ -106,6 +107,54 @@ namespace ISPTF.API.Controllers.ImportBL
             }
         }
 
+        //[HttpGet("select/master")]
+        //public async Task<ActionResult<PIMBLPPaymentRsp>> GetAllSelect(string ADNumber, string BLSeqno)
+        //{
+        //    DynamicParameters param = new();
+
+        //    param.Add("@ADNumber", ADNumber);
+        //    param.Add("@BLSeqno", BLSeqno);
+        //    // param.Add("@RecType", 'M');
+        //    // param.Add("@EVENT", EVENT);
+        //    // param.Add("@RecStatus", RecStatus);
+
+        //    param.Add("@PIMBLRsp", dbType: DbType.Int32,
+        //               direction: ParameterDirection.Output,
+        //               size: 12800);
+
+        //    param.Add("@PIMBLPPaymentRsp", dbType: DbType.String,
+        //               direction: ParameterDirection.Output,
+        //               size: 5215585);
+
+        //    try
+        //    {
+        //        var results = await _db.LoadData<PIMBLPPaymentRsp, dynamic>(
+        //                   storedProcedure: "usp_pIMBL_CollectRefund_Select_Master",
+        //                   param);
+
+        //        var PIMBLRsp = param.Get<dynamic>("@PIMBLRsp");
+        //        var PIMBLPPaymentRsp = param.Get<dynamic>("@PIMBLPPaymentRsp");
+
+        //        if (PIMBLRsp > 0)
+        //        {
+        //            return Ok(PIMBLPPaymentRsp);
+        //        }
+        //        else
+        //        {
+
+        //            ReturnResponse response = new();
+        //            response.StatusCode = "400";
+        //            response.Message = "IMPORT B/L NO Bill does not exit";
+        //            return BadRequest(response);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
+
         [HttpPost("release")]
         public async Task<ActionResult<List<PIMBLPPaymentRsp>>> GetAllRelease([FromBody] PIMBLReleaseReq pimbcrsp)
         {
@@ -130,8 +179,8 @@ namespace ISPTF.API.Controllers.ImportBL
                 size: 5215585);
             try
             {
-                var results = await _db.LoadData<PIMBLPPaymentRsp, dynamic>(
-                    storedProcedure: "usp_pIMBL_Accept_Term_Release",
+                var results = await _db.LoadData<PIMBCPPaymentRsp, dynamic>(
+                    storedProcedure: "usp_pIMBL_CollectRefund_Release",
                     param);
                 var PIMBCRsp = param.Get<dynamic>("@PIMBLRsp");
                 var PIMBCPPaymentRsp = param.Get<dynamic>("@PIMBLPPaymentRsp");
@@ -370,7 +419,7 @@ namespace ISPTF.API.Controllers.ImportBL
             try
             {
                 var results = await _db.LoadData<PIMBLPPaymentRsp, dynamic>(
-                    storedProcedure: "usp_pIMBL_Accept_Term_Update",
+                    storedProcedure: "usp_pIMBL_CollectRefund_Update",
                     param);
 
                 var PIMBLRsp = param.Get<dynamic>("@PIMBLRsp");
@@ -400,53 +449,6 @@ namespace ISPTF.API.Controllers.ImportBL
             }
         }
 
-        [HttpGet("select/master")]
-        public async Task<ActionResult<PIMBLPPaymentRsp>> GetAllSelect(string ADNumber, string BLSeqno)
-        {
-            DynamicParameters param = new();
-
-            param.Add("@ADNumber", ADNumber);
-            param.Add("@BLSeqno", BLSeqno);
-            param.Add("@RecType", 'E');
-            param.Add("@EVENT", "ACCEPT");
-            param.Add("@RecStatus", "P");
-            param.Add("@PIMBLRsp", dbType: DbType.Int32,
-                       direction: ParameterDirection.Output,
-                       size: 12800);
-
-            param.Add("@PIMBLPPaymentRsp", dbType: DbType.String,
-                       direction: ParameterDirection.Output,
-                       size: 5215585);
-
-            try
-            {
-                var results = await _db.LoadData<PIMBLPPaymentRsp, dynamic>(
-                           storedProcedure: "usp_pIMBL_Accept_Term_Select_Master",
-                           param);
-
-                var PIMBLRsp = param.Get<dynamic>("@PIMBLRsp");
-                var PIMBLPPaymentRsp = param.Get<dynamic>("@PIMBLPPaymentRsp");
-
-                if (PIMBLRsp > 0)
-                {
-                    return Ok(PIMBLPPaymentRsp);
-                }
-                else
-                {
-
-                    ReturnResponse response = new();
-                    response.StatusCode = "400";
-                    response.Message = "IMPORT B/L NO Bill does not exit";
-                    return BadRequest(response);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [HttpPost("delete")]
         public async Task<ActionResult<List<PIMBLMasterDeleteReq>>> GetAllDelete(string BLNumber, string BLSeqno, DateTime? EventDate)
         {
@@ -462,7 +464,7 @@ namespace ISPTF.API.Controllers.ImportBL
             try
             {
                 var results = await _db.LoadData<PDocRegister, dynamic>(
-                    storedProcedure: "usp_pIMBL_AcceptTerm_Due_Delete",
+                    storedProcedure: "usp_pIMBL_CollectRefund_Delete",
                     param);
                 var resp = param.Get<int>("@Resp");
                 if (resp == 1)
@@ -703,7 +705,7 @@ namespace ISPTF.API.Controllers.ImportBL
             try
             {
                 var results = await _db.LoadData<PIMBLPPaymentRsp, dynamic>(
-                    storedProcedure: "usp_pIMBL_Accept_Term_Due_Insert",
+                    storedProcedure: "usp_pIMBL_CollectRefund_Insert",
                     param);
 
                 var PIMBLRsp = param.Get<dynamic>("@PIMBLRsp");
