@@ -12,5 +12,6 @@ namespace ISPTF.Models.ImportTR
         public pIMTR pIMTR { get; set; }
         //public IMTR_SaveIssue_pIMTR_req pIMTR {get; set;}
         public IMTR_Save_pPayment_req pPayment { get; set; }
+        public IMTR_SaveIssue_pSWImport_req pSWImport { get; set; }
     }
 }

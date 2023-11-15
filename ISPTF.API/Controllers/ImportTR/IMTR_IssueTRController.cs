@@ -23,6 +23,7 @@ namespace ISPTF.API.Controllers.ImportTR
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+        public IFormatProvider engDateFormat = new System.Globalization.CultureInfo("en-US").DateTimeFormat;
         public IMTR_IssueTRController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -575,7 +576,101 @@ namespace ISPTF.API.Controllers.ImportTR
                 //param.Add("@UpdateDate", saveissue.pPayment.UpdateDate);
                 //param.Add("@AuthCode", saveissue.pPayment.AuthCode);
                 //param.Add("@AuthDate", saveissue.pPayment.AuthDate);
-               
+
+
+                //pSWImport
+                //param.Add("@Login", saveissue.pSWImport.Login);
+                param.Add("@DocNumber", saveissue.pSWImport.DocNumber);
+                //param.Add("@Seqno", saveissue.pSWImport.Seqno);
+                //param.Add("@RefNumber", saveissue.pSWImport.RefNumber);
+                param.Add("@RemitCcy", saveissue.pSWImport.RemitCcy);
+                param.Add("@RemitAmt", saveissue.pSWImport.RemitAmt);
+                param.Add("@DeductAmt", saveissue.pSWImport.DeductAmt);
+                param.Add("@ChargeAmt", saveissue.pSWImport.ChargeAmt);
+                //param.Add("@Amt71", saveissue.pSWImport.Amt71);
+                //param.Add("@ValueDate", saveissue.pSWImport.ValueDate);
+                param.Add("@SwiftFile", saveissue.pSWImport.SwiftFile);
+                param.Add("@MT103", saveissue.pSWImport.MT103);
+                param.Add("@MT202", saveissue.pSWImport.MT202);
+                param.Add("@MT734", saveissue.pSWImport.MT734);
+                param.Add("@MT752", saveissue.pSWImport.MT752);
+                param.Add("@MT754", saveissue.pSWImport.MT754);
+                param.Add("@MT756", saveissue.pSWImport.MT756);
+                param.Add("@MT799", saveissue.pSWImport.MT799);
+                param.Add("@MT999", saveissue.pSWImport.MT999);
+                param.Add("@MT412", saveissue.pSWImport.MT412);
+                param.Add("@MT499", saveissue.pSWImport.MT499);
+                param.Add("@MT202Cov", saveissue.pSWImport.MT202Cov);
+                param.Add("@MT400", saveissue.pSWImport.MT400);
+                param.Add("@BNet", saveissue.pSWImport.BNet);
+                param.Add("@ToNego", saveissue.pSWImport.ToNego);
+                param.Add("@ToName", saveissue.pSWImport.ToName);
+                param.Add("@ToRefer", saveissue.pSWImport.ToRefer);
+                param.Add("@ToBank", saveissue.pSWImport.ToBank);
+                param.Add("@ToWhom", saveissue.pSWImport.ToWhom);
+                param.Add("@F20", saveissue.pSWImport.F20);
+                //param.Add("@F20_X", saveissue.pSWImport.F20_X);
+                //param.Add("@F21", saveissue.pSWImport.F21);
+                //param.Add("@F21_X", saveissue.pSWImport.F21_X);
+                //param.Add("@F23", saveissue.pSWImport.F23);
+                //param.Add("@F23_X", saveissue.pSWImport.F23_X);
+                //param.Add("@F26", saveissue.pSWImport.F26);
+                //param.Add("@F30", saveissue.pSWImport.F30);
+                //param.Add("@F32A", saveissue.pSWImport.F32A);
+                //param.Add("@F32B", saveissue.pSWImport.F32B);
+                //param.Add("@F33A", saveissue.pSWImport.F33A);
+                //param.Add("@F33B", saveissue.pSWImport.F33B);
+                //param.Add("@F34A", saveissue.pSWImport.F34A);
+                param.Add("@F50K", saveissue.pSWImport.F50K);
+                param.Add("@F59", saveissue.pSWImport.F59);
+                //param.Add("@F70", saveissue.pSWImport.F70);
+                //param.Add("@F71A", saveissue.pSWImport.F71A);
+                //param.Add("@F71F", saveissue.pSWImport.F71F);
+                //param.Add("@F52A", saveissue.pSWImport.F52A);
+                //param.Add("@F52D", saveissue.pSWImport.F52D);
+                //param.Add("@F53A", saveissue.pSWImport.F53A);
+                //param.Add("@F53B", saveissue.pSWImport.F53B);
+                //param.Add("@F53D", saveissue.pSWImport.F53D);
+                //param.Add("@F53UID", saveissue.pSWImport.F53UID);
+                //param.Add("@F54A", saveissue.pSWImport.F54A);
+                //param.Add("@F54D", saveissue.pSWImport.F54D);
+                //param.Add("@F54UID", saveissue.pSWImport.F54UID);
+                //param.Add("@F56A", saveissue.pSWImport.F56A);
+                //param.Add("@F56D", saveissue.pSWImport.F56D);
+                //param.Add("@F56UID", saveissue.pSWImport.F56UID);
+                //param.Add("@F57A", saveissue.pSWImport.F57A);
+                //param.Add("@F57D", saveissue.pSWImport.F57D);
+                //param.Add("@F57UID", saveissue.pSWImport.F57UID);
+                //param.Add("@F58A", saveissue.pSWImport.F58A);
+                //param.Add("@F58D", saveissue.pSWImport.F58D);
+                //param.Add("@F58UID", saveissue.pSWImport.F58UID);
+                //param.Add("@F71B", saveissue.pSWImport.F71B);
+                //param.Add("@F72", saveissue.pSWImport.F72);
+                //param.Add("@F72_X", saveissue.pSWImport.F72_X);
+                //param.Add("@F73", saveissue.pSWImport.F73);
+                //param.Add("@F79", saveissue.pSWImport.F79);
+                //param.Add("@F79_X", saveissue.pSWImport.F79_X);
+                //param.Add("@F77A", saveissue.pSWImport.F77A);
+                //param.Add("@F77B", saveissue.pSWImport.F77B);
+                //param.Add("@F77J", saveissue.pSWImport.F77J);
+                //param.Add("@F53A_X", saveissue.pSWImport.F53A_X);
+                //param.Add("@F53B_X", saveissue.pSWImport.F53B_X);
+                //param.Add("@F53D_X", saveissue.pSWImport.F53D_X);
+                //param.Add("@F53UID_X", saveissue.pSWImport.F53UID_X);
+                //param.Add("@F54A_X", saveissue.pSWImport.F54A_X);
+                //param.Add("@F54D_X", saveissue.pSWImport.F54D_X);
+                //param.Add("@F54UID_X", saveissue.pSWImport.F54UID_X);
+                //param.Add("@F72103", saveissue.pSWImport.F72103);
+                param.Add("@Flag32", saveissue.pSWImport.Flag32);
+                param.Add("@Detail32", saveissue.pSWImport.Detail32);
+                //param.Add("@F21_B", saveissue.pSWImport.F21_B);
+                //param.Add("@F21_C", saveissue.pSWImport.F21_C);
+                //param.Add("@MT199", saveissue.pSWImport.MT199);
+                //param.Add("@CF50", saveissue.pSWImport.CF50);
+                //param.Add("@CF59", saveissue.pSWImport.CF59);
+                //param.Add("@F79_Z", saveissue.pSWImport.F79_Z);
+                //param.Add("@SWUuid", saveissue.pSWImport.SWUuid);
+
                 param.Add("@Resp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);
@@ -1044,8 +1139,38 @@ namespace ISPTF.API.Controllers.ImportTR
 
         }
 
+        [HttpPost("SwiftPrintData")]
+        public ActionResult<pIMTR_SWPrintData_Response> SwiftPrintData([FromBody] IMTR_SwiftPrintData_req swreq)
+        {
+            pIMTR_SWPrintData_Response response = new();
 
+            try
+            {
+                string result;
 
+                result = ISPModuleIMP.SWIMTR.SWPrintData(swreq.TxDocNo, swreq.TxDocSeq, swreq.cSysDate.Value.ToString("dd/MM/yyyy", engDateFormat),
+                    swreq.UserCode, swreq.AuthCode, swreq.LbMT);
+                if (result == "OK")
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "SwiftPrintData Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Error for SwiftPrintData";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
 
 
 
