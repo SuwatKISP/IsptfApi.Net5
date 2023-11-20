@@ -721,7 +721,7 @@ namespace ISPTF.API.Controllers.ImportBL
                 {
                     string eventDate;
                     string resVoucherID;
-                    eventDate = pimblcrsp.PIMBL.EventDate?.ToString("dd/MM/yyyy") ?? "";
+                    eventDate = pimblcrsp.PIMBL.EventDate?.ToString("dd/MM/yyyy");
                     PIMBLPPaymentRsp2 resultJson = new();
                     resultJson.PIMBL = JsonConvert.DeserializeObject<PIMBLPPaymentRsp>(PIMBLPPaymentRsp);
                     return Ok(resultJson);
