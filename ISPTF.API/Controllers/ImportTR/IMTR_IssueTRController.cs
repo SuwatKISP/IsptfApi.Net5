@@ -14,6 +14,8 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Transactions;
 using ISPTF.Models.ExportLC;
+using static ISPTF.API.Startup;
+
 namespace ISPTF.API.Controllers.ImportTR
 {
     [Authorize]
@@ -1146,14 +1148,36 @@ namespace ISPTF.API.Controllers.ImportTR
 
             try
             {
-                string result;
-
-                result = ISPModuleIMP.SWIMTR.SWPrintData(swreq.TxDocNo, swreq.TxDocSeq, swreq.cSysDate.Value.ToString("dd/MM/yyyy", engDateFormat),
-                    swreq.UserCode, swreq.AuthCode, swreq.LbMT);
-                if (result == "OK")
+                string[] result;
+                var PDFPath = ConfigurationHelper.config.GetSection("PDFPath");
+                result = ISPModuleIMP.SWIMTR.SWPrintData(swreq.TxDocNo, "2", swreq.cSysDate.Value.ToString("dd/MM/yyyy", engDateFormat),
+                    swreq.UserCode, swreq.AuthCode, swreq.LbMT, PDFPath.Value,swreq.RptFlag);
+               
+                int irow=0;
+                foreach (var row in result)
+                {
+                    if (result[irow] !=null)
+                    {
+                        irow++;
+                    }
+                    
+                }
+                string[] resultFile = new string[irow];
+                irow = 0;
+                foreach (var row in result)
+                {
+                    if (result[irow] != null)
+                    {
+                        resultFile[irow] = row;
+                    }
+                    irow++;
+                }
+                //   result = "OK";
+                if (result.Length>0)
                 {
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "SwiftPrintData Complete";
+                    response.FileNames = resultFile;
                     return Ok(response);
                 }
                 else

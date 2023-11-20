@@ -14,5 +14,6 @@ namespace ISPTF.Models.ImportTR
 		public string? UserCode { get; set; }
 		public string? AuthCode { get; set; }
 		public string? LbMT { get; set; }
+		public string? RptFlag { get; set; }
 	}
 }

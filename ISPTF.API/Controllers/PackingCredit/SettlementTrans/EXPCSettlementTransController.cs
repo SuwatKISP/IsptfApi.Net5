@@ -404,25 +404,25 @@ namespace ISPTF.API.Controllers.PackingCredit
                         }
 
 
-                        string resPayDetail;
-                        if (response.Data.PPAYMENT != null)
-                        {
-                            resPayDetail = ISPModule.PayDetailEXPC.PayDetail_EXTEND(response.Data.PEXPC.PACKING_NO, response.Data.PEXPC.event_no, response.Data.PEXPC.received_no);
-                            if (resPayDetail != "ERROR")
-                            {
-                                resPayD = true;
-                            }
-                            else
-                            {
-                                response.Code = Constants.RESPONSE_ERROR;
-                                response.Message = "Error for PayDetail";
-                                return BadRequest(response);
-                            }
-                        }
-                        else
-                        {
-                            resPayD = true;
-                        }
+                        //string resPayDetail;
+                        //if (response.Data.PPAYMENT != null)
+                        //{
+                        //    resPayDetail = ISPModule.PayDetailEXPC.PayDetail_EXTEND(response.Data.PEXPC.PACKING_NO, response.Data.PEXPC.event_no, response.Data.PEXPC.received_no);
+                        //    if (resPayDetail != "ERROR")
+                        //    {
+                        //        resPayD = true;
+                        //    }
+                        //    else
+                        //    {
+                        //        response.Code = Constants.RESPONSE_ERROR;
+                        //        response.Message = "Error for PayDetail";
+                        //        return BadRequest(response);
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    resPayD = true;
+                        //}
                         return Ok(response);
                     }
                     catch (Exception e)

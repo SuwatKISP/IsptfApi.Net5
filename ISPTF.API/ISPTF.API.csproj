@@ -14,6 +14,17 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Controllers\IssueCollectionLC\**" />
+	  <Compile Remove="Controllers\IssueIMBC\**" />
+	  <Content Remove="Controllers\IssueCollectionLC\**" />
+	  <Content Remove="Controllers\IssueIMBC\**" />
+	  <EmbeddedResource Remove="Controllers\IssueCollectionLC\**" />
+	  <EmbeddedResource Remove="Controllers\IssueIMBC\**" />
+	  <None Remove="Controllers\IssueCollectionLC\**" />
+	  <None Remove="Controllers\IssueIMBC\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="12.0.1" />
 		<PackageReference Include="CSharpTest.Net.Collections" Version="14.906.1403.1082" />
 		<PackageReference Include="Dapper" Version="2.0.123" />
@@ -58,8 +69,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Controllers\IssueCollectionLC\" />
-		<Folder Include="Controllers\IssueIMBC\" />
 		<Folder Include="Controllers\Remittance\" />
 	</ItemGroup>
 

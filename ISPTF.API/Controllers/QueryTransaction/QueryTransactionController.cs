@@ -2,6 +2,7 @@
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
 using ISPTF.Models.ExportBC;
+using ISPTF.Models.ImportTR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -70,8 +71,8 @@ namespace ISPTF.API.Controllers.QueryTransaction
           //  var USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(@CenterID) ||
-                string.IsNullOrEmpty(@RECORD_TYPE) ||
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RECORD_TYPE) ||
                 Page == null ||
                 PageSize == null)
             {
@@ -151,8 +152,8 @@ namespace ISPTF.API.Controllers.QueryTransaction
             //  var USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(@CenterID) ||
-                string.IsNullOrEmpty(@RECORD_TYPE) ||
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RECORD_TYPE) ||
                 Page == null ||
                 PageSize == null)
             {
@@ -232,8 +233,8 @@ namespace ISPTF.API.Controllers.QueryTransaction
             //  var USER_ID = User.Identity.Name;
 
             // Validate
-            if (string.IsNullOrEmpty(@CenterID) ||
-                string.IsNullOrEmpty(@RECORD_TYPE) ||
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RECORD_TYPE) ||
                 Page == null ||
                 PageSize == null)
             {
@@ -302,6 +303,392 @@ namespace ISPTF.API.Controllers.QueryTransaction
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
                 response.Data = new List<Q_EXPCQueryListPageRsp>();
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet("ListEXAD")]
+        public async Task<ActionResult<EXADQueryListPageResponse>> ListEXAD(string? CenterID, string? EXPORT_ADVICE_NO, string? RecType, string? RecStatus, string? BENName, int Page, int PageSize)
+        {
+            EXADQueryListPageResponse response = new EXADQueryListPageResponse();
+            //  var USER_ID = User.Identity.Name;
+
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RecType) ||
+                Page == null ||
+                PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CenterID, RecType,Page, PageSize is required";
+                response.Data = new List<Q_EXADQueryListPageRsp>();
+                return BadRequest(response);
+
+            }
+
+            DynamicParameters param = new();
+            param.Add("@CenterID", CenterID);
+            param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
+            param.Add("@RecType", RecType);
+            param.Add("@RecStatus", RecStatus);
+            param.Add("@BENName", BENName);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (EXPORT_ADVICE_NO == null)
+            {
+                param.Add("@EXPORT_ADVICE_NO", "");
+            }
+            if (RecType == null)
+            {
+                param.Add("@RecType", "");
+            }
+            if (RecStatus == null)
+            {
+                param.Add("@RecStatus", "");
+            }
+            if (BENName == null)
+            {
+                param.Add("@BENName", "");
+            }
+
+            try
+            {
+                var results = await _db.LoadData<Q_EXADQueryListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_ExportAD",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_EXADQueryListPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_EXADQueryListPageRsp>();
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet("ListIMTR")]
+        public async Task<ActionResult<IMTRQueryListPageResponse>> ListIMTR(string? CenterID, string? TRNumber, string? RecType, string? RecStatus, string? BLNumber, string? CustName, int Page, int PageSize)
+        {
+            IMTRQueryListPageResponse response = new IMTRQueryListPageResponse();
+            //  var USER_ID = User.Identity.Name;
+
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RecType) ||
+                Page == null ||
+                PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CenterID, RecType,Page, PageSize is required";
+                response.Data = new List<Q_IMTR_ListPage_rsp>();
+                return BadRequest(response);
+
+            }
+
+            DynamicParameters param = new();
+            param.Add("@CenterID", CenterID);
+            param.Add("@TRNumber", TRNumber);
+            param.Add("@RecType", RecType);
+            param.Add("@RecStatus", RecStatus);
+            param.Add("@BLNumber", BLNumber);
+            param.Add("@CustName", CustName);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (TRNumber == null)
+            {
+                param.Add("@TRNumber", "");
+            }
+            if (RecType == null)
+            {
+                param.Add("@RecType", "");
+            }
+            if (RecStatus == null)
+            {
+                param.Add("@RecStatus", "");
+            }
+            if (BLNumber == null)
+            {
+                param.Add("@BLNumber", "");
+            }
+            if (CustName == null)
+            {
+                param.Add("@CustName", "");
+            }
+
+            try
+            {
+                var results = await _db.LoadData<Q_IMTR_ListPage_rsp, dynamic>(
+                            storedProcedure: "usp_q_ImportTR",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_IMTR_ListPage_rsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_IMTR_ListPage_rsp>();
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet("ListIMLC")]
+        public async Task<ActionResult<IMLCQueryListPageResponse>> ListIMLC(string? CenterID, string? LCNumber, string? RecType, string? RecStatus, string? CustName, int Page, int PageSize)
+        {
+            IMLCQueryListPageResponse response = new IMLCQueryListPageResponse();
+            //  var USER_ID = User.Identity.Name;
+
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RecType) ||
+                Page == null ||
+                PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CenterID, RecType,Page, PageSize is required";
+                response.Data = new List<Q_IMLCQueryListPageRsp>();
+                return BadRequest(response);
+
+            }
+
+            DynamicParameters param = new();
+            param.Add("@CenterID", CenterID);
+            param.Add("@LCNumber", LCNumber);
+            param.Add("@RecType", RecType);
+            param.Add("@RecStatus", RecStatus);
+            param.Add("@CustName", CustName);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (LCNumber == null)
+            {
+                param.Add("@LCNumber", "");
+            }
+            if (RecType == null)
+            {
+                param.Add("@RecType", "");
+            }
+            if (RecStatus == null)
+            {
+                param.Add("@RecStatus", "");
+            }
+            if (CustName == null)
+            {
+                param.Add("@CustName", "");
+            }
+
+            try
+            {
+                var results = await _db.LoadData<Q_IMLCQueryListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_ImportLC",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_IMLCQueryListPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_IMLCQueryListPageRsp>();
+            }
+            return BadRequest(response);
+        }
+
+
+        [HttpGet("ListIMBC")]
+        public async Task<ActionResult<IMBCQueryListPageResponse>> ListIMBC(string? CenterID, string? BCNumber, string? RecType, string? RecStatus, string? CustName, int Page, int PageSize)
+        {
+            IMBCQueryListPageResponse response = new IMBCQueryListPageResponse();
+            //  var USER_ID = User.Identity.Name;
+
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RecType) ||
+                Page == null ||
+                PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CenterID, RecType,Page, PageSize is required";
+                response.Data = new List<Q_IMBCQueryListPageRsp>();
+                return BadRequest(response);
+
+            }
+
+            DynamicParameters param = new();
+            param.Add("@CenterID", CenterID);
+            param.Add("@BCNumber", BCNumber);
+            param.Add("@RecType", RecType);
+            param.Add("@RecStatus", RecStatus);
+            param.Add("@CustName", CustName);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (BCNumber == null)
+            {
+                param.Add("@BCNumber", "");
+            }
+            if (RecType == null)
+            {
+                param.Add("@RecType", "");
+            }
+            if (RecStatus == null)
+            {
+                param.Add("@RecStatus", "");
+            }
+            if (CustName == null)
+            {
+                param.Add("@CustName", "");
+            }
+
+            try
+            {
+                var results = await _db.LoadData<Q_IMBCQueryListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_ImportBC",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_IMBCQueryListPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_IMBCQueryListPageRsp>();
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet("ListIMBL")]
+        public async Task<ActionResult<IMBLQueryListPageResponse>> ListIMBL(string? CenterID, string? BLNumber, string? RecType, string? RecStatus, string? CustName, int Page, int PageSize)
+        {
+            IMBLQueryListPageResponse response = new IMBLQueryListPageResponse();
+            //  var USER_ID = User.Identity.Name;
+
+            // Validate
+            if (string.IsNullOrEmpty(CenterID) ||
+                string.IsNullOrEmpty(RecType) ||
+                Page == null ||
+                PageSize == null)
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "CenterID, RecType,Page, PageSize is required";
+                response.Data = new List<Q_IMBLQueryListPageRsp>();
+                return BadRequest(response);
+
+            }
+
+            DynamicParameters param = new();
+            param.Add("@CenterID", CenterID);
+            param.Add("@BLNumber", BLNumber);
+            param.Add("@RecType", RecType);
+            param.Add("@RecStatus", RecStatus);
+            param.Add("@CustName", CustName);
+            param.Add("@Page", Page);
+            param.Add("@PageSize", PageSize);
+
+            if (BLNumber == null)
+            {
+                param.Add("@BLNumber", "");
+            }
+            if (RecType == null)
+            {
+                param.Add("@RecType", "");
+            }
+            if (RecStatus == null)
+            {
+                param.Add("@RecStatus", "");
+            }
+            if (CustName == null)
+            {
+                param.Add("@CustName", "");
+            }
+
+            try
+            {
+                var results = await _db.LoadData<Q_IMBLQueryListPageRsp, dynamic>(
+                            storedProcedure: "usp_q_ImportBL",
+                            param);
+                response.Code = Constants.RESPONSE_OK;
+                response.Message = "Success";
+                response.Data = (List<Q_IMBLQueryListPageRsp>)results;
+                try
+                {
+                    response.Page = (int)Page;
+                    response.Total = (int)response.Data[0].RCount;
+                    response.TotalPage = (int)((response.Total + PageSize - 1) / PageSize);
+                }
+                catch (Exception)
+                {
+                    response.Page = 0;
+                    response.Total = 0;
+                    response.TotalPage = 0;
+                }
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new List<Q_IMBLQueryListPageRsp>();
             }
             return BadRequest(response);
         }

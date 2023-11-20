@@ -561,6 +561,12 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentEvent.UpdateDate =UpdateDateT;
                 pPaymentEvent.AuthCode = "";
                 pPaymentEvent.AuthDate = null;
+                if (pPaymentEvent.RpCustAc1 == null) pPaymentEvent.RpCustAc1 = "";
+                if (pPaymentEvent.RpCustAc2 == null) pPaymentEvent.RpCustAc2 = "";
+                if (pPaymentEvent.RpCustAc3 == null) pPaymentEvent.RpCustAc3 = "";
+                if (pPaymentEvent.RpChqNo == null) pPaymentEvent.RpChqNo = "";
+                if (pPaymentEvent.RpChqBank == null) pPaymentEvent.RpChqBank = "";
+                if (pPaymentEvent.RpChqBranch == null) pPaymentEvent.RpChqBranch = "";
                 _context.pPayments.Add(pPaymentEvent);
             }
             else
@@ -573,6 +579,12 @@ namespace ISPTF.API.Controllers.ExportADV
                 pPaymentReq.UpdateDate = UpdateDateT;
                 pPaymentReq.AuthCode = "";
                 pPaymentReq.AuthDate = null;
+                if (pPaymentEvent.RpCustAc1 == null) pPaymentEvent.RpCustAc1 = "";
+                if (pPaymentEvent.RpCustAc2 == null) pPaymentEvent.RpCustAc2 = "";
+                if (pPaymentEvent.RpCustAc3 == null) pPaymentEvent.RpCustAc3 = "";
+                if (pPaymentEvent.RpChqNo == null) pPaymentEvent.RpChqNo = "";
+                if (pPaymentEvent.RpChqBank == null) pPaymentEvent.RpChqBank = "";
+                if (pPaymentEvent.RpChqBranch == null) pPaymentEvent.RpChqBranch = "";
                 _context.pPayments.Update(pPaymentReq);
             }
 

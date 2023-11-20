@@ -162,7 +162,8 @@ namespace ISPTF.API.Controllers.ExportADV
         {
             PEXADPPaymentResponse response = new();
             response.Data = new();
-
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Validate
             if (pexadppaymentrequest.pExad == null)
             {
@@ -175,6 +176,7 @@ namespace ISPTF.API.Controllers.ExportADV
             // Get USER_ID, CenterID
             pexadppaymentrequest.pExad.USER_ID = User.Identity.Name;
             pexadppaymentrequest.pExad.CenterID = HttpContext.User.FindFirst("UserBranch").Value.ToString();
+            pexadppaymentrequest.pExad.UPDATE_DATE = UpdateDateT;
 
             try
             {
@@ -364,6 +366,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         if (pExadEvent != null)
                         {
                             pExadEvent.AUTH_CODE = USER_ID;
+                            pExadEvent.AUTH_DATE = UpdateDateT;
                             pExadEvent.CenterID = CenterID;
                             pExadEvent = SaveSup(pExadEvent);
                             _context.pExads.Update(pExadEvent);
@@ -376,6 +379,8 @@ namespace ISPTF.API.Controllers.ExportADV
                         if (pExadMaster != null)
                         {
                             pExadMaster.AUTH_CODE = USER_ID;
+                            pExadMaster.AUTH_DATE = UpdateDateT;
+                            pExadMaster.GENACC_DATE = UpdateDateNT;
                             pExadMaster.CenterID = CenterID;
                             pExadMaster = SaveMaster(pExadMaster, pExadEvent, "Reverse L/C");
                             _context.pExads.Update(pExadMaster);
@@ -385,7 +390,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         await _context.SaveChangesAsync();
 
                         // Update REC_STATUS
-                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'C' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO = {seq}");
+                        await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R' WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='EVENT' AND EVENT_NO = {seq}");
                         await _context.Database.ExecuteSqlRawAsync($"UPDATE pExad SET REC_STATUS = 'R',EVENT_NO ={seq} WHERE EXPORT_ADVICE_NO = '{pExadEvent_temp.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER' ");
 
                         transaction.Complete();
@@ -449,6 +454,10 @@ namespace ISPTF.API.Controllers.ExportADV
                     pExad.BUSINESS_TYPE = "4";
                     pExadEvent.TRANSACTION_TYPE = "3";
                 }
+                pExadEvent.RECEIPT_NO = "";
+                pExadEvent.VOUCH_ID = "";
+                pExadEvent.AUTH_CODE = "";
+                pExadEvent.AUTH_DATE = null;
                 _context.Add(pExadEvent);
             }
             else
@@ -475,6 +484,8 @@ namespace ISPTF.API.Controllers.ExportADV
                     pExad.BUSINESS_TYPE = "4";
                     pExadEvent.TRANSACTION_TYPE = "3";
                 }
+                pExadEvent.AUTH_CODE = "";
+                pExadEvent.AUTH_DATE = null;
                 _context.Update(pExadEvent);
                 _context.SaveChanges();
             }
@@ -518,12 +529,6 @@ namespace ISPTF.API.Controllers.ExportADV
 
         private pExad SaveSup(pExad pExadEvent)
         {
-            var eventTran = "COLLECT";
-            pExadEvent.AUTH_DATE = DateTime.Now;
-            if (pExadEvent.COLLECT_TYPE == "2")
-            {
-                eventTran = "REFUND";
-            }
 
             // Update pPayment
             var pPayment = (from row in _context.pPayments
@@ -532,14 +537,14 @@ namespace ISPTF.API.Controllers.ExportADV
             if (pPayment != null)
             {
                 pPayment.RpRecStatus = "R";
-                pPayment.AuthDate = DateTime.Now;
+                pPayment.AuthDate = pExadEvent.AUTH_DATE;
                 pPayment.AuthCode = pExadEvent.USER_ID;
             }
 
             // Update pDailyGL
             var pDailyGL = (from row in _context.pDailyGLs
                             where row.TranDocNo == pExadEvent.EXPORT_ADVICE_NO &&
-                                  row.TranEvent == eventTran &&
+                                  row.TranEvent == pExadEvent.EVENT_TYPE &&
                                   row.VouchDate == pExadEvent.EVENT_DATE
                             select row).ToList();
             foreach (var row in pDailyGL)

@@ -536,17 +536,20 @@ namespace ISPTF.API.Controllers.ImportLC
                 //param.Add("@RpPayDate", save.pPayment.RpPayDate);
                 //param.Add("@RpPayBy", save.pPayment.RpPayBy);
                 //param.Add("@RpNote", save.pPayment.RpNote);
-                param.Add("@RpCashAmt", save.pPayment.RpCashAmt);
-                param.Add("@RpChqAmt", save.pPayment.RpChqAmt);
-                param.Add("@RpChqNo", save.pPayment.RpChqNo);
-                param.Add("@RpChqBank", save.pPayment.RpChqBank);
-                param.Add("@RpChqBranch", save.pPayment.RpChqBranch);
-                param.Add("@RpCustAc1", save.pPayment.RpCustAc1);
-                param.Add("@RpCustAmt1", save.pPayment.RpCustAmt1);
-                param.Add("@RpCustAc2", save.pPayment.RpCustAc2);
-                param.Add("@RpCustAmt2", save.pPayment.RpCustAmt2);
-                param.Add("@RpCustAc3", save.pPayment.RpCustAc3);
-                param.Add("@RpCustAmt3", save.pPayment.RpCustAmt3);
+                if (save.pPayment != null)
+                {
+                    param.Add("@RpCashAmt", save.pPayment.RpCashAmt);
+                    param.Add("@RpChqAmt", save.pPayment.RpChqAmt);
+                    param.Add("@RpChqNo", save.pPayment.RpChqNo);
+                    param.Add("@RpChqBank", save.pPayment.RpChqBank);
+                    param.Add("@RpChqBranch", save.pPayment.RpChqBranch);
+                    param.Add("@RpCustAc1", save.pPayment.RpCustAc1);
+                    param.Add("@RpCustAmt1", save.pPayment.RpCustAmt1);
+                    param.Add("@RpCustAc2", save.pPayment.RpCustAc2);
+                    param.Add("@RpCustAmt2", save.pPayment.RpCustAmt2);
+                    param.Add("@RpCustAc3", save.pPayment.RpCustAc3);
+                    param.Add("@RpCustAmt3", save.pPayment.RpCustAmt3);
+                }
                 //param.Add("@RpRefer1", save.pPayment.RpRefer1);
                 //param.Add("@RpRefer2", save.pPayment.RpRefer2);
                 //param.Add("@RpApplicant", save.pPayment.RpApplicant);

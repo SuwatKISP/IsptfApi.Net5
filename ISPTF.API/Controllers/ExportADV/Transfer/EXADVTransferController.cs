@@ -854,32 +854,42 @@ namespace ISPTF.API.Controllers.ExportADV
 
         private pTransfer Transfer_save(pTransfer pTransfer, pPayment pPayment, int EVENT_NO, string RECORD_TYPE, string EVENT_TYPE, string REC_STATUS, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
-            int Seqno;
-            var pTransferMax = (
-                from row in _context.pTransfers
-                where row.EXPORT_ADVICE_NO == pTransfer.EXPORT_ADVICE_NO
-                orderby row.EVENT_NO descending
-                select row).AsNoTracking().FirstOrDefault();
-            if (pTransferMax != null)
+            int Seqno =pTransfer.SEQ_TRANSFER;
+            if (pTransfer.SEQ_TRANSFER == 0)
             {
-                Seqno =pTransferMax.SEQ_TRANSFER;
-            }
-            else
-            {
-                Seqno =0;
-            }
-            Seqno = Seqno + 1;
 
+                var pTransferMax = (
+                    from row in _context.pTransfers
+                    where row.EXPORT_ADVICE_NO == pTransfer.EXPORT_ADVICE_NO
+                    orderby row.SEQ_TRANSFER descending
+                    select row).AsNoTracking().FirstOrDefault();
+                if (pTransferMax != null)
+                {
+                    Seqno = pTransferMax.SEQ_TRANSFER;
+                }
+                else
+                {
+                    Seqno = 0;
+                }
+                Seqno = Seqno + 1;
+            }
             var pTransferEvent = (from row in _context.pTransfers
                               where
                                     row.EXPORT_ADVICE_NO == pTransfer.EXPORT_ADVICE_NO &&
                                     row.SEQ_TRANSFER == Seqno &&
                                     row.EVENT_NO == EVENT_NO
                                   select row).AsNoTracking().FirstOrDefault();
-
-                pTransferEvent = pTransfer;
+            bool AddNew;
+            if (pTransferEvent == null)
+            {
+                AddNew = true;
+            }
+            else
+            {
+                AddNew = false;
+            }
+            pTransferEvent = pTransfer;
                 pTransferEvent.SEQ_TRANSFER = Seqno;
-                pTransferEvent = pTransfer;
                 pTransferEvent.EVENT_TYPE = EVENT_TYPE;
                 pTransferEvent.EVENT_NO = EVENT_NO;
                 if (pTransferEvent.EVENT_TYPE == "Transfer")
@@ -951,7 +961,7 @@ namespace ISPTF.API.Controllers.ExportADV
                 pTransferEvent.GENACC_DATE =UpdateDateNT;
                 pTransferEvent.IN_Use = "0";
 
-            if (pTransferEvent == null)
+            if (AddNew==true)
             {
                 _context.Add(pTransferEvent);
             }

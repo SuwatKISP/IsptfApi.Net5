@@ -6,5 +6,7 @@ namespace ISPTF.Models.ImportTR
     {
         public string Code { get; set; }
         public string Message { get; set; }
+        public string[] FileNames { get; set; }
+      //  public List<Q_IMTR_SWPrintData_ListPage_rsp> Data { get; set; }
     }
 }
