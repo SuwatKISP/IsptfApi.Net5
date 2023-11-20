@@ -110,7 +110,7 @@ namespace ISPTF.API.Controllers.ImportTR
         }
 
         [HttpGet("Select")]
-        public async Task<ActionResult<Q_IMTR_ConvertTRSelect_Response>> Select(string? CustCode, string? RefNumber, string? TRSeqno, string? RecType, string? Event)
+        public async Task<ActionResult<Q_IMTR_ConvertTRSelect_Response>> Select(string? ListType, string? CustCode, string? RefNumber, string? TRSeqno, string? RecType, string? Event)
         {
             Q_IMTR_ConvertTRSelect_Response response = new Q_IMTR_ConvertTRSelect_Response();
             var USER_ID = User.Identity.Name;
@@ -124,11 +124,18 @@ namespace ISPTF.API.Controllers.ImportTR
                 response.Data = new Q_IMTR_ConvertTRSelect_JSON_rsp();
                 return BadRequest(response);
             }
-
+            if (ListType != "NEW" && ListType != "EDIT")
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "ListType = NEW or EDIT only";
+                response.Data = new Q_IMTR_ConvertTRSelect_JSON_rsp();
+                return BadRequest(response);
+            }
             // Call Store Procedure
             try
             {
                 DynamicParameters param = new();
+                param.Add("@ListType", ListType);
                 param.Add("@CustCode", CustCode);
                 param.Add("@RefNumber", RefNumber);
                 param.Add("@TRSeqno", TRSeqno);
@@ -183,8 +190,10 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTR_SaveConvert_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
-            if (save.pIMTR.ListType != "NEW" && save.pIMTR.ListType != "EDIT")
+            if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType should be NEW or EDIT";
@@ -195,9 +204,10 @@ namespace ISPTF.API.Controllers.ImportTR
             {
                 DynamicParameters param = new DynamicParameters();
 
+                //ListType
+                param.Add("@ListType", save.ListType.ListType);
                 //pIMTR
-                param.Add("@ListType", save.pIMTR.ListType);
-                param.Add("@CenterID", save.pIMTR.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@TRNumber", save.pIMTR.TRNumber);
                 param.Add("@RefNumber", save.pIMTR.RefNumber);
                 param.Add("@RecType", save.pIMTR.RecType);
@@ -392,6 +402,9 @@ namespace ISPTF.API.Controllers.ImportTR
                 param.Add("@Campaign_EffDate", save.pIMTR.Campaign_EffDate);
                 param.Add("@PurposeCode", save.pIMTR.PurposeCode);
 
+                //pIMInterest
+                param.Add("@IntDay", save.pIMInterest.IntDay);
+
                 param.Add("@Resp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
                            size: 12800);
@@ -434,7 +447,143 @@ namespace ISPTF.API.Controllers.ImportTR
 
         }
 
+        [HttpPost("release")]
+        public async Task<ActionResult<IMTRResultResponse>> Release([FromBody] IMTR_ReleaseConvert_req release)
+        {
+            IMTRResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+            // Class validate
+            //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMTR_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
 
+            DynamicParameters param = new DynamicParameters();
+
+            param.Add("@RefNumber", release.RefNumber);
+            param.Add("@RecType", release.RecType);
+            param.Add("@TRSeqno", release.TRSeqno);
+            param.Add("@DMS", release.DMS);
+            param.Add("@Event", release.Event);
+            param.Add("@EventDate", release.EventDate);
+            param.Add("@LastIntDate", release.LastIntDate);
+            param.Add("@TRCcy", release.TRCcy); ;
+            param.Add("@TRAmount", release.TRAmount);
+            param.Add("@TRBalance", release.TRBalance);
+            param.Add("@BLIntAmt", release.BLIntAmt);
+            param.Add("@CFRRate", release.CFRRate);
+            param.Add("@IntRateCode", release.IntRateCode);
+            param.Add("@IntRate", release.IntRate);
+            param.Add("@IntSpread", release.IntSpread);
+            param.Add("@Tx26", release.Tx26);
+            param.Add("@PayAmount", release.PayAmount);
+            param.Add("@UserCode", USER_ID);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+
+            try
+            {
+                await _db.SaveData(
+                    storedProcedure: "usp_pIMTR_ConvertTR_Release", param);
+
+                var Resp = param.Get<int>("@Resp");
+
+                if (Resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Convert T/R Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = Resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Convert T/R Release Error";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("delete")]
+        public async Task<ActionResult<IMTRResultResponse>> Delete([FromBody] IMTR_DeleteConvert_req delete)
+        {
+            IMTRResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+            // Class validate
+            //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMTR_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
+            DynamicParameters param = new DynamicParameters();
+
+            param.Add("@RefNumber", delete.RefNumber);
+            param.Add("@TRNumber", delete.TRNumber);
+            param.Add("@TRSeqno", delete.TRSeqno);
+            param.Add("@EventDate", delete.EventDate);
+
+            param.Add("@Resp", dbType: DbType.Int32,
+                       direction: System.Data.ParameterDirection.Output,
+                       size: 12800);
+
+            try
+            {
+                await _db.SaveData(
+                    storedProcedure: "usp_pIMTR_ConvertTR_Delete", param);
+
+                var Resp = param.Get<int>("@Resp");
+
+                if (Resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Convert T/R Delete Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = Resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Convert T/R Delete Error";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
 
 
 

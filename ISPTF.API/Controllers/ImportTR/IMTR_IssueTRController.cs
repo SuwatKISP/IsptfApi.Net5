@@ -13,8 +13,6 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Transactions;
-
-
 using ISPTF.Models.ExportLC;
 namespace ISPTF.API.Controllers.ImportTR
 {
@@ -25,6 +23,7 @@ namespace ISPTF.API.Controllers.ImportTR
     {
         private readonly ISqlDataAccess _db;
         private readonly ISPTFContext _context;
+        public IFormatProvider engDateFormat = new System.Globalization.CultureInfo("en-US").DateTimeFormat;
         public IMTR_IssueTRController(ISqlDataAccess db, ISPTFContext context)
         {
             _db = db;
@@ -326,8 +325,10 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTR_SaveIssue_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
-            if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
+            if (saveissue.ListType.ListType != "NEW" && saveissue.ListType.ListType != "EDIT")
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType should be NEW or EDIT";
@@ -337,10 +338,12 @@ namespace ISPTF.API.Controllers.ImportTR
             try
             {
                 DynamicParameters param = new DynamicParameters();
-
+                //ListType
+                param.Add("@ListType", saveissue.ListType.ListType);
+                param.Add("@cutLineTextF50K", saveissue.ListType.cutLineTextF50K);
+                param.Add("@cutLineTextF59", saveissue.ListType.cutLineTextF59);
                 //pIMTR
-                param.Add("@ListType", saveissue.pIMTR.ListType);
-                param.Add("@CenterID", saveissue.pIMTR.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@TRNumber", saveissue.pIMTR.TRNumber);
                 param.Add("@RefNumber", saveissue.pIMTR.RefNumber);
                 param.Add("@RecType", saveissue.pIMTR.RecType);
@@ -536,36 +539,137 @@ namespace ISPTF.API.Controllers.ImportTR
                 param.Add("@PurposeCode", saveissue.pIMTR.PurposeCode);
 
                 //pPayment
-                param.Add("@RpReceiptNo", saveissue.pPayment.RpReceiptNo);
-                param.Add("@RpModule", saveissue.pPayment.RpModule);
-                param.Add("@RpEvent", saveissue.pPayment.RpEvent);
-                param.Add("@RpDocNo", saveissue.pPayment.RpDocNo);
-                param.Add("@RpCustCode", saveissue.pPayment.RpCustCode);
-                param.Add("@RpPayDate", saveissue.pPayment.RpPayDate);
-                param.Add("@RpPayBy", saveissue.pPayment.RpPayBy);
-                param.Add("@RpNote", saveissue.pPayment.RpNote);
-                param.Add("@RpCashAmt", saveissue.pPayment.RpCashAmt);
-                param.Add("@RpChqAmt", saveissue.pPayment.RpChqAmt);
-                param.Add("@RpChqNo", saveissue.pPayment.RpChqNo);
-                param.Add("@RpChqBank", saveissue.pPayment.RpChqBank);
-                param.Add("@RpChqBranch", saveissue.pPayment.RpChqBranch);
-                param.Add("@RpCustAc1", saveissue.pPayment.RpCustAc1);
-                param.Add("@RpCustAmt1", saveissue.pPayment.RpCustAmt1);
-                param.Add("@RpCustAc2", saveissue.pPayment.RpCustAc2);
-                param.Add("@RpCustAmt2", saveissue.pPayment.RpCustAmt2);
-                param.Add("@RpCustAc3", saveissue.pPayment.RpCustAc3);
-                param.Add("@RpCustAmt3", saveissue.pPayment.RpCustAmt3);
-                param.Add("@RpRefer1", saveissue.pPayment.RpRefer1);
-                param.Add("@RpRefer2", saveissue.pPayment.RpRefer2);
-                param.Add("@RpApplicant", saveissue.pPayment.RpApplicant);
-                param.Add("@RpIssBank", saveissue.pPayment.RpIssBank);
-                param.Add("@RpStatus", saveissue.pPayment.RpStatus);
-                param.Add("@RpRecStatus", saveissue.pPayment.RpRecStatus);
-                param.Add("@RpPrint", saveissue.pPayment.RpPrint);
+                if (saveissue.pPayment != null)
+                {
+                    param.Add("@RpReceiptNo", saveissue.pPayment.RpReceiptNo);
+                    param.Add("@RpModule", saveissue.pPayment.RpModule);
+                    param.Add("@RpEvent", saveissue.pPayment.RpEvent);
+                    param.Add("@RpDocNo", saveissue.pPayment.RpDocNo);
+                    param.Add("@RpCustCode", saveissue.pPayment.RpCustCode);
+                    param.Add("@RpPayDate", saveissue.pPayment.RpPayDate);
+                    param.Add("@RpPayBy", saveissue.pPayment.RpPayBy);
+                    param.Add("@RpNote", saveissue.pPayment.RpNote);
+                    param.Add("@RpCashAmt", saveissue.pPayment.RpCashAmt);
+                    param.Add("@RpChqAmt", saveissue.pPayment.RpChqAmt);
+                    param.Add("@RpChqNo", saveissue.pPayment.RpChqNo);
+                    param.Add("@RpChqBank", saveissue.pPayment.RpChqBank);
+                    param.Add("@RpChqBranch", saveissue.pPayment.RpChqBranch);
+                    param.Add("@RpCustAc1", saveissue.pPayment.RpCustAc1);
+                    param.Add("@RpCustAmt1", saveissue.pPayment.RpCustAmt1);
+                    param.Add("@RpCustAc2", saveissue.pPayment.RpCustAc2);
+                    param.Add("@RpCustAmt2", saveissue.pPayment.RpCustAmt2);
+                    param.Add("@RpCustAc3", saveissue.pPayment.RpCustAc3);
+                    param.Add("@RpCustAmt3", saveissue.pPayment.RpCustAmt3);
+                    param.Add("@RpRefer1", saveissue.pPayment.RpRefer1);
+                    param.Add("@RpRefer2", saveissue.pPayment.RpRefer2);
+                    param.Add("@RpApplicant", saveissue.pPayment.RpApplicant);
+                    param.Add("@RpIssBank", saveissue.pPayment.RpIssBank);
+                    param.Add("@RpStatus", saveissue.pPayment.RpStatus);
+                    param.Add("@RpRecStatus", saveissue.pPayment.RpRecStatus);
+                    param.Add("@RpPrint", saveissue.pPayment.RpPrint);
+                }
+                else
+                {
+                    param.Add("@RpReceiptNo", null);
+                }
                 //param.Add("@UserCode", saveissue.pPayment.UserCode);
                 //param.Add("@UpdateDate", saveissue.pPayment.UpdateDate);
                 //param.Add("@AuthCode", saveissue.pPayment.AuthCode);
                 //param.Add("@AuthDate", saveissue.pPayment.AuthDate);
+
+
+                //pSWImport
+                //param.Add("@Login", saveissue.pSWImport.Login);
+                param.Add("@DocNumber", saveissue.pSWImport.DocNumber);
+                //param.Add("@Seqno", saveissue.pSWImport.Seqno);
+                //param.Add("@RefNumber", saveissue.pSWImport.RefNumber);
+                param.Add("@RemitCcy", saveissue.pSWImport.RemitCcy);
+                param.Add("@RemitAmt", saveissue.pSWImport.RemitAmt);
+                param.Add("@DeductAmt", saveissue.pSWImport.DeductAmt);
+                param.Add("@ChargeAmt", saveissue.pSWImport.ChargeAmt);
+                //param.Add("@Amt71", saveissue.pSWImport.Amt71);
+                //param.Add("@ValueDate", saveissue.pSWImport.ValueDate);
+                param.Add("@SwiftFile", saveissue.pSWImport.SwiftFile);
+                param.Add("@MT103", saveissue.pSWImport.MT103);
+                param.Add("@MT202", saveissue.pSWImport.MT202);
+                param.Add("@MT734", saveissue.pSWImport.MT734);
+                param.Add("@MT752", saveissue.pSWImport.MT752);
+                param.Add("@MT754", saveissue.pSWImport.MT754);
+                param.Add("@MT756", saveissue.pSWImport.MT756);
+                param.Add("@MT799", saveissue.pSWImport.MT799);
+                param.Add("@MT999", saveissue.pSWImport.MT999);
+                param.Add("@MT412", saveissue.pSWImport.MT412);
+                param.Add("@MT499", saveissue.pSWImport.MT499);
+                param.Add("@MT202Cov", saveissue.pSWImport.MT202Cov);
+                param.Add("@MT400", saveissue.pSWImport.MT400);
+                param.Add("@BNet", saveissue.pSWImport.BNet);
+                param.Add("@ToNego", saveissue.pSWImport.ToNego);
+                param.Add("@ToName", saveissue.pSWImport.ToName);
+                param.Add("@ToRefer", saveissue.pSWImport.ToRefer);
+                param.Add("@ToBank", saveissue.pSWImport.ToBank);
+                param.Add("@ToWhom", saveissue.pSWImport.ToWhom);
+                param.Add("@F20", saveissue.pSWImport.F20);
+                //param.Add("@F20_X", saveissue.pSWImport.F20_X);
+                //param.Add("@F21", saveissue.pSWImport.F21);
+                //param.Add("@F21_X", saveissue.pSWImport.F21_X);
+                //param.Add("@F23", saveissue.pSWImport.F23);
+                //param.Add("@F23_X", saveissue.pSWImport.F23_X);
+                //param.Add("@F26", saveissue.pSWImport.F26);
+                //param.Add("@F30", saveissue.pSWImport.F30);
+                //param.Add("@F32A", saveissue.pSWImport.F32A);
+                //param.Add("@F32B", saveissue.pSWImport.F32B);
+                //param.Add("@F33A", saveissue.pSWImport.F33A);
+                //param.Add("@F33B", saveissue.pSWImport.F33B);
+                //param.Add("@F34A", saveissue.pSWImport.F34A);
+                param.Add("@F50K", saveissue.pSWImport.F50K);
+                param.Add("@F59", saveissue.pSWImport.F59);
+                //param.Add("@F70", saveissue.pSWImport.F70);
+                //param.Add("@F71A", saveissue.pSWImport.F71A);
+                //param.Add("@F71F", saveissue.pSWImport.F71F);
+                //param.Add("@F52A", saveissue.pSWImport.F52A);
+                //param.Add("@F52D", saveissue.pSWImport.F52D);
+                //param.Add("@F53A", saveissue.pSWImport.F53A);
+                //param.Add("@F53B", saveissue.pSWImport.F53B);
+                //param.Add("@F53D", saveissue.pSWImport.F53D);
+                //param.Add("@F53UID", saveissue.pSWImport.F53UID);
+                //param.Add("@F54A", saveissue.pSWImport.F54A);
+                //param.Add("@F54D", saveissue.pSWImport.F54D);
+                //param.Add("@F54UID", saveissue.pSWImport.F54UID);
+                //param.Add("@F56A", saveissue.pSWImport.F56A);
+                //param.Add("@F56D", saveissue.pSWImport.F56D);
+                //param.Add("@F56UID", saveissue.pSWImport.F56UID);
+                //param.Add("@F57A", saveissue.pSWImport.F57A);
+                //param.Add("@F57D", saveissue.pSWImport.F57D);
+                //param.Add("@F57UID", saveissue.pSWImport.F57UID);
+                //param.Add("@F58A", saveissue.pSWImport.F58A);
+                //param.Add("@F58D", saveissue.pSWImport.F58D);
+                //param.Add("@F58UID", saveissue.pSWImport.F58UID);
+                //param.Add("@F71B", saveissue.pSWImport.F71B);
+                //param.Add("@F72", saveissue.pSWImport.F72);
+                //param.Add("@F72_X", saveissue.pSWImport.F72_X);
+                //param.Add("@F73", saveissue.pSWImport.F73);
+                //param.Add("@F79", saveissue.pSWImport.F79);
+                //param.Add("@F79_X", saveissue.pSWImport.F79_X);
+                //param.Add("@F77A", saveissue.pSWImport.F77A);
+                //param.Add("@F77B", saveissue.pSWImport.F77B);
+                //param.Add("@F77J", saveissue.pSWImport.F77J);
+                //param.Add("@F53A_X", saveissue.pSWImport.F53A_X);
+                //param.Add("@F53B_X", saveissue.pSWImport.F53B_X);
+                //param.Add("@F53D_X", saveissue.pSWImport.F53D_X);
+                //param.Add("@F53UID_X", saveissue.pSWImport.F53UID_X);
+                //param.Add("@F54A_X", saveissue.pSWImport.F54A_X);
+                //param.Add("@F54D_X", saveissue.pSWImport.F54D_X);
+                //param.Add("@F54UID_X", saveissue.pSWImport.F54UID_X);
+                //param.Add("@F72103", saveissue.pSWImport.F72103);
+                param.Add("@Flag32", saveissue.pSWImport.Flag32);
+                param.Add("@Detail32", saveissue.pSWImport.Detail32);
+                //param.Add("@F21_B", saveissue.pSWImport.F21_B);
+                //param.Add("@F21_C", saveissue.pSWImport.F21_C);
+                //param.Add("@MT199", saveissue.pSWImport.MT199);
+                //param.Add("@CF50", saveissue.pSWImport.CF50);
+                //param.Add("@CF59", saveissue.pSWImport.CF59);
+                //param.Add("@F79_Z", saveissue.pSWImport.F79_Z);
+                //param.Add("@SWUuid", saveissue.pSWImport.SWUuid);
 
                 param.Add("@Resp", dbType: DbType.Int32,
                            direction: System.Data.ParameterDirection.Output,
@@ -581,20 +685,110 @@ namespace ISPTF.API.Controllers.ImportTR
 
                 var Resp = param.Get<int>("@Resp");
                 var IssueTRSaveResp = param.Get<dynamic>("@IssueTRSaveResp");
-
+                
                 //var Resp = param.Get<int>("@Resp");
                 if (Resp > 0)
                 {
                     IMTR_SaveIssue_JSON_rsp jsonResponse = JsonSerializer.Deserialize<IMTR_SaveIssue_JSON_rsp>(IssueTRSaveResp);
+
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+                    //return Ok(response);
+                    bool resGL;
+                    bool resPayD;
+                    string eventDate;
+                    string resVoucherID;
+                    string TRLogin;
+                    eventDate = response.Data.pIMTR.EventDate.Value.ToString("dd/MM/yyyy");
+                    if (response.Data.pIMTR.EventMode=="L")
+                    {
+                        TRLogin = "IMBL";
+                    }
+                    else if (response.Data.pIMTR.EventMode == "B")
+                    {
+                        TRLogin = "IMBC";
+                    }
+                    else if (response.Data.pIMTR.EventMode == "D")
+                    {
+                        TRLogin = "DMLC";
+                    }
+                    else if (response.Data.pIMTR.EventMode == "S")
+                    {
+                        TRLogin = "TRS";
+                    }
+                    else 
+                    {
+                        TRLogin = "PN";
+                    }
+
+                    resVoucherID = ISPModuleIMP.GenerateGL.StartPIMTR(response.Data.pIMTR.TRNumber,
+                        eventDate,
+                        response.Data.pIMTR.TRSeqno.ToString("#0"),
+                        response.Data.pIMTR.Event,TRLogin);
+
+
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.pIMTR.VoucherID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for  Gen.G/L  ";
+                        response.Data = jsonResponse;
+                        return BadRequest(response);
+                    }
+                    string resQuote = "";
+                    if (response.Data.pIMTR.RecStatus == "N" )
+                    {
+                        resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("IMTR", response.Data.pIMTR.TRNumber,
+                             response.Data.pIMTR.TRSeqno, response.Data.pIMTR.Event, "", response.Data.pIMTR.UserCode);
+                    }
+                    if (resQuote == "ERROR")
+                    {
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for Quote Rate";
+                        return BadRequest(response);
+                    }
                     return Ok(response);
+                    //string resPayDetail;
+
+                    //resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssPurchase(response.Data.pIMTR.EXPORT_BC_NO, response.Data.pIMTR.EVENT_NO, resReceiptNo);
+                    //if (resPayDetail != "ERROR")
+                    //{
+                    //    resPayD = true;
+                    //}
+                    //else
+                    //{
+                    //    resPayD = false;
+                    //}
+
+                    //string resQuote = "";
+                    //if (response.Data.pIMTR.REC_STATUS == "N")
+                    //{
+                    //    resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC", response.Data.pIMTR.EXPORT_BC_NO,
+                    //         response.Data.pIMTR.EVENT_NO, response.Data.pIMTR.EVENT_TYPE, "NEW", response.Data.pIMTR.USER_ID);
+                    //}
+                    //if (resQuote == "ERROR" || resPayD == false || resGL == false)
+                    //{
+                    //    response.Code = Constants.RESPONSE_ERROR;
+                    //    response.Message = "Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
+                    //    response.Data = new IMTR_SaveIssue_JSON_rsp();
+                    //    return BadRequest(response);
+                    //}
+                    //else
+                    //{
+                    //    return Ok(response);
+                    //}
+
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
-                    response.Message = "EXPORT_LC_NO Insert Error";
+                    response.Message = "Issue T/R Insert Error";
                     response.Data = new IMTR_SaveIssue_JSON_rsp();
                     return BadRequest(response);
                 }
@@ -614,6 +808,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -642,7 +838,7 @@ namespace ISPTF.API.Controllers.ImportTR
             param.Add("@SGNumber", releaseissue.SGNumber);
             param.Add("@LCNumber", releaseissue.LCNumber);
             param.Add("@DocCcy", releaseissue.DocCcy);
-            param.Add("@CenterID", releaseissue.CenterID);
+            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@UserCode", USER_ID);
 
             param.Add("@Resp", dbType: DbType.Int32,
@@ -653,8 +849,8 @@ namespace ISPTF.API.Controllers.ImportTR
             {
                 await _db.SaveData(
                     storedProcedure: "usp_pIMTR_IssueTR_Release", param);
-                
-                    var Resp = param.Get<int>("@Resp");
+
+                var Resp = param.Get<int>("@Resp");
 
                 if (Resp > 0)
                 {
@@ -689,6 +885,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -732,7 +930,7 @@ namespace ISPTF.API.Controllers.ImportTR
                     }
                     catch (Exception)
                     {
-                        response.Message = Resp.ToString(); 
+                        response.Message = Resp.ToString();
                     }
                     return BadRequest(response);
                 }
@@ -745,50 +943,237 @@ namespace ISPTF.API.Controllers.ImportTR
             }
         }
 
+        [HttpGet("cmbACType")]
+        public async Task<IEnumerable<MControl>> cmbACType()
+        {
+            DynamicParameters param = new DynamicParameters();
+
+            var results = await _db.LoadData<MControl, dynamic>(
+                storedProcedure: "usp_pIMTR_IssueTR_mControlSelect",
+                param);
+            return results;
+        }
+
+        [HttpPost("saveSWIFT")]
+        public async Task<ActionResult<IMTR_SaveSWIFT_Response>> SaveSWIFT([FromBody] IMTR_SaveSWIFT_JSON_req saveSWIFT)
+        {
+            IMTR_SaveSWIFT_Response response = new();
+            var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
+            // Class validate
+            //if (saveissue.ListType.ListType != "NEW" && saveissue.ListType.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMTR_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                //ListType
+                //param.Add("@ListType", saveissue.ListType.ListType);
+                param.Add("@cutLineTextF50K", saveSWIFT.SWIFTCutLine.cutLineTextF50K);
+                param.Add("@cutLineTextF59", saveSWIFT.SWIFTCutLine.cutLineTextF59);
+                //pIMTR
+                param.Add("@CenterID", USER_CENTER_ID);
+                param.Add("@TRNumber", saveSWIFT.pIMTR.TRNumber);
+                param.Add("@RefNumber", saveSWIFT.pIMTR.RefNumber);
+                param.Add("@RecType", saveSWIFT.pIMTR.RecType);
+                param.Add("@TRSeqno", saveSWIFT.pIMTR.TRSeqno);
+                param.Add("@EventMode", saveSWIFT.pIMTR.EventMode);
+                param.Add("@EventDate", saveSWIFT.pIMTR.EventDate);
+                param.Add("@ValueDate", saveSWIFT.pIMTR.ValueDate);
+                param.Add("@EventFlag", saveSWIFT.pIMTR.EventFlag);
+                param.Add("@LCNumber", saveSWIFT.pIMTR.LCNumber);
+                param.Add("@DocCCy", saveSWIFT.pIMTR.DocCCy);
+                param.Add("@BLBalance", saveSWIFT.pIMTR.BLBalance);
+                param.Add("@BLDay", saveSWIFT.pIMTR.BLDay);
+                param.Add("@NegoBank", saveSWIFT.pIMTR.NegoBank);
+                param.Add("@NegoRefno", saveSWIFT.pIMTR.NegoRefno);
+                param.Add("@ChipNego", saveSWIFT.pIMTR.ChipNego);
+                param.Add("@TRCcy", saveSWIFT.pIMTR.TRCcy);
+                param.Add("@TRAmount", saveSWIFT.pIMTR.TRAmount);
+                param.Add("@FBCharge", saveSWIFT.pIMTR.FBCharge);
+                param.Add("@FBInterest", saveSWIFT.pIMTR.FBInterest);
+                param.Add("@DeductSwift", saveSWIFT.pIMTR.DeductSwift);
+                param.Add("@DeductComm", saveSWIFT.pIMTR.DeductComm);
+                param.Add("@DeductOther", saveSWIFT.pIMTR.DeductOther);
+                param.Add("@MTNego", saveSWIFT.pIMTR.MTNego);
+                param.Add("@ReimBank", saveSWIFT.pIMTR.ReimBank);
+                param.Add("@UserCode", USER_ID);
+
+                //pSWImport
+                param.Add("@Login", saveSWIFT.pSWImport.Login);
+                param.Add("@DocNumber", saveSWIFT.pSWImport.DocNumber);
+                param.Add("@Seqno", saveSWIFT.pSWImport.Seqno);
+                //param.Add("@RefNumber", saveSWIFT.pSWImport.RefNumber);
+                param.Add("@RemitCcy", saveSWIFT.pSWImport.RemitCcy);
+                param.Add("@RemitAmt", saveSWIFT.pSWImport.RemitAmt);
+                param.Add("@DeductAmt", saveSWIFT.pSWImport.DeductAmt);
+                param.Add("@ChargeAmt", saveSWIFT.pSWImport.ChargeAmt);
+                param.Add("@Amt71", saveSWIFT.pSWImport.Amt71);
+                //param.Add("@ValueDate", saveSWIFT.pSWImport.ValueDate);
+                param.Add("@SwiftFile", saveSWIFT.pSWImport.SwiftFile);
+                param.Add("@MT103", saveSWIFT.pSWImport.MT103);
+                param.Add("@MT202", saveSWIFT.pSWImport.MT202);
+                param.Add("@MT734", saveSWIFT.pSWImport.MT734);
+                param.Add("@MT752", saveSWIFT.pSWImport.MT752);
+                param.Add("@MT754", saveSWIFT.pSWImport.MT754);
+                param.Add("@MT756", saveSWIFT.pSWImport.MT756);
+                param.Add("@MT799", saveSWIFT.pSWImport.MT799);
+                param.Add("@MT999", saveSWIFT.pSWImport.MT999);
+                param.Add("@MT412", saveSWIFT.pSWImport.MT412);
+                param.Add("@MT499", saveSWIFT.pSWImport.MT499);
+                param.Add("@MT202Cov", saveSWIFT.pSWImport.MT202Cov);
+                param.Add("@MT400", saveSWIFT.pSWImport.MT400);
+                param.Add("@BNet", saveSWIFT.pSWImport.BNet);
+                param.Add("@ToNego", saveSWIFT.pSWImport.ToNego);
+                param.Add("@ToName", saveSWIFT.pSWImport.ToName);
+                param.Add("@ToRefer", saveSWIFT.pSWImport.ToRefer);
+                param.Add("@ToBank", saveSWIFT.pSWImport.ToBank);
+                param.Add("@ToWhom", saveSWIFT.pSWImport.ToWhom);
+                param.Add("@F20", saveSWIFT.pSWImport.F20);
+                param.Add("@F20_X", saveSWIFT.pSWImport.F20_X);
+                param.Add("@F21", saveSWIFT.pSWImport.F21);
+                param.Add("@F21_X", saveSWIFT.pSWImport.F21_X);
+                param.Add("@F23", saveSWIFT.pSWImport.F23);
+                param.Add("@F23_X", saveSWIFT.pSWImport.F23_X);
+                param.Add("@F26", saveSWIFT.pSWImport.F26);
+                param.Add("@F30", saveSWIFT.pSWImport.F30);
+                param.Add("@F32A", saveSWIFT.pSWImport.F32A);
+                param.Add("@F32B", saveSWIFT.pSWImport.F32B);
+                param.Add("@F33A", saveSWIFT.pSWImport.F33A);
+                param.Add("@F33B", saveSWIFT.pSWImport.F33B);
+                param.Add("@F34A", saveSWIFT.pSWImport.F34A);
+                param.Add("@F50K", saveSWIFT.pSWImport.F50K);
+                param.Add("@F59", saveSWIFT.pSWImport.F59);
+                param.Add("@F70", saveSWIFT.pSWImport.F70);
+                param.Add("@F71A", saveSWIFT.pSWImport.F71A);
+                param.Add("@F71F", saveSWIFT.pSWImport.F71F);
+                param.Add("@F52A", saveSWIFT.pSWImport.F52A);
+                param.Add("@F52D", saveSWIFT.pSWImport.F52D);
+                param.Add("@F53A", saveSWIFT.pSWImport.F53A);
+                param.Add("@F53B", saveSWIFT.pSWImport.F53B);
+                param.Add("@F53D", saveSWIFT.pSWImport.F53D);
+                param.Add("@F53UID", saveSWIFT.pSWImport.F53UID);
+                param.Add("@F54A", saveSWIFT.pSWImport.F54A);
+                param.Add("@F54D", saveSWIFT.pSWImport.F54D);
+                param.Add("@F54UID", saveSWIFT.pSWImport.F54UID);
+                param.Add("@F56A", saveSWIFT.pSWImport.F56A);
+                param.Add("@F56D", saveSWIFT.pSWImport.F56D);
+                param.Add("@F56UID", saveSWIFT.pSWImport.F56UID);
+                param.Add("@F57A", saveSWIFT.pSWImport.F57A);
+                param.Add("@F57D", saveSWIFT.pSWImport.F57D);
+                param.Add("@F57UID", saveSWIFT.pSWImport.F57UID);
+                param.Add("@F58A", saveSWIFT.pSWImport.F58A);
+                param.Add("@F58D", saveSWIFT.pSWImport.F58D);
+                param.Add("@F58UID", saveSWIFT.pSWImport.F58UID);
+                param.Add("@F71B", saveSWIFT.pSWImport.F71B);
+                param.Add("@F72", saveSWIFT.pSWImport.F72);
+                param.Add("@F72_X", saveSWIFT.pSWImport.F72_X);
+                param.Add("@F73", saveSWIFT.pSWImport.F73);
+                param.Add("@F79", saveSWIFT.pSWImport.F79);
+                param.Add("@F79_X", saveSWIFT.pSWImport.F79_X);
+                param.Add("@F77A", saveSWIFT.pSWImport.F77A);
+                param.Add("@F77B", saveSWIFT.pSWImport.F77B);
+                param.Add("@F77J", saveSWIFT.pSWImport.F77J);
+                param.Add("@F53A_X", saveSWIFT.pSWImport.F53A_X);
+                param.Add("@F53B_X", saveSWIFT.pSWImport.F53B_X);
+                param.Add("@F53D_X", saveSWIFT.pSWImport.F53D_X);
+                param.Add("@F53UID_X", saveSWIFT.pSWImport.F53UID_X);
+                param.Add("@F54A_X", saveSWIFT.pSWImport.F54A_X);
+                param.Add("@F54D_X", saveSWIFT.pSWImport.F54D_X);
+                param.Add("@F54UID_X", saveSWIFT.pSWImport.F54UID_X);
+                param.Add("@F72103", saveSWIFT.pSWImport.F72103);
+                param.Add("@Flag32", saveSWIFT.pSWImport.Flag32);
+                param.Add("@Detail32", saveSWIFT.pSWImport.Detail32);
+                param.Add("@F21_B", saveSWIFT.pSWImport.F21_B);
+                param.Add("@F21_C", saveSWIFT.pSWImport.F21_C);
+                param.Add("@MT199", saveSWIFT.pSWImport.MT199);
+                param.Add("@CF50", saveSWIFT.pSWImport.CF50);
+                param.Add("@CF59", saveSWIFT.pSWImport.CF59);
+                param.Add("@F79_Z", saveSWIFT.pSWImport.F79_Z);
+                param.Add("@SWUuid", saveSWIFT.pSWImport.SWUuid);
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+
+                param.Add("@SaveSWIFTResp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
+
+                var results = await _db.LoadData<IMTR_SaveSWIFT_Response, dynamic>(
+                    storedProcedure: "usp_pIMTR_IssueTR_SaveSWIFT",
+                    param);
+
+                var Resp = param.Get<int>("@Resp");
+                var SaveSWIFTResp = param.Get<dynamic>("@SaveSWIFTResp");
+
+                //var Resp = param.Get<int>("@Resp");
+                if (Resp > 0)
+                {
+                    IMTR_SaveSWIFT_JSON_rsp jsonResponse = JsonSerializer.Deserialize<IMTR_SaveSWIFT_JSON_rsp>(SaveSWIFTResp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "EXPORT_LC_NO Insert Error";
+                    response.Data = new IMTR_SaveSWIFT_JSON_rsp();
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new IMTR_SaveSWIFT_JSON_rsp();
+                return BadRequest(response);
+            }
+
+        }
+
+        [HttpPost("SwiftPrintData")]
+        public ActionResult<pIMTR_SWPrintData_Response> SwiftPrintData([FromBody] IMTR_SwiftPrintData_req swreq)
+        {
+            pIMTR_SWPrintData_Response response = new();
+
+            try
+            {
+                string result;
+
+                result = ISPModuleIMP.SWIMTR.SWPrintData(swreq.TxDocNo, swreq.TxDocSeq, swreq.cSysDate.Value.ToString("dd/MM/yyyy", engDateFormat),
+                    swreq.UserCode, swreq.AuthCode, swreq.LbMT);
+                if (result == "OK")
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "SwiftPrintData Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Error for SwiftPrintData";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
 
 
 
-
-
-
-
-
-
-
-
-        //        var results = await _db.LoadData<IMTRResultResponse, dynamic>(
-        //            storedProcedure: "usp_pIMTR_IssueTR_Release",
-        //            param);
-
-        //        var Resp = param.Get<int>("@Resp");
-        //        //var IssueTRSaveResp = param.Get<dynamic>("@IssueTRSaveResp");
-
-        //        //var Resp = param.Get<int>("@Resp");
-        //        if (Resp > 0)
-        //        {
-        //            IMTRResultResponse jsonResponse = JsonSerializer.Deserialize<IMTRResultResponse>(IssueTRSaveResp);
-        //            response.Code = Constants.RESPONSE_OK;
-        //            response.Message = "Success";
-        //            //response.Data = jsonResponse;
-        //            return Ok(response);
-        //        }
-        //        else
-        //        {
-        //            response.Code = Constants.RESPONSE_ERROR;
-        //            response.Message = "EXPORT_LC_NO Insert Error";
-        //            //response.Data = new IMTR_SaveIssue_JSON_rsp();
-        //            return BadRequest(response);
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        response.Code = Constants.RESPONSE_ERROR;
-        //        response.Message = e.ToString();
-        //        //response.Data = new IMTR_SaveIssue_JSON_rsp();
-        //        return BadRequest(response);
-        //    }
-
-        //}
 
 
 

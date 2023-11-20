@@ -10,6 +10,6 @@ namespace ISPTF.Models
         public pExlc PEXLC { get; set; }
         public pPayment PPAYMENT { get; set; }
         public pExPayment PEXPAYMENT { get; set; }
-        public pPayDetail[] PPAYDETAILS { get; set; }
+     //   public pPayDetail[] PPAYDETAILS { get; set; }
     }
 }

@@ -18,6 +18,7 @@ namespace ISPTF.Models.ImportLC
         public Q_IMLC_Amend_Select_pSWIMLC_rsp pSWIMLC_ASSEQ2 { get; set; }
         public Q_IMLC_Amend_Select_pIMLCAmend_rsp pIMLCAmend { get; set; }
         public Q_IMLC_Amend_Select_pIMLCGoods_rsp pIMLCGoods { get; set; }
+        public Q_IMLC_Amend_Select_DefaultCommRate_rsp DefaultCommRate { get; set; }
 
     }
 }

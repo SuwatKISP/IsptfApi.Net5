@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using ISPTF.Models.MidRate;
 
 namespace ISPTF.API.Controllers.GetAny
 {
@@ -180,12 +180,74 @@ namespace ISPTF.API.Controllers.GetAny
         }
 
 
+        [HttpGet("CalDueDate")]
+        public async Task<ActionResult<CalDueDateRsp>> CalDueDate(DateTime CalDate, int DaysAdd)
+        {
+            CalDueDateRsp response = new CalDueDateRsp();
+            // Call Store Procedure
+            try
+            {
+
+                DynamicParameters param = new();
+                param.Add("@CalDate", CalDate);
+                param.Add("@DaysAdd", DaysAdd);
+
+                var results = await _db.LoadData<CalDueDateRsp, dynamic>(
+                            storedProcedure: "usp_CalDueDate",
+                            param);
+                return Ok(results);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("AutoTmpMidRate")]
+        public async Task<IEnumerable<PMidRateRsp>> AutoTmpMidRate()
+        {
+            DynamicParameters param = new();
+            var results = await _db.LoadData<PMidRateRsp, dynamic>(
+                        storedProcedure: "usp_Auto_TmpMidRate", param);
+            return results;
+        }
+
+        [HttpGet("CheckGLBalance")]
+        public async Task<IEnumerable<CheckGLBalanceRsq>> CheckGLBalance(DateTime VouchDate,string VouchID)
+        {
+            DynamicParameters param = new();
+            param.Add("@VouchID", VouchID);
+            param.Add("@VouchDate", VouchDate);
+            var results = await _db.LoadData<CheckGLBalanceRsq, dynamic>(
+                        storedProcedure: "usp_Auto_CheckGLBalance", param);
+            return results;
+        }
+        [HttpGet("AutoRepViewMaster")]
+        public async Task<ActionResult<PMidRateRsp>> AutoRepViewMaster(string UserID)
+        {
+            DynamicParameters param = new();
+            param.Add("@CUser", UserID);
+            param.Add("@Resp", dbType: DbType.Int32,
+               direction: System.Data.ParameterDirection.Output,
+               size: 5215585);
+            var results = await _db.LoadData<PMidRateRsp, dynamic>(
+                        storedProcedure: "usp_Auto_RepViewMaster", param);
+            var resp = param.Get<int>("@Resp");
+            ReturnResponse response = new();
+            if (resp == 1)
+            {
+                response.StatusCode = "200";
+                response.Message = "Success";
+                return Ok(response);
+            }
+            else
+            {
 
 
-
-
-
-
-
+                response.StatusCode = "400";
+                response.Message = "Error for  Auto RepViewMaster";
+                return BadRequest(response);
+            }
+        }
     }
 }

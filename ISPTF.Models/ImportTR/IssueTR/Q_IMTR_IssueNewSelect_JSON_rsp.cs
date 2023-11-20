@@ -17,5 +17,7 @@ namespace ISPTF.Models.ImportTR
         public Q_IMTR_IssueNewSelect_SearchRate_rsp SearchRate { get; set; }
         public Q_IMTR_IssueNewSelect_TxBank1_rsp TxBank1 { get; set; }
         public Q_IMTR_IssueNewSelect_TxReimBank_rsp TxReimBank { get; set; }
+        public Q_IMTR_IssueNewSelect_MidRate_rsp GetMidExChange { get; set; }
+        public Q_IMTR_IssueNewSelect_DefaultData_rsp DefaultData { get; set; }
     }
 }

@@ -138,7 +138,7 @@ namespace ISPTF.API.Controllers.ExportADV
                     // pTransfer
                     if (exad.RECORD_TYPE=="EVENT")
                     {
-                        response.Data.PTRANSFER = await EXHelper.GetPTransfer(_context, exad.EXPORT_ADVICE_NO, "P");
+                     //   response.Data.PTRANSFER = await EXHelper.GetPTransfer(_context, exad.EXPORT_ADVICE_NO, "P");
                     }
                     response.Code = Constants.RESPONSE_OK;
                     response.Data.PEXAD = exad;

@@ -287,6 +287,49 @@ namespace ISPTF.API.Controllers.TradeCreditLimit
             }
             param.Add("@CustCCS", dtCust.AsTableValuedParameter("Type_pCustLmCCS"));
 
+            //-----CFR_Rate
+            dtCust = new DataTable();
+            dtCust.Columns.Add("CustCode", typeof(string));
+            dtCust.Columns.Add("CurCode", typeof(string));
+            dtCust.Columns.Add("prdcode", typeof(string));
+            dtCust.Columns.Add("rate_type", typeof(string));
+            dtCust.Columns.Add("sign", typeof(string));
+            dtCust.Columns.Add("spread", typeof(double));
+            dtCust.Columns.Add("Facility_No", typeof(string));
+            dtCust.Columns.Add("remark", typeof(string));
+            dtCust.Columns.Add("ApproveDate", typeof(DateTime));
+            dtCust.Columns.Add("InputDate", typeof(DateTime));
+            dtCust.Columns.Add("ExpiryDate", typeof(DateTime));
+            dtCust.Columns.Add("Delete_Flag", typeof(string));
+            dtCust.Columns.Add("ZZUser", typeof(string));
+            dtCust.Columns.Add("ZZStrdate", typeof(DateTime));
+            dtCust.Columns.Add("ZZDate", typeof(DateTime));
+
+
+            if (pCustLimitReq.cfrrate != null)
+            {
+                for (int i = 0; i < pCustLimitReq.cfrrate.Length; i++)
+                {
+                    dtCust.Rows.Add(
+                          pCustLimitReq.cfrrate[i].CustCode
+                        , pCustLimitReq.cfrrate[i].CurCode
+                        , pCustLimitReq.cfrrate[i].prdcode
+                        , pCustLimitReq.cfrrate[i].rate_type
+                        , pCustLimitReq.cfrrate[i].sign
+                        , pCustLimitReq.cfrrate[i].spread
+                        , pCustLimitReq.cfrrate[i].Facility_No
+                        , pCustLimitReq.cfrrate[i].remark
+                        , pCustLimitReq.cfrrate[i].ApproveDate
+                        , pCustLimitReq.cfrrate[i].InputDate
+                        , pCustLimitReq.cfrrate[i].ExpiryDate
+                        , pCustLimitReq.cfrrate[i].Delete_Flag
+                        , pCustLimitReq.cfrrate[i].ZZUser
+                        , pCustLimitReq.cfrrate[i].ZZStrdate
+                        , pCustLimitReq.cfrrate[i].ZZDate
+                        );
+                }
+            }
+            param.Add("@CFR_Rate", dtCust.AsTableValuedParameter("Type_CFR_Rate"));
 
             //param.Add("@Resp", dbType: DbType.Int32,
             param.Add("@Resp", dbType: DbType.Int32,

@@ -7,8 +7,8 @@ namespace ISPTF.Models.ExportBC
         [JsonProperty("PEXBC")]
         public pExbc PEXBC;
 
-        [JsonProperty("VOUCH_ID")]
-        public string VOUCH_ID;
+        //[JsonProperty("VOUCH_ID")]
+        //public string VOUCH_ID;
 
         public PEXBCVouchIdDataContainer()
         {

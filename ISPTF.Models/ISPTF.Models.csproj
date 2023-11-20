@@ -27,6 +27,9 @@
 
   <ItemGroup>
     <Folder Include="GetFiles\" />
+    <Folder Include="ImportTR\TRPastDuePayment\" />
+    <Folder Include="ImportTR\TROverDuePayment\" />
+    <Folder Include="ImportTR\TRPayment\" />
   </ItemGroup>
 
 </Project>
