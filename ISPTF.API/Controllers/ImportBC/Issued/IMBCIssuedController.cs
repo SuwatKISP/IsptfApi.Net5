@@ -662,6 +662,22 @@ namespace ISPTF.API.Controllers.ImportBC
                     eventDate = pimbcrsp.PIMBC.EventDate.ToString("dd/MM/yyyy");
                     PIMBCPPaymentRsp2 resultJson = new();
                     resultJson.PIMBC = JsonConvert.DeserializeObject<PIMBCPPaymentRsp>(PIMBCPPaymentRsp);
+                    resVoucherID = ISPModuleIMP.GenerateGL.StartPIMBC(resultJson.PIMBC.PIMBC.BCNumber,
+                   eventDate, resultJson.PIMBC.PIMBC.BCSeqno,
+                    resultJson.PIMBC.PIMBC.Event);
+
+
+                    if (resVoucherID != "ERROR")
+                    {
+                        resultJson.PIMBC.PIMBC.VoucherID = resVoucherID;
+                    }
+                    else
+                    {
+                        ReturnResponse response = new();
+                        response.StatusCode = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for  Gen.G/L  ";
+                        return BadRequest(response);
+                    }
                     return Ok(resultJson);
                 }
                 else
