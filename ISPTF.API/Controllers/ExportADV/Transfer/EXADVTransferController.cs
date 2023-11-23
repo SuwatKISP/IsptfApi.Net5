@@ -504,7 +504,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         string eventDate;
                         string resVoucherID;
                         string GLEvent = pTransferEvent.EVENT_TYPE;
-                        eventDate = pTransferEvent.EVENT_DATE.Value.ToString("dd/MM/yyyy",engDateFormat);
+                        eventDate = pTransferEvent.EVENT_DATE.Value.ToString("dd/MM/yyyy", engDateFormat);
                         if (pExadEvent.PAYMENT_INSTRU == "1")
                         {
                             resVoucherID = ISPModule.GeneratrEXP.StartPEXAD(pTransferEvent.EXPORT_ADVICE_NO,
@@ -834,8 +834,9 @@ namespace ISPTF.API.Controllers.ExportADV
                 pExadEvent.VOUCH_ID = "ADVICE LC";
                 pExadEvent.AUTH_CODE = "";
                 pExadEvent.UPDATE_DATE =UpdateDateT;
+                if (pExadEvent.SENDING_BANK_REF == null) pExadEvent.SENDING_BANK_REF = "";
+                if (pExadEvent.ADVISE_THRU_THRU_BK_ID == null) pExadEvent.ADVISE_THRU_THRU_BK_ID = "";
                 _context.Add(pExadEvent);
-                _context.SaveChanges();
             }
             else
             {
@@ -845,10 +846,12 @@ namespace ISPTF.API.Controllers.ExportADV
                 pExadEvent.VOUCH_ID = "ADVICE LC";
                 pExadEvent.AUTH_CODE = "";
                 pExadEvent.UPDATE_DATE = UpdateDateT;
+                if (pExadEvent.SENDING_BANK_REF == null) pExadEvent.SENDING_BANK_REF = "";
+                if (pExadEvent.ADVISE_THRU_THRU_BK_ID == null) pExadEvent.ADVISE_THRU_THRU_BK_ID = "";
                 _context.Update(pExadEvent);
-                _context.SaveChanges();
             }
-
+            //update Master
+            _context.Database.ExecuteSqlRaw($"UPDATE pExad SET REC_STATUS = 'P'  WHERE EXPORT_ADVICE_NO = '{pExadEvent.EXPORT_ADVICE_NO}' AND RECORD_TYPE='MASTER'");
             return pExadEvent;
         }
 
@@ -889,79 +892,73 @@ namespace ISPTF.API.Controllers.ExportADV
                 AddNew = false;
             }
             pTransferEvent = pTransfer;
-                pTransferEvent.SEQ_TRANSFER = Seqno;
-                pTransferEvent.EVENT_TYPE = EVENT_TYPE;
-                pTransferEvent.EVENT_NO = EVENT_NO;
-                if (pTransferEvent.EVENT_TYPE == "Transfer")
+            if (AddNew==true)
+            {
+                pTransferEvent.VOUCH_ID = "";
+                pTransferEvent.RECEIPT_NO = "";
+            }
+            pTransferEvent.SEQ_TRANSFER = Seqno;
+            pTransferEvent.EVENT_TYPE = EVENT_TYPE;
+            pTransferEvent.EVENT_NO = EVENT_NO;
+            if (pTransferEvent.EVENT_TYPE == "Transfer")
+            {
+                pTransferEvent.TRANSFER_TYPE = "T";
+            }
+            else
+            {
+                pTransferEvent.TRANSFER_TYPE = "A";
+            }
+
+            //eventType$ = pTransferEvent.event_type
+            //EventTran = "TRANSFER"
+            pTransferEvent.RECORD_TYPE = "EVENT";
+            pTransferEvent.BUSINESS_TYPE = "6";
+            pTransferEvent.REC_STATUS = "P";
+            // ' ---------------------------------------------------------Tab Transfer/History
+            pTransferEvent.STATUS = "A";
+            pTransferEvent.UPDATE_DATE = UpdateDateT;
+            pTransferEvent.GENACC_FLAG = "";
+            pTransferEvent.GENACC_DATE = UpdateDateNT;
+            pTransferEvent.IN_Use = "0";
+            if (pTransferEvent.PAYMENT_INSTRU == "1")
+            {
+                if (pTransferEvent.RECEIPT_NO == null || pTransferEvent.RECEIPT_NO =="")
                 {
-                    pTransferEvent.TRANSFER_TYPE = "T";
-                }
-                else
-                {
-                    pTransferEvent.TRANSFER_TYPE = "A";
-                }
-
-                //eventType$ = pTransferEvent.event_type
-                //EventTran = "TRANSFER"
-                pTransferEvent.RECORD_TYPE = "EVENT";
-                pTransferEvent.BUSINESS_TYPE = "6";
-                pTransferEvent.REC_STATUS = "P";
-                // ' ---------------------------------------------------------Tab Transfer/History
-
-
-                pTransferEvent.VOUCH_ID = "ADVICE LC";
-               // pTransferEvent.user_id = cUserCode;
-                pTransferEvent.STATUS = "A";
-                if (pTransferEvent.PAYMENT_INSTRU == "1")
-                {
-                    if (pTransferEvent.RECEIPT_NO == null)
-                    {
-                        pTransferEvent.RECEIPT_NO = ExportLCHelper.GenRefNo(_context, pTransferEvent.CenterID, pTransferEvent.USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
-
-                    }
+                    pTransferEvent.RECEIPT_NO = ExportLCHelper.GenRefNo(_context, pTransferEvent.CenterID, pTransferEvent.USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
                     PaymentSave(pTransferEvent, pPayment, UpdateDateT, UpdateDateNT);
                 }
-                else
+            }
+            else
+            {
+                pTransferEvent.VOUCH_ID = "";
+                pTransferEvent.RECEIPT_NO = "";
+                // Delete pPayment
+                var pPaymentDel = (from row in _context.pPayments
+                                   where row.RpReceiptNo == pTransferEvent.RECEIPT_NO
+                                   select row).ToList();
+                foreach (var row in pPaymentDel)
                 {
-                    pTransferEvent.VOUCH_ID = "";
-                    pTransferEvent.RECEIPT_NO = "";
-                    // Delete pPayment
-                    var pPaymentDel = (from row in _context.pPayments
-                                       where row.RpReceiptNo == pTransferEvent.RECEIPT_NO
-                                       select row).ToList();
-                    foreach (var row in pPaymentDel)
-                    {
-                        _context.pPayments.Remove(row);
-                    }
-                    // Delete pPayDetail
-                    var pPayDetailDel = (from row in _context.pPayDetails
-                                         where row.DpReceiptNo == pTransferEvent.RECEIPT_NO
-                                         select row).ToList();
-                    foreach (var row in pPayDetailDel)
-                    {
-                        _context.pPayDetails.Remove(row);
-                    }
-                    // Delete pDailyGL
-                    var pDailyGLDel = (from row in _context.pDailyGLs
-                                       where row.VouchID == pTransferEvent.VOUCH_ID &&
-                                             row.VouchDate == pTransferEvent.EVENT_DATE
-                                       select row).ToList();
-                    foreach (var row in pDailyGLDel)
-                    {
-                        _context.pDailyGLs.Remove(row);
-                    }
-
+                    _context.pPayments.Remove(row);
                 }
-
-                //cRecpt = pTransferEvent.RECEIPT_NO
-
-                pTransferEvent.UPDATE_DATE = UpdateDateT;
-                // pTransferEvent.centerID = cBran
-                pTransferEvent.GENACC_FLAG = "";
-                pTransferEvent.GENACC_DATE =UpdateDateNT;
-                pTransferEvent.IN_Use = "0";
-
-            if (AddNew==true)
+                // Delete pPayDetail
+                var pPayDetailDel = (from row in _context.pPayDetails
+                                     where row.DpReceiptNo == pTransferEvent.RECEIPT_NO
+                                     select row).ToList();
+                foreach (var row in pPayDetailDel)
+                {
+                    _context.pPayDetails.Remove(row);
+                }
+                // Delete pDailyGL
+                var pDailyGLDel = (from row in _context.pDailyGLs
+                                   where row.VouchID == pTransferEvent.VOUCH_ID &&
+                                         row.VouchDate == pTransferEvent.EVENT_DATE
+                                   select row).ToList();
+                foreach (var row in pDailyGLDel)
+                {
+                    _context.pDailyGLs.Remove(row);
+                }
+            }
+            if (AddNew == true)
             {
                 _context.Add(pTransferEvent);
             }
@@ -969,7 +966,8 @@ namespace ISPTF.API.Controllers.ExportADV
             {
                 _context.Update(pTransferEvent);
             }
-                return pTransferEvent;
+
+            return pTransferEvent;
         }
         private void PaymentSave(pTransfer exad, pPayment pPaymentReq, DateTime UpdateDateT, DateTime UpdateDateNT)
         {
@@ -977,33 +975,43 @@ namespace ISPTF.API.Controllers.ExportADV
             var pPaymentEvent = (from row in _context.pPayments
                                  where row.RpReceiptNo == exad.RECEIPT_NO
                                  select row).AsNoTracking().FirstOrDefault();
+            bool AddNew=false;
+            if (pPaymentEvent == null)
+            {
+                AddNew = true;
+            }
             pPaymentEvent = new();
             pPaymentEvent = pPaymentReq;
             pPaymentEvent.RpReceiptNo = exad.RECEIPT_NO;
-            pPaymentReq.RpDocNo = exad.EXPORT_ADVICE_NO;
-            pPaymentReq.RpRefer1 = exad.LC_NO;
-            pPaymentReq.RpModule = "EXAD";
-            pPaymentReq.RpEvent = "1";
-            pPaymentReq.RpPayDate = exad.EVENT_DATE;
-            pPaymentReq.RpPayBy = exad.METHOD;
-            pPaymentReq.RpNote = "";
-            pPaymentReq.RpStatus = "A";
-            pPaymentReq.RpRecStatus = "P";
-            pPaymentReq.UserCode = exad.USER_ID;
-            pPaymentReq.UpdateDate = UpdateDateT;
-            pPaymentReq.AuthCode = "";
-            pPaymentReq.AuthDate = null;
+            pPaymentEvent.RpDocNo = exad.EXPORT_ADVICE_NO;
+            pPaymentEvent.RpRefer1 = exad.LC_NO;
+            pPaymentEvent.RpModule = "EXAD";
+            pPaymentEvent.RpEvent = "1";
+            pPaymentEvent.RpPayDate = exad.EVENT_DATE;
+            pPaymentEvent.RpPayBy = exad.METHOD;
+            pPaymentEvent.RpNote = "";
+            pPaymentEvent.RpStatus = "A";
+            pPaymentEvent.RpRecStatus = "P";
+            pPaymentEvent.UserCode = exad.USER_ID;
+            pPaymentEvent.UpdateDate = UpdateDateT;
+            pPaymentEvent.AuthCode = "";
+            pPaymentEvent.AuthDate = null;
+            pPaymentEvent.RpCustCode = exad.TRANSFER_ID;
+            if (pPaymentEvent.RpCustAc1 == null) pPaymentEvent.RpCustAc1 = "";
+            if (pPaymentEvent.RpCustAc2 == null) pPaymentEvent.RpCustAc2 = "";
+            if (pPaymentEvent.RpCustAc3 == null) pPaymentEvent.RpCustAc3 = "";
+            if (pPaymentEvent.RpChqNo == null) pPaymentEvent.RpChqNo = "";
+            if (pPaymentEvent.RpChqBank == null) pPaymentEvent.RpChqBank = "";
+            if (pPaymentEvent.RpChqBranch == null) pPaymentEvent.RpChqBranch = "";
 
-            if (pPaymentEvent == null)
+            if (AddNew == true)
             {
-
                 _context.pPayments.Add(pPaymentEvent);
             }
             else
             {
-                _context.pPayments.Update(pPaymentReq);
+                _context.pPayments.Update(pPaymentEvent);
             }
-
             // Delete pPayDetail
             var pPayDetailDel = (from row in _context.pPayDetails
                                  where row.DpReceiptNo == exad.RECEIPT_NO

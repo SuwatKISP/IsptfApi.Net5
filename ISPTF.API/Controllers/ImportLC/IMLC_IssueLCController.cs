@@ -584,6 +584,27 @@ namespace ISPTF.API.Controllers.ImportLC
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
                     response.Data = jsonResponse;
+                    bool resGL;
+                    string eventDate;
+                    string resVoucherID;    
+                    eventDate = response.Data.pIMLC.EventDate.Value.ToString("dd/MM/yyyy");
+                    resVoucherID = ISPModuleIMP.GenerateGL.StartPIMLC(response.Data.pIMLC.LCNumber,
+                        eventDate,response.Data.pIMLC.LCSeqno.ToString("#0"),
+                        response.Data.pIMLC.Event);
+                    if (resVoucherID != "ERROR")
+                    {
+                        resGL = true;
+                        response.Data.pIMLC.VoucherID = resVoucherID;
+                    }
+                    else
+                    {
+                        resGL = false;
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = "Error for  Gen.G/L  ";
+                        response.Data = jsonResponse;
+                        return BadRequest(response);
+                    }
+
                     return Ok(response);
                 }
                 else

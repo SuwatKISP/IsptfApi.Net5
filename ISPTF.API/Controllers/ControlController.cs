@@ -22,44 +22,52 @@ namespace ISPTF.API.Controllers
             _db = db;
         }
         [HttpGet]
-        public async Task<IEnumerable<MControl>> GetAll(string? ctltype, string? ctlcode,string? ctlid,string? ctldesc)
+        public async Task<IEnumerable<MControl>> GetAll(string? ctltype, string? ctlcode,string? ctlid,string? ctldesc,string? ctlname)
         {
             DynamicParameters param = new DynamicParameters();
-            if (ctltype == "*" || ctltype == null)
+            if (ctltype == "" || ctltype == null)
             {
-                param.Add("@CTL_Type", "*");
+                param.Add("@CTL_Type", "");
             }
             else
             {
                 param.Add("@CTL_Type", ctltype);
             }
 
-            if (ctlcode == "*" || ctlcode == null)
+            if (ctlcode == "" || ctlcode == null)
             {
-                param.Add("@CTL_code", "*");
+                param.Add("@CTL_code", "");
             }
             else
             {
                 param.Add("@CTL_code", ctlcode);
             }
 
-            if (ctlid == "*" || ctlid == null)
+            if (ctlid == "" || ctlid == null)
             {
-                param.Add("@CTL_ID", "*");
+                param.Add("@CTL_ID", "");
             }
             else
             {
                 param.Add("@CTL_ID", ctlid);
             }
-            if (ctldesc == "*" || ctldesc == null)
+            if (ctldesc == "" || ctldesc == null)
             {
-                param.Add("@CTL_DESC", "*");
+                param.Add("@CTL_DESC", "");
             }
             else
             {
                 param.Add("@CTL_DESC", ctldesc);
             }
 
+            if (ctlname == "" || ctlname == null)
+            {
+                param.Add("@CTL_NAME", "");
+            }
+            else
+            {
+                param.Add("@CTL_NAME", ctlname);
+            }
 
             var results = await _db.LoadData<MControl, dynamic>(
                 storedProcedure: "usp_mcontrolselect",

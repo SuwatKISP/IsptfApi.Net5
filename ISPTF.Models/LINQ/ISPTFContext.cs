@@ -22489,7 +22489,7 @@ namespace ISPTF.Models
 
             modelBuilder.Entity<pTransfer>(entity =>
             {
-                entity.HasNoKey();
+                entity.HasKey(e => new { e.EXPORT_ADVICE_NO, e.SEQ_TRANSFER, e.EVENT_NO });
 
                 entity.ToTable("pTransfer");
 

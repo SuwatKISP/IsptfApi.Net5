@@ -796,6 +796,8 @@ namespace ISPTF.API.Controllers.ExportADV
                 }
 
             }
+            if (pExadEvent.SENDING_BANK_REF == null) pExadEvent.SENDING_BANK_REF = "";
+            if (pExadEvent.ADVISE_THRU_THRU_BK_ID == null) pExadEvent.ADVISE_THRU_THRU_BK_ID = "";
             if (AddNEW == "Y")
             {
                 _context.Add(pExadEvent);

@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 using ISPTF.Models.Controllers.ExportBC;
+//using Newtonsoft.Json;
 
 namespace ISPTF.API.Controllers.ExportBC
 {
@@ -183,15 +185,15 @@ namespace ISPTF.API.Controllers.ExportBC
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<PEXBCResponse>> Insert([FromBody] PEXBCRsp pexbcsave)
+        public async Task<ActionResult<PEXBC_Json_Response>> Insert([FromBody] PEXBCRsp pexbcsave)
         {
-            PEXBCResponse response = new PEXBCResponse();
+            PEXBC_Json_Response response = new PEXBC_Json_Response();
             // Validate
             if (pexbcsave == null)
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = "pexbc is required.";
-                response.Data = new PEXBCDataContainer();
+                response.Data = new PEXBC_JSON();
                 return BadRequest(response);
             }
 
@@ -466,31 +468,34 @@ namespace ISPTF.API.Controllers.ExportBC
                        size: 12800);
 
             param.Add("@PEXBCPRsp", dbType: DbType.String,
-            direction: System.Data.ParameterDirection.Output,
-            size: 5215585);
+                direction: System.Data.ParameterDirection.Output,
+                size: 5215585);
 
             try
             {
-                var results = await _db.LoadData<pExbc, dynamic>(
+                var results = await _db.LoadData<PEXBCjsonRsp, dynamic>(
                             storedProcedure: "usp_pEXBC_BCReverseOverDue_Save",
                             param);
 
                 var resp = param.Get<string>("@Resp");
                 var resSeqNo = param.Get<int>("@ResSeqNo");
                 var respexbc = param.Get<dynamic>("@PEXBCPRsp");
+                 //var PEXBCDataContainer = new PEXBCDataContainer(results.FirstOrDefault());
+                //PEXBCDataContainer PEXBCDataContainer = JsonConvert.DeserializeObject<PEXBCDataContainer>(respexbc);
 
                 if (resp == "1")
                 {
+                    PEXBC_JSON jsonResponse = JsonSerializer.Deserialize<PEXBC_JSON>(respexbc);
                     response.Code = Constants.RESPONSE_OK;
                     response.Message = "Success";
-                    response.Data = new PEXBCDataContainer(results.First());
+                    response.Data = jsonResponse;
                     return Ok(response);
                 }
                 else
                 {
                     response.Code = Constants.RESPONSE_ERROR;
                     response.Message = "EXPORT_BC_NO Save Error";
-                    response.Data = new PEXBCDataContainer();
+                    response.Data = new PEXBC_JSON();
                     return BadRequest(response);
                 }
             }
@@ -498,7 +503,7 @@ namespace ISPTF.API.Controllers.ExportBC
             {
                 response.Code = Constants.RESPONSE_ERROR;
                 response.Message = e.ToString();
-                response.Data = new PEXBCDataContainer();
+                response.Data = new PEXBC_JSON();
             }
             return BadRequest(response);
         }

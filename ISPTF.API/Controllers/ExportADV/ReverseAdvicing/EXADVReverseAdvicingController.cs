@@ -463,6 +463,10 @@ namespace ISPTF.API.Controllers.ExportADV
             else
             {
                 pExadEvent = pExad;
+                pExadEvent.RECORD_TYPE = RECORD_TYPE;
+                pExadEvent.EVENT_TYPE = EVENT_TYPE;
+                pExadEvent.REC_STATUS = REC_STATUS;
+                pExadEvent.EVENT_NO = seqNo;
                 pExadEvent.EVENT_MODE = "E";
                 if (pExadEvent.EVENT_TYPE == "Full Advice")
                 {

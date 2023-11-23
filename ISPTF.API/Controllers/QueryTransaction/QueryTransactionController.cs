@@ -329,8 +329,8 @@ namespace ISPTF.API.Controllers.QueryTransaction
             DynamicParameters param = new();
             param.Add("@CenterID", CenterID);
             param.Add("@EXPORT_ADVICE_NO", EXPORT_ADVICE_NO);
-            param.Add("@RecType", RecType);
-            param.Add("@RecStatus", RecStatus);
+            param.Add("@RECORD_TYPE", RecType);
+            param.Add("@REC_STATUS", RecStatus);
             param.Add("@BENName", BENName);
             param.Add("@Page", Page);
             param.Add("@PageSize", PageSize);
@@ -341,11 +341,11 @@ namespace ISPTF.API.Controllers.QueryTransaction
             }
             if (RecType == null)
             {
-                param.Add("@RecType", "");
+                param.Add("@RECORD_TYPE", "");
             }
             if (RecStatus == null)
             {
-                param.Add("@RecStatus", "");
+                param.Add("@REC_STATUS", "");
             }
             if (BENName == null)
             {
