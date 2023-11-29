@@ -407,7 +407,129 @@ namespace ISPTF.API.Controllers.PackingCredit
             return BadRequest(response);
         }
 
+        [HttpPost("release")]
+        public ActionResult<EXPCResultResponse> Release([FromBody] PEXPCRelaseReq data)
+        {
+            EXPCResultResponse response = new();
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
+            // Validate
+            if (string.IsNullOrEmpty(data.PACKING_NO))
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "PACKING_NO is required";
+                return BadRequest(response);
+            }
 
+            // Get USER_ID, CenterID
+            var USER_ID = User.Identity.Name;
+            var CenterID = HttpContext.User.FindFirst("UserBranch").Value.ToString();
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
+                    {
+                        var pExpcMaster = (from row in _context.pExpcs
+                                           where row.PACKING_NO == data.PACKING_NO &&
+                                                 row.record_type == "MASTER"
+                                           select row).FirstOrDefault();
+                        var event_no = pExpcMaster.event_no + 1;
+                        // 1 - Check if Master Exists
+                        if (pExpcMaster == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PEXPC Master does not exists";
+                            return BadRequest(response);
+                        }
+                        var pExpcEvent = (from row in _context.pExpcs
+                                          where row.PACKING_NO == data.PACKING_NO &&
+                                                row.event_type == EVENT_TYPE &&
+                                                row.business_type == BUSINESS_TYPE &&
+                                                row.event_no == event_no
+                                          select row).AsNoTracking().FirstOrDefault();
+                        if (pExpcEvent == null)
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "PACKING_NO does not exist.";
+                            return BadRequest(response);
+                        }
+                        //UPDATE MASTER
+                        pExpcMaster.rec_status = "R";
+                        pExpcMaster.user_id = USER_ID;
+                        pExpcMaster.event_type = EVENT_TYPE;
+                        pExpcMaster.business_type = BUSINESS_TYPE;
+                        pExpcMaster.event_mode = "E";
+                        pExpcMaster.update_date = UpdateDateT;
+                        pExpcMaster.auth_code = USER_ID;
+                        pExpcMaster.auth_date = UpdateDateT;
+                        pExpcMaster.vouch_id = "EDITOVERDUE";
+                        pExpcMaster.genacc_flag = "N";
+                        pExpcMaster.genacc_date = UpdateDateNT;
+                        pExpcMaster.AutoOverdue = pExpcEvent.AutoOverdue;
+                        pExpcMaster.received_no = "";
+
+                        pExpcMaster.doc_expiry_date = pExpcEvent.doc_expiry_date;
+                        pExpcMaster.current_pc_due = pExpcEvent.current_pc_due;
+                        pExpcMaster.tot_pc_day = pExpcEvent.tot_pc_day;
+                        pExpcMaster.current_60_daydue = pExpcEvent.current_60_daydue;
+                        pExpcMaster.pc_int_rate = pExpcEvent.pc_int_rate;
+                        pExpcMaster.spread_rate = pExpcEvent.spread_rate;
+                        pExpcMaster.current_intrate = pExpcEvent.current_intrate;
+                        pExpcMaster.IntFlag = pExpcEvent.IntFlag;
+                        if (pExpcEvent.PCOverdue=="Y")
+                        {
+                            pExpcMaster.OBASEDAY = pExpcEvent.OBASEDAY;
+                            pExpcMaster.OINTCODE = pExpcEvent.OINTCODE;
+                            pExpcMaster.OINTRATE = pExpcEvent.OINTRATE;
+                            pExpcMaster.OINTSPDRATE = pExpcEvent.OINTSPDRATE;
+                            pExpcMaster.OINTCURRATE = pExpcEvent.OINTCURRATE;
+                        }
+                        pExpcMaster.PcIntType = pExpcEvent.PcIntType;
+                        pExpcMaster.FixDate = pExpcEvent.FixDate;
+                        if (pExpcMaster.PcIntType=="1")
+                        {
+                            pExpcMaster.CalIntDate = pExpcMaster.LastPayDate;
+
+                        }
+
+
+                        _context.SaveChanges();
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET  rec_status= 'R', event_type = '{EVENT_TYPE}', auth_code = '{USER_ID}', auth_date = '{UpdateDateT}',event_no ={pExpcEvent.event_no} WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}' AND record_type ='MASTER'");
+                        //Update EVENT
+                        pExpcEvent.auth_code = USER_ID;
+                        pExpcEvent.auth_date = UpdateDateT;
+                        pExpcEvent.genacc_flag = "N";
+                        pExpcEvent.genacc_date = UpdateDateNT;
+                        _context.SaveChanges();
+                        _context.Database.ExecuteSqlRaw($"UPDATE pExpc SET rec_status= 'R'  WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}' AND record_type ='EVENT' and Event_no ={pExpcEvent.event_no} ");
+
+                        // Commit
+                        transaction.Complete();
+                        transaction.Dispose();
+                    }
+                    catch (Exception e)
+                    {
+                        // Rollback
+                        transaction.Dispose();
+                        response.Code = Constants.RESPONSE_ERROR;
+                        response.Message = e.ToString();
+                        return BadRequest(response);
+                    }
+
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Packing Credit Released";
+                    return Ok(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = e.ToString();
+            }
+            response.Code = Constants.RESPONSE_ERROR;
+            return BadRequest(response);
+        }
 
 
 

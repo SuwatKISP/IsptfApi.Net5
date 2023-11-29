@@ -18,7 +18,7 @@ using ISPTF.API.Controllers.ExportLC;
 
 namespace ISPTF.API.Controllers.ExportADV
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EXADVReverseAdvicingController : ControllerBase
@@ -256,7 +256,7 @@ namespace ISPTF.API.Controllers.ExportADV
 
                         var seq = EVENT_NO;
                         // 1 - Update pPayment
-                        if (pExadEvent.RECEIPT_NO != "")
+                        if (pExadEvent.RECEIPT_NO != "" && pExadEvent.RECEIPT_NO!=null)
                         {
                             var pPayment = (from row in _context.pPayments
                                             where row.RpReceiptNo == pExadEvent.RECEIPT_NO

@@ -508,7 +508,7 @@ namespace ISPTF.API.Controllers.ExportADV
                         if (pExadEvent.PAYMENT_INSTRU == "1")
                         {
                             resVoucherID = ISPModule.GeneratrEXP.StartPEXAD(pTransferEvent.EXPORT_ADVICE_NO,
-                                eventDate, GLEvent, pTransferEvent.EVENT_NO, "TRANSFER");
+                                eventDate, GLEvent, pTransferEvent.EVENT_NO, "TRANSFER",false,"",pTransferEvent.SEQ_TRANSFER);
                         }
                         else
                         {
@@ -519,6 +519,7 @@ namespace ISPTF.API.Controllers.ExportADV
                             resGL = true;
                             pTransferEvent.VOUCH_ID = resVoucherID;
                             pExadEvent.VOUCH_ID = resVoucherID;
+
                         }
                         else
                         {
@@ -925,8 +926,9 @@ namespace ISPTF.API.Controllers.ExportADV
                 if (pTransferEvent.RECEIPT_NO == null || pTransferEvent.RECEIPT_NO =="")
                 {
                     pTransferEvent.RECEIPT_NO = ExportLCHelper.GenRefNo(_context, pTransferEvent.CenterID, pTransferEvent.USER_ID, "PAYD", UpdateDateT, UpdateDateNT);
-                    PaymentSave(pTransferEvent, pPayment, UpdateDateT, UpdateDateNT);
+
                 }
+                PaymentSave(pTransferEvent, pPayment, UpdateDateT, UpdateDateNT);
             }
             else
             {
