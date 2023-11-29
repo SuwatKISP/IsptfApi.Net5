@@ -60,7 +60,7 @@ namespace ISPTF.API.Controllers.ImportBC
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = "IMPORT B/C Swift for Collect Refund does not exit";
+                    response.Message = "IMPORT B/L Swift does not exit";
                     return BadRequest(response);
                 }
 
@@ -194,7 +194,7 @@ namespace ISPTF.API.Controllers.ImportBC
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = "IMPORT B/C Swift for Collect Refund does not exit";
+                    response.Message = "IMPORT B/L Swift does not exit";
                     return BadRequest(response);
                 }
 

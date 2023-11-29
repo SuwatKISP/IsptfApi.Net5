@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using DocumentFormat.OpenXml.Wordprocessing;
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -22,8 +23,12 @@ namespace ISPTF.API.Controllers
             _db = db;
         }
         [HttpGet]
-        public async Task<IEnumerable<MControl>> GetAll(string? ctltype, string? ctlcode,string? ctlid,string? ctldesc)
+        public async Task<IEnumerable<MControl>> GetAll(string? ctltype, string? ctlcode,string? ctlid,string? ctldesc, string? ctlname)
         {
+
+            ctlid = "";
+            ctldesc = "";
+            ctlname = "";
             DynamicParameters param = new DynamicParameters();
             if (ctltype == "*" || ctltype == null)
             {
@@ -60,7 +65,15 @@ namespace ISPTF.API.Controllers
                 param.Add("@CTL_DESC", ctldesc);
             }
 
-
+            if (ctlname == "*" || ctlname == null)
+            {
+                param.Add("@CTL_Name", "*");
+            }
+            else
+            {
+                param.Add("@CTL_Name", ctlname);
+            }
+            
             var results = await _db.LoadData<MControl, dynamic>(
                 storedProcedure: "usp_mcontrolselect",
                 param);
