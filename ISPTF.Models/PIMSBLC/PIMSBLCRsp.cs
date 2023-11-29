@@ -9,6 +9,7 @@ namespace ISPTF.Models.PIMSBLC
 {
     public class PIMSBLCRsp : PIMSBLC
     {
-
+        public int? RCount { get; set; }
+        public String Cust_Name {  get; set; }
     }
 }
