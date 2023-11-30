@@ -17,10 +17,10 @@ namespace ISPTF.API.Controllers.ImportBC
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class IMBCSwiftController : ControllerBase
+    public class IMBLSwiftController : ControllerBase
     {
         private readonly ISqlDataAccess _db;
-        public IMBCSwiftController(ISqlDataAccess db)
+        public IMBLSwiftController(ISqlDataAccess db)
         {
             _db = db;
         }
@@ -60,7 +60,7 @@ namespace ISPTF.API.Controllers.ImportBC
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = "IMPORT B/L Swift does not exit";
+                    response.Message = "IMPORT B/C Swift for Collect Refund does not exit";
                     return BadRequest(response);
                 }
 
@@ -194,7 +194,7 @@ namespace ISPTF.API.Controllers.ImportBC
 
                     ReturnResponse response = new();
                     response.StatusCode = "400";
-                    response.Message = "IMPORT B/L Swift does not exit";
+                    response.Message = "IMPORT B/C Swift for Collect Refund does not exit";
                     return BadRequest(response);
                 }
 

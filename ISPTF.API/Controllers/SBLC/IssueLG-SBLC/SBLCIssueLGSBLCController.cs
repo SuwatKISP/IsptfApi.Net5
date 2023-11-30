@@ -12,6 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using ISPTF.Models.PIMSBLC;
 
 namespace ISPTF.API.Controllers.SBLC
 {
@@ -60,7 +61,7 @@ namespace ISPTF.API.Controllers.SBLC
         }
 
         [HttpGet("editreleaselist")]
-        public async Task<IEnumerable<SBLCEditReleaseListRsp>> GetEditRelease(string? ListType, string? CenterID,  string? SBLCNumber, string? CustCode, string? CustName, string? UserCode, string? Page, string? PageSize)
+        public async Task<IEnumerable<PIMSBLCRsp>> GetEditRelease(string? ListType, string? CenterID,  string? SBLCNumber, string? CustCode, string? CustName, string? UserCode, string? Page, string? PageSize)
         {
             DynamicParameters param = new();
 
@@ -89,16 +90,58 @@ namespace ISPTF.API.Controllers.SBLC
                 param.Add("@CustName", "");
             }
 
-            var results = await _db.LoadData<SBLCEditReleaseListRsp, dynamic>(
+            var results = await _db.LoadData<PIMSBLCRsp, dynamic>(
                         storedProcedure: "usp_q_SBLC_IssueLGSBLCListPage",
                         param);
             return results;
         }
 
+        [HttpGet("select")]
+        public async Task<ActionResult<PSBLCPaymentRsp>> GetAllSelect(string SBLCNumber, string SBLCSeqno, string RecType, string EVENT, string RecStatus)
+        {
+            DynamicParameters param = new();
 
+            param.Add("@SBLCNumber", SBLCNumber);
+            param.Add("@SBLCSeqno", SBLCSeqno);
+            param.Add("@RecType", RecType);
+            param.Add("@EVENT", EVENT);
+            param.Add("@RecStatus", RecStatus);
 
+            param.Add("@PSBLCRsp", dbType: DbType.Int32,
+                       direction: ParameterDirection.Output,
+                       size: 12800);
 
+            param.Add("@PSBLCPPaymentRsp", dbType: DbType.String,
+                       direction: ParameterDirection.Output,
+                       size: 5215585);
 
+            try
+            {
+                var results = await _db.LoadData<PSBLCPaymentRsp, dynamic>(
+                           storedProcedure: "usp_pSBLC_IssueLGSB_Select",
+                           param);
 
+                var pSBLCRsp = param.Get<dynamic>("@PSBLCRsp");
+                var pSBLCPPaymentRsp = param.Get<dynamic>("@PSBLCPPaymentRsp");
+
+                if (pSBLCRsp > 0)
+                {
+                    return Ok(pSBLCPPaymentRsp);
+                }
+                else
+                {
+
+                    ReturnResponse response = new();
+                    response.StatusCode = "400";
+                    response.Message = "IMPORT SB/LC NO for Collection does not exit";
+                    return BadRequest(response);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

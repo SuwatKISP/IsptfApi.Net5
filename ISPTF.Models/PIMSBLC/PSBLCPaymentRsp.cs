@@ -1,4 +1,4 @@
-﻿//using Newtonsoft.Json;
+﻿using ISPTF.Models.PPayment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models.PIMSBLC
 {
-    public class PIMSBLCRsp : PIMSBLC
+    public class PSBLCPaymentRsp
     {
-        public int? RCount { get; set; }
-        public String Cust_Name {  get; set; }
+        public PIMSBLC PIMSBLC { get; set; }
+        public PPaymentRsp PPayment { get; set; }
+
     }
 }
