@@ -11,6 +11,7 @@ namespace ISPTF.Models.ImportLC
         public int RCount { get; set; }
         public string? LCNumber { get; set; }
         public int? LCSeqno { get; set; }
+        public string? RecType { get; set; }
         public string? LCccy { get; set; }
         public double? LCAvalBal { get; set; }
         public string? CustCode { get; set; }
