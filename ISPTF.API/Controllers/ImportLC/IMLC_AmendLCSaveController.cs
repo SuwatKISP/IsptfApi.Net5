@@ -225,16 +225,18 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@DocRequire", save.pIMLCDocs.DocRequire);
 
                 //pSWIMLC
-                param.Add("@SwiftFile", save.pSWIMLC.SwiftFile);
-                param.Add("@Flag701", save.pSWIMLC.Flag701);
-                //param.Add("@F40E", save.pSWIMLC.F40E);
-                param.Add("@F40F", save.pSWIMLC.F40F);
-                //param.Add("@F42M", save.pSWIMLC.F42M);
-                //param.Add("@F44D", save.pSWIMLC.F44D);
-                param.Add("@F44E", save.pSWIMLC.F44E);
-                param.Add("@F44F", save.pSWIMLC.F44F);
-                //param.Add("@", save.pSWIMLC.);
-
+                if (save.pSWIMLC !=null)
+                {
+                    param.Add("@SwiftFile", save.pSWIMLC.SwiftFile);
+                    param.Add("@Flag701", save.pSWIMLC.Flag701);
+                    //param.Add("@F40E", save.pSWIMLC.F40E);
+                    param.Add("@F40F", save.pSWIMLC.F40F);
+                    //param.Add("@F42M", save.pSWIMLC.F42M);
+                    //param.Add("@F44D", save.pSWIMLC.F44D);
+                    param.Add("@F44E", save.pSWIMLC.F44E);
+                    param.Add("@F44F", save.pSWIMLC.F44F);
+                    //param.Add("@", save.pSWIMLC.);
+                }
 
                 //pPayment
                 //param.Add("@RpReceiptNo", save.pPayment.RpReceiptNo);
