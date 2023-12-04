@@ -10,6 +10,6 @@ namespace ISPTF.Models.ImportLC
     {
         public string? ListType {get; set;}
         public string? LoadLC { get; set; }
-        public string? MT { get; set; }
+        //public string? MT { get; set; }
     }
 }

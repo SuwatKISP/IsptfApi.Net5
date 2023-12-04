@@ -35,6 +35,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTR_SavePayment_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (save.ListTypePay.ListType != "NEW" && save.ListTypePay.ListType != "EDIT")
             {
@@ -55,7 +57,7 @@ namespace ISPTF.API.Controllers.ImportTR
                 param.Add("@TxNewInt", save.ListTypePay.TxNewInt);
          
                 //pIMTR
-                param.Add("@CenterID", save.pIMTR.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@TRNumber", save.pIMTR.TRNumber);
                 param.Add("@RefNumber", save.pIMTR.RefNumber);
                 param.Add("@RecType", save.pIMTR.RecType);
@@ -400,6 +402,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -421,7 +425,7 @@ namespace ISPTF.API.Controllers.ImportTR
             param.Add("@TRNumber", release.pIMTR.TRNumber);
             param.Add("@RecStatus", release.pIMTR.RecStatus);
             param.Add("@PayFlag", release.pIMTR.PayFlag);
-            param.Add("@UserCode", release.pIMTR.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@TRCcy", release.pIMTR.TRCcy);
             param.Add("@ExchBefore", release.pIMTR.ExchBefore);
             param.Add("@PaymentDate", release.pIMTR.PaymentDate);
@@ -491,6 +495,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{

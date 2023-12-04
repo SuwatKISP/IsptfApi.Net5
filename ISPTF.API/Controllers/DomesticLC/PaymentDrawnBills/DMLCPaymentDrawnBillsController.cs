@@ -2,6 +2,7 @@
 using ISPTF.DataAccess.DbAccess;
 using ISPTF.Models;
 using ISPTF.Models.DomesticLC;
+using ISPTF.Models.ImportLC;
 using ISPTF.Models.PackingCredit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -113,6 +114,133 @@ namespace ISPTF.API.Controllers.DomesticLC
             }
             return BadRequest(response);
         }
+
+
+        [HttpHead("listSelect/ Use DMLCFormBEPayment/select  ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> Remark([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpHead("save/ Use DMLCFormBEPayment/save LoadPay = PAYMENT ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkSave([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpHead("release/ Use DMLCFormBEPayment/release LoadPay = PAYMENT ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkRelease([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpHead("delete/ Use DMLCFormBEPayment/delete LoadPay = PAYMENT ")]
+
+        public async Task<ActionResult<IMLCResultResponse>> RemarkDelete([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+                ////ListType
+
+                //await _db.SaveData(
+                //  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(response);
+            }
+        }
+
+
 
 
 

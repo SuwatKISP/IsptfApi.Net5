@@ -73,6 +73,25 @@ namespace ISPTF.API.Controllers
             return results;
         }
 
+
+
+        [HttpGet("selectCustRate")]
+        public async Task<IEnumerable<MCustRateDefault>> selectCustRate(string? defcust, string? defmod, string? defexp, string? deftype)
+        {
+            DynamicParameters param = new();
+            param.Add("@Def_Cust", defcust);
+            param.Add("@Def_Mod", defmod);
+            param.Add("@Def_Exp", defexp);
+            param.Add("@Def_Type", deftype);
+            var results = await _db.LoadData<MCustRateDefault, dynamic>(
+                storedProcedure: "usp_mCustRateSelect_Rate",
+                param);
+            return results;
+        }
+
+
+
+
         [HttpPost("insert")]
         public async Task<ActionResult<List<MCustRateDefault>>> Insert([FromBody] MCustRateDefault custratereq)
         {

@@ -38,11 +38,20 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLC_SaveNOTIssue_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
             {
                 response.Code = Constants.RESPONSE_FIELD_REQUIRED;
                 response.Message = "ListType should be NEW or EDIT";
+                response.Data = new IMLC_SaveNOTIssue_JSON_rsp();
+                return BadRequest(response);
+            }
+            if (save.ListType.LoadLC != "CANCEL" && save.ListType.LoadLC != "REFUSE")
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "LoadLC should be CANCEL, REFUSE";
                 response.Data = new IMLC_SaveNOTIssue_JSON_rsp();
                 return BadRequest(response);
             }
@@ -53,13 +62,13 @@ namespace ISPTF.API.Controllers.ImportLC
                 //ListType
                 param.Add("@ListType", save.ListType.ListType);
                 param.Add("@LoadLC", save.ListType.LoadLC);
-                param.Add("@MT", save.ListType.MT);
+                //param.Add("@MT", save.ListType.MT);
 
                 //pIMTR
                 param.Add("@LCNumber", save.pIMLC.LCNumber);
                 param.Add("@RecType", save.pIMLC.RecType);
                 param.Add("@LCSeqno", save.pIMLC.LCSeqno);
-                param.Add("@CenterID", save.pIMLC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@Event", save.pIMLC.Event);
                 param.Add("@EventDate", save.pIMLC.EventDate);
                 param.Add("@EventFlag", save.pIMLC.EventFlag);
@@ -185,7 +194,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@AppvNo", save.pIMLC.AppvNo);
                 param.Add("@FacNo", save.pIMLC.FacNo);
                 //param.Add("@UpdateDate", save.pIMLC.UpdateDate);
-                param.Add("@UserCode", save.pIMLC.UserCode);
+                param.Add("@UserCode", USER_ID);
                 //param.Add("@AuthDate", save.pIMLC.AuthDate);
                 //param.Add("@AuthCode", save.pIMLC.AuthCode);
                 param.Add("@GenAccFlag", save.pIMLC.GenAccFlag);
@@ -301,6 +310,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -320,9 +331,9 @@ namespace ISPTF.API.Controllers.ImportLC
             param.Add("@LCNumber", release.pIMLC.LCNumber);
             param.Add("@RecType", release.pIMLC.RecType);
             param.Add("@LCSeqno", release.pIMLC.LCSeqno);
-            param.Add("@CenterID", release.pIMLC.CenterID);
+            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@EventDate", release.pIMLC.EventDate);
-            param.Add("@UserCode", release.pIMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@PayFlag", release.pIMLC.PayFlag);
             param.Add("@LCAmt", release.pIMLC.LCAmt);
             param.Add("@LCAvalBal", release.pIMLC.LCAvalBal);
@@ -375,6 +386,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -393,7 +406,7 @@ namespace ISPTF.API.Controllers.ImportLC
             param.Add("@LCNumber", delete.pIMLC.LCNumber);
             param.Add("@LCSeqno", delete.pIMLC.LCSeqno);
             param.Add("@LastReceiptNo", delete.pIMLC.LastReceiptNo);
-            param.Add("@UserCode", delete.pIMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@ConfirmRequest", delete.pIMLC.ConfirmRequest);
             //param.Add("", release.);
 
@@ -436,6 +449,65 @@ namespace ISPTF.API.Controllers.ImportLC
             }
         }
 
+
+        [HttpGet("Remark1/1. For Menu Requese for Cancel, Confirm-Refuse, Reverse LC ")]
+        [HttpGet("Remark2/2.LoadLC = 'REQUEST' or 'RESPONSE' or 'REVERSE' ")]
+        public async Task<ActionResult<IMLCResultResponse>> Remark([FromBody] IMLC_RemarkAmend_JSON_req save)
+        {
+            IMLCResultResponse response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            //if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMLC_SaveAmend_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+
+                ////ListType
+                param.Add("@LoadLC", save.ListType.LoadLC);
+
+
+                param.Add("@Resp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+
+                await _db.SaveData(
+                  storedProcedure: "usp_pIMLC_Amend_Release", param);
+                var resp = param.Get<int>("@Resp");
+
+                if (resp > 0)
+                {
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Release Complete";
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    try
+                    {
+                        response.Message = resp.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        response.Message = "Release Error";
+                    }
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                return BadRequest(response);
+            }
+        }
 
 
 

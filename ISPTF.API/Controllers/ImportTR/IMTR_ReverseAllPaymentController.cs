@@ -182,6 +182,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTR_SaveRevAllPayment_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (save.ListTypePay.ListType != "NEW" && save.ListTypePay.ListType != "EDIT")
             {
@@ -202,7 +204,7 @@ namespace ISPTF.API.Controllers.ImportTR
                 param.Add("@TxNewInt", save.ListTypePay.TxNewInt);
 
                 //pIMTR
-                param.Add("@CenterID", save.pIMTR.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@TRNumber", save.pIMTR.TRNumber);
                 param.Add("@RefNumber", save.pIMTR.RefNumber);
                 param.Add("@RecType", save.pIMTR.RecType);
@@ -547,6 +549,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -566,7 +570,7 @@ namespace ISPTF.API.Controllers.ImportTR
             param.Add("@RecType", release.pIMTR.RecType);
             param.Add("@TRSeqno", release.pIMTR.TRSeqno);
             param.Add("@TRNumber", release.pIMTR.TRNumber);
-            param.Add("@UserCode", release.pIMTR.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@LastIntDate", release.pIMTR.LastIntDate);
             param.Add("@DateStartAccru", release.pIMTR.DateStartAccru);
             param.Add("@IntBalance", release.pIMTR.IntBalance);
@@ -621,6 +625,8 @@ namespace ISPTF.API.Controllers.ImportTR
         {
             IMTRResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -639,7 +645,7 @@ namespace ISPTF.API.Controllers.ImportTR
             param.Add("@TRNumber", delete.pIMTR.TRNumber);
             param.Add("@TRSeqno", delete.pIMTR.TRSeqno);
             param.Add("@EventDate", delete.pIMTR.EventDate);
-            param.Add("@UserCode", delete.pIMTR.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@TRDueStatus", delete.pIMTR.TRDueStatus);
             param.Add("@PayFlag", delete.pIMTR.PayFlag);
 

@@ -1,7 +1,8 @@
 ﻿using ISPTF.Models.ExportBC;
 using System.Collections.Generic;
+using ISPTF.Models.PurchasePayment;
 
-namespace ISPTF.Models
+namespace ISPTF.Models.ExportBC
 {
     public class PEXBCResponse
     {

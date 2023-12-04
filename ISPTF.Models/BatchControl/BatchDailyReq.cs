@@ -9,5 +9,6 @@ namespace ISPTF.Models.BatchControl
     public class BatchDailyReq
     {
         public DateTime? RunBatchDate { get; set; }
+        public string RerunGFMS { get; set; }
     }
 }

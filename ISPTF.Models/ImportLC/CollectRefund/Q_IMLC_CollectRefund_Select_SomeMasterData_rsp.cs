@@ -15,7 +15,7 @@ namespace ISPTF.Models.ImportLC
         public double? DutyAmt { get; set; }
         public double? PayableAmt { get; set; }
         public double? OtherAmt { get; set; }
-        public string? PostageAmt { get; set; }
+        public double? PostageAmt { get; set; }
 
     }
 }

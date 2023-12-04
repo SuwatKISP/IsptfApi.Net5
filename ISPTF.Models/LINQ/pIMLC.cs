@@ -120,7 +120,7 @@ namespace ISPTF.Models
         public double? CommBenCCy { get; set; }
         public double? CommAmt { get; set; }
         public double? CableAmt { get; set; }
-        public string PostageAmt { get; set; }
+        public double? PostageAmt { get; set; }
         public double? DutyAmt { get; set; }
         public double? PayableAmt { get; set; }
         public double? OtherAmt { get; set; }

@@ -323,6 +323,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLC_SaveIssue_Response response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
             {
@@ -331,20 +333,36 @@ namespace ISPTF.API.Controllers.ImportLC
                 response.Data = new IMLC_SaveIssue_JSON_rsp();
                 return BadRequest(response);
             }
+            if (save.ListType.LoadLC != "ISSUE")
+            {
+                response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+                response.Message = "LoadLC should be ISSUE";
+                response.Data = new IMLC_SaveIssue_JSON_rsp();
+                return BadRequest(response);
+            }
+            //if (save.ListType.MT != "700")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "MT Should be 700";
+            //    response.Data = new IMLC_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+
             try
             {
                 DynamicParameters param = new DynamicParameters();
 
+
                 //ListType
                 param.Add("@ListType", save.ListType.ListType);
                 param.Add("@LoadLC", save.ListType.LoadLC);
-                param.Add("@MT", save.ListType.MT);
+                //param.Add("@MT", save.ListType.MT);
 
                 //pIMTR
                 param.Add("@LCNumber", save.pIMLC.LCNumber);
                 param.Add("@RecType", save.pIMLC.RecType);
                 param.Add("@LCSeqno", save.pIMLC.LCSeqno);
-                param.Add("@CenterID", save.pIMLC.CenterID);
+                param.Add("@CenterID", USER_CENTER_ID);
                 param.Add("@Event", save.pIMLC.Event);
                 param.Add("@EventDate", save.pIMLC.EventDate);
                 param.Add("@EventFlag", save.pIMLC.EventFlag);
@@ -470,7 +488,7 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@AppvNo", save.pIMLC.AppvNo);
                 param.Add("@FacNo", save.pIMLC.FacNo);
                 //param.Add("@UpdateDate", save.pIMLC.UpdateDate);
-                param.Add("@UserCode", save.pIMLC.UserCode);
+                param.Add("@UserCode", USER_ID);
                 //param.Add("@AuthDate", save.pIMLC.AuthDate);
                 //param.Add("@AuthCode", save.pIMLC.AuthCode);
                 param.Add("@GenAccFlag", save.pIMLC.GenAccFlag);
@@ -496,16 +514,18 @@ namespace ISPTF.API.Controllers.ImportLC
                 param.Add("@DocRequire", save.pIMLCDocs.DocRequire);
 
                 //pSWIMLC
-                param.Add("@SwiftFile", save.pSWIMLC.SwiftFile);
-                param.Add("@Flag701", save.pSWIMLC.Flag701);
-                param.Add("@F40E", save.pSWIMLC.F40E);
-                param.Add("@F40F", save.pSWIMLC.F40F);
-                param.Add("@F42M", save.pSWIMLC.F42M);
-                param.Add("@F44D", save.pSWIMLC.F44D);
-                param.Add("@F44E", save.pSWIMLC.F44E);
-                param.Add("@F44F", save.pSWIMLC.F44F);
-                //param.Add("@", save.pSWIMLC.);
-
+                if (save.pSWIMLC != null)
+                {
+                    param.Add("@SwiftFile", save.pSWIMLC.SwiftFile);
+                    param.Add("@Flag701", save.pSWIMLC.Flag701);
+                    param.Add("@F40E", save.pSWIMLC.F40E);
+                    param.Add("@F40F", save.pSWIMLC.F40F);
+                    param.Add("@F42M", save.pSWIMLC.F42M);
+                    param.Add("@F44D", save.pSWIMLC.F44D);
+                    param.Add("@F44E", save.pSWIMLC.F44E);
+                    param.Add("@F44F", save.pSWIMLC.F44F);
+                    //param.Add("@", save.pSWIMLC.);
+                }
 
                 //pPayment
                 //param.Add("@RpReceiptNo", save.pPayment.RpReceiptNo);
@@ -586,6 +606,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -605,9 +627,9 @@ namespace ISPTF.API.Controllers.ImportLC
             param.Add("@LCNumber", release.pIMLC.LCNumber);
             param.Add("@RecType", release.pIMLC.RecType);
             param.Add("@LCSeqno", release.pIMLC.LCSeqno);
-            param.Add("@CenterID", release.pIMLC.CenterID);
+            param.Add("@CenterID", USER_CENTER_ID);
             param.Add("@EventDate", release.pIMLC.EventDate);
-            param.Add("@UserCode", release.pIMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@PayFlag", release.pIMLC.PayFlag);
             param.Add("@LCAmt", release.pIMLC.LCAmt);
             param.Add("@LCAvalBal", release.pIMLC.LCAvalBal);
@@ -660,6 +682,8 @@ namespace ISPTF.API.Controllers.ImportLC
         {
             IMLCResultResponse response = new();
             var USER_ID = User.Identity.Name;
+            var claimsPrincipal = HttpContext.User;
+            var USER_CENTER_ID = claimsPrincipal.FindFirst("UserBranch").Value.ToString();
             // Class validate
             //if (saveissue.pIMTR.ListType != "NEW" && saveissue.pIMTR.ListType != "EDIT")
             //{
@@ -678,7 +702,7 @@ namespace ISPTF.API.Controllers.ImportLC
             param.Add("@LCNumber", delete.pIMLC.LCNumber);
             param.Add("@LCSeqno", delete.pIMLC.LCSeqno);
             param.Add("@LastReceiptNo", delete.pIMLC.LastReceiptNo);
-            param.Add("@UserCode", delete.pIMLC.UserCode);
+            param.Add("@UserCode", USER_ID);
             param.Add("@ConfirmRequest", delete.pIMLC.ConfirmRequest);
             //param.Add("", release.);
 
@@ -721,6 +745,181 @@ namespace ISPTF.API.Controllers.ImportLC
             }
         }
 
+        [HttpPost("saveSWIFT")]
+        public async Task<ActionResult<IMLC_SaveIssueSWIFT_Response>> SaveSWIFT([FromBody] IMLC_SaveIssueSWIFT_JSON_req save)
+        {
+            IMLC_SaveIssueSWIFT_Response response = new();
+            var USER_ID = User.Identity.Name;
+            // Class validate
+            //if (save.ListType.ListType != "NEW" && save.ListType.ListType != "EDIT")
+            //{
+            //    response.Code = Constants.RESPONSE_FIELD_REQUIRED;
+            //    response.Message = "ListType should be NEW or EDIT";
+            //    response.Data = new IMLC_SaveIssue_JSON_rsp();
+            //    return BadRequest(response);
+            //}
+            try
+            {
+                DynamicParameters param = new DynamicParameters();
+
+                //pIMTR
+                param.Add("@LCNumber", save.pIMLC.LCNumber);
+                param.Add("@LCSeqno", save.pIMLC.LCSeqno);
+                param.Add("@CenterID", save.pIMLC.CenterID);
+                param.Add("@UserCode", save.pIMLC.UserCode);
+
+                //pSWIMLC
+                param.Add("@LCNo", save.pSWIMLC.LCNo);
+                param.Add("@LCSeq", save.pSWIMLC.LCSeq);
+                param.Add("@LCEvent", save.pSWIMLC.LCEvent);
+                param.Add("@SwiftFile", save.pSWIMLC.SwiftFile);
+                param.Add("@ToBank", save.pSWIMLC.ToBank);
+                param.Add("@ToReim", save.pSWIMLC.ToReim);
+                param.Add("@ValueDate", save.pSWIMLC.ValueDate);
+                param.Add("@LCCcy", save.pSWIMLC.LCCcy);
+                param.Add("@LCAmount", save.pSWIMLC.LCAmount);
+                param.Add("@Flag701", save.pSWIMLC.Flag701);
+                param.Add("@Flag740", save.pSWIMLC.Flag740);
+                param.Add("@Flag747", save.pSWIMLC.Flag747);
+                param.Add("@F27", save.pSWIMLC.F27);
+                param.Add("@F21", save.pSWIMLC.F21);
+                param.Add("@F23", save.pSWIMLC.F23);
+                param.Add("@F26E", save.pSWIMLC.F26E);
+                param.Add("@F30", save.pSWIMLC.F30);
+                param.Add("@F31C", save.pSWIMLC.F31C);
+                param.Add("@F31D", save.pSWIMLC.F31D);
+                param.Add("@F31E", save.pSWIMLC.F31E);
+                param.Add("@F32B", save.pSWIMLC.F32B);
+                param.Add("@F33B", save.pSWIMLC.F33B);
+                param.Add("@F34B", save.pSWIMLC.F34B);
+                param.Add("@F39A", save.pSWIMLC.F39A);
+                param.Add("@F39B", save.pSWIMLC.F39B);
+                param.Add("@F39C", save.pSWIMLC.F39C);
+                param.Add("@F40A", save.pSWIMLC.F40A);
+                param.Add("@F40E", save.pSWIMLC.F40E);
+                param.Add("@F40F", save.pSWIMLC.F40F);
+                param.Add("@F41A", save.pSWIMLC.F41A);
+                param.Add("@F41D", save.pSWIMLC.F41D);
+                param.Add("@F41UID", save.pSWIMLC.F41UID);
+                param.Add("@F42A", save.pSWIMLC.F42A);
+                param.Add("@F42D", save.pSWIMLC.F42D);
+                param.Add("@F42UID", save.pSWIMLC.F42UID);
+                param.Add("@F42C", save.pSWIMLC.F42C);
+                param.Add("@F42M", save.pSWIMLC.F42M);
+                param.Add("@F42P", save.pSWIMLC.F42P);
+                param.Add("@F43P", save.pSWIMLC.F43P);
+                param.Add("@F43T", save.pSWIMLC.F43T);
+                param.Add("@F44A", save.pSWIMLC.F44A);
+                param.Add("@F44B", save.pSWIMLC.F44B);
+                param.Add("@F44C", save.pSWIMLC.F44C);
+                param.Add("@F44D", save.pSWIMLC.F44D);
+                param.Add("@F44E", save.pSWIMLC.F44E);
+                param.Add("@F44F", save.pSWIMLC.F44F);
+                param.Add("@F48", save.pSWIMLC.F48);
+                param.Add("@F49", save.pSWIMLC.F49);
+                param.Add("@F50", save.pSWIMLC.F50);
+                param.Add("@F51A", save.pSWIMLC.F51A);
+                param.Add("@F51D", save.pSWIMLC.F51D);
+                param.Add("@F51UID", save.pSWIMLC.F51UID);
+                param.Add("@F53A", save.pSWIMLC.F53A);
+                param.Add("@F53D", save.pSWIMLC.F53D);
+                param.Add("@F53UID", save.pSWIMLC.F53UID);
+                param.Add("@F57A", save.pSWIMLC.F57A);
+                param.Add("@F57D", save.pSWIMLC.F57D);
+                param.Add("@F57UID", save.pSWIMLC.F57UID);
+                param.Add("@F58A", save.pSWIMLC.F58A);
+                param.Add("@F58D", save.pSWIMLC.F58D);
+                param.Add("@F58UID", save.pSWIMLC.F58UID);
+                param.Add("@F59", save.pSWIMLC.F59);
+                param.Add("@F59UID", save.pSWIMLC.F59UID);
+                param.Add("@F71B", save.pSWIMLC.F71B);
+                param.Add("@F72", save.pSWIMLC.F72);
+                param.Add("@F78", save.pSWIMLC.F78);
+                param.Add("@F79", save.pSWIMLC.F79);
+                param.Add("@F25", save.pSWIMLC.F25);
+                param.Add("@F77A", save.pSWIMLC.F77A);
+                param.Add("@F71A", save.pSWIMLC.F71A);
+                param.Add("@F21_X", save.pSWIMLC.F21_X);
+                param.Add("@F27_X", save.pSWIMLC.F27_X);
+                param.Add("@F72_X", save.pSWIMLC.F72_X);
+                param.Add("@F71B_X", save.pSWIMLC.F71B_X);
+                param.Add("@F41Flag", save.pSWIMLC.F41Flag);
+                param.Add("@F79C", save.pSWIMLC.F79C);
+                param.Add("@F21C", save.pSWIMLC.F21C);
+                param.Add("@F20", save.pSWIMLC.F20);
+                param.Add("@F58A1", save.pSWIMLC.F58A1);
+                param.Add("@F58D1", save.pSWIMLC.F58D1);
+                param.Add("@F58UID1", save.pSWIMLC.F58UID1);
+                param.Add("@F57D1", save.pSWIMLC.F57D1);
+                param.Add("@F57UID1", save.pSWIMLC.F57UID1);
+                param.Add("@F23S", save.pSWIMLC.F23S);
+                param.Add("@F22R", save.pSWIMLC.F22R);
+                param.Add("@F57A1", save.pSWIMLC.F57A1);
+                param.Add("@F31DX", save.pSWIMLC.F31DX);
+                param.Add("@F59DX", save.pSWIMLC.F59DX);
+                param.Add("@F59UIDX", save.pSWIMLC.F59UIDX);
+                param.Add("@F50DX", save.pSWIMLC.F50DX);
+                //param.Add("@", save.pSWIMLC.);
+
+                //pIMLCGoods
+                param.Add("@T45A", save.pIMLCGoods.T45A);
+                param.Add("@T45B", save.pIMLCGoods.T45B);
+
+                //pIMLCDocs
+                param.Add("@T46A", save.pIMLCDocs.T46A);
+                param.Add("@T46B", save.pIMLCDocs.T46B);
+
+                //pIMLCCond
+                param.Add("@T47A", save.pIMLCCond.T47A);
+                param.Add("@T47B", save.pIMLCCond.T47B);
+
+                //pSWImpText
+                param.Add("@T49G", save.pSWImpText.T49G);
+                param.Add("@T49H", save.pSWImpText.T49H);
+                param.Add("@T49GA", save.pSWImpText.T49GA);
+                param.Add("@T49HA", save.pSWImpText.T49HA);
+
+                 param.Add("@Resp", dbType: DbType.Int32,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 12800);
+
+                param.Add("@SaveResp", dbType: DbType.String,
+                           direction: System.Data.ParameterDirection.Output,
+                           size: 5215585);
+
+                var results = await _db.LoadData<IMLC_SaveIssueSWIFT_JSON_rsp, dynamic>(
+                    storedProcedure: "usp_pIMLC_Issue_SaveSWIFT",
+                    param);
+
+                var Resp = param.Get<int>("@Resp");
+                var SaveResp = param.Get<dynamic>("@SaveResp");
+
+                //var Resp = param.Get<int>("@Resp");
+                if (Resp > 0)
+                {
+                    IMLC_SaveIssueSWIFT_JSON_rsp jsonResponse = JsonSerializer.Deserialize<IMLC_SaveIssueSWIFT_JSON_rsp>(SaveResp);
+                    response.Code = Constants.RESPONSE_OK;
+                    response.Message = "Success";
+                    response.Data = jsonResponse;
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Code = Constants.RESPONSE_ERROR;
+                    response.Message = "Save Error";
+                    response.Data = new IMLC_SaveIssueSWIFT_JSON_rsp();
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception e)
+            {
+                response.Code = Constants.RESPONSE_ERROR;
+                response.Message = e.ToString();
+                response.Data = new IMLC_SaveIssueSWIFT_JSON_rsp();
+                return BadRequest(response);
+            }
+
+        }
 
 
 
