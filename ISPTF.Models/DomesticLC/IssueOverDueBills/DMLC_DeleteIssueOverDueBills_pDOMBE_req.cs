@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISPTF.Models.DomesticLC
 {
-	public class DMLC_DeletePaymentToBEN_pDOMBE_req
+	public class DMLC_DeleteIssueOverDueBills_pDOMBE_req
 	{
 		public string? BENumber { get; set; }
 		public int? BESeqno { get; set; }
