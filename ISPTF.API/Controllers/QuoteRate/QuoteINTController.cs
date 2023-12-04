@@ -239,7 +239,7 @@ namespace ISPTF.API.Controllers.QuoteRate
         // Confirm Use CFR
         [HttpGet("getCFRUsed")]
         public async Task<IEnumerable<QuoteCFRUsed>> GetUse(string CustCode, string Facility_No, string CurCode, 
-                                                                                           string CFR_1, string CFR_2, double CFR_3, string TxnDate,int? TDay)
+                                                                                           string CFR_1, string CFR_2, double CFR_3, string TxnDate,int? TDay,double RateQuote)
         {
             DynamicParameters param = new();
             param.Add("@CustCode", CustCode);
@@ -250,6 +250,7 @@ namespace ISPTF.API.Controllers.QuoteRate
             param.Add("@CFR_3", CFR_3);
             param.Add("@TxnDate", TxnDate);
             param.Add("@TDay", TDay);
+            param.Add("@RateQuote", RateQuote);
 
             var results = await _db.LoadData<QuoteCFRUsed, dynamic>(
                         storedProcedure: "usp_AQuote_QuoteCFRUsed",

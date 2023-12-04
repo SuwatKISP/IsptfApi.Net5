@@ -12,5 +12,7 @@ namespace ISPTF.Models.ExportLC
 		public int? EVENT_NO { get; set; }
 		public string? RECORD_TYPE { get; set; }
 		public string? REC_STATUS { get; set; }
+		public string? EVENT_TYPE { get; set; }
+		public string? BUSINESS_TYPE { get; set; }
 	}
 }

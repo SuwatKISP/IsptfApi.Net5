@@ -260,6 +260,8 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (pExlcEvent == null)
                         {
                             recNew = true;
+                            eventRow.VOUCH_ID = "";
+                            eventRow.RECEIVED_NO = "";
                         }
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
@@ -354,7 +356,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-                            eventRow.RECEIVED_NO = "";
                             eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
@@ -371,6 +372,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 _context.pPayDetails.Remove(row);
                             }
+                            eventRow.RECEIVED_NO = "";
 
                         }
 
@@ -378,6 +380,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         if (pExlcEvent == null)
                         {
                             // Insert
+                            eventRow.VOUCH_ID = "";
                             _context.pExlcs.Add(eventRow);
                         }
                         else
@@ -452,6 +455,8 @@ namespace ISPTF.API.Controllers.ExportLC
         public ActionResult<EXLCResultResponse> Release([FromBody] PEXLCSaveRequest data)
         {
             EXLCResultResponse response = new();
+            var UpdateDateNT = ExportLCHelper.GetSysDateNT(_context);
+            var UpdateDateT = ExportLCHelper.GetSysDate(_context);
             // Class validate
 
             try
@@ -501,42 +506,12 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         pExlc eventRow = pExlcEvent;
 
-                        var opEvent = "";
-                        if (eventRow.METHOD.Contains("DEBIT"))
-                        {
-                            opEvent = "DR";
-                        }
-                        else if (eventRow.METHOD.Contains("CREDIT"))
-                        {
-                            opEvent = "CR";
-                        }
-                        if (opEvent != "")
-                        {
-                            /*
-                             Req1PSys = Send1PTxn(txtBeneCode.Text, TxtExLcCode.Text, OPSeqNo, "EXLC", op_event, _
-                                txtAcctNo(1).Text, txtAmtDebt(1).Text, _
-                                txtAcctNo(2).Text, txtAmtDebt(2).Text, _
-                                txtAcctNo(3).Text, txtAmtDebt(3).Text)
-                                If Req1PSys = False Then
-                                    cSql = "Update pExlc set   REC_STATUS ='W'   where EXPORT_LC_NO='" & TxtExLcCode.Text & "' " _
-                                           & "and record_type='EVENT' and Event_No =" & OPSeqNo & ""
-                                    cn.Execute cSql
-                                    framRelease.Visible = False
-                                    CmdDel.Enabled = True
-                                    CmdSave.Enabled = False
-                                    CmdPrint.Enabled = False
-                                     CmdExit.Enabled = True: SSTab1.Enabled = True
-                                    TxtExLcCode.Enabled = True: cmdFndLC.Enabled = True
-                                    Exit Sub
-                                End If
-                            */
-                        }
 
 
                         // 4 - Update Master
                         pExlcMaster.AUTH_CODE = USER_ID;
-                        pExlcMaster.AUTH_DATE = DateTime.Now; // With Time
-                        pExlcMaster.UPDATE_DATE = DateTime.Now; // With Time
+                        pExlcMaster.AUTH_DATE =UpdateDateT; // With Time
+                        pExlcMaster.UPDATE_DATE = UpdateDateT; // With TimeUpdateDateT
 
 
 

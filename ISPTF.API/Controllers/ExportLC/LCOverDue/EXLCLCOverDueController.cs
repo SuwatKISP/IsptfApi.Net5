@@ -154,7 +154,7 @@ namespace ISPTF.API.Controllers.ExportLC
                                                 row.RECORD_TYPE == "EVENT" &&
                                                 row.REC_STATUS == "R" &&
                                                 row.EVENT_TYPE == EVENT_TYPE &&
-                                                row.EVENT_NO == targetEventNo
+                                                row.EVENT_NO == pExlcMaster.EVENT_NO
                                           select row).FirstOrDefaultAsync();
 
                     if (eventRow == null)

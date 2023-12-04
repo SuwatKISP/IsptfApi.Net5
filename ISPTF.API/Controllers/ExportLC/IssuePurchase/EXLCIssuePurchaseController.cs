@@ -377,12 +377,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // PDocRegister Not Found
                         }
-
+                        string NewRec ="NEW";
                         var pExlcMasterDelete = (from row in _context.pExlcs
                                            where row.EXPORT_LC_NO == data.PEXLC.EXPORT_LC_NO 
                                            select row).ToList();
                         foreach (var row in pExlcMasterDelete)
                         {
+                            NewRec = "EDIT";
                             _context.pExlcs.Remove(row);
                         }
                         _context.SaveChanges();
@@ -398,7 +399,13 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             pExlc.EXPORT_LC_NO = data.PEXLC.EXPORT_LC_NO;
                             pExlc.EVENT_NO = 1;
-                            pExlc.REC_STATUS = "P";
+                            if (data.PEXLC.REC_STATUS == "N" && data.PEXLC.TENOR_OF_COLL == 1)
+                            {
+                                pExlc.REC_STATUS = "P";
+                            }
+                            if (pExlc.FB_AMT == null) pExlc.FB_AMT = 0;
+                            if (pExlc.RECEIVE_PAY_AMT == null) pExlc.RECEIVE_PAY_AMT = 0;
+                            //    pExlc.REC_STATUS = "P";
                             pExlc.RECORD_TYPE = "MASTER";
                             _context.pExlcs.Add(pExlc);
                             _context.SaveChanges();
@@ -426,7 +433,8 @@ namespace ISPTF.API.Controllers.ExportLC
                             pExlc.UPDATE_DATE = UpdateDateT; // With Time
                             pExlc.FACNO = appvFac;
                             pExlc.APPVNO = appvNo;
-
+                            if (pExlc.FB_AMT == null) pExlc.FB_AMT = 0;
+                            if (pExlc.RECEIVE_PAY_AMT == null) pExlc.RECEIVE_PAY_AMT = 0;
                             _context.pExlcs.Update(pExlc);
                             _context.SaveChanges();
                         }
@@ -445,10 +453,20 @@ namespace ISPTF.API.Controllers.ExportLC
                                        select row).AsNoTracking().FirstOrDefault();
 
                         pExlc eventRow = data.PEXLC;
+
+                        if (pExlcEvent == null)
+                        {
+                            eventRow.VOUCH_ID = "";
+                            eventRow.RECEIVED_NO = "";
+                        }
                         eventRow.CenterID = USER_CENTER_ID;
                         //eventRow.RECORD_TYPE = "EVENT";
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
-                        eventRow.REC_STATUS = "P";
+                        if (data.PEXLC.REC_STATUS == "N" && data.PEXLC.TENOR_OF_COLL == 1)
+                        {
+                            eventRow.REC_STATUS = "P";
+                        }
+                        //      eventRow.REC_STATUS = "P";
                         eventRow.EVENT_NO = 1;
                         eventRow.EVENT_MODE = "E";
                         eventRow.EVENT_TYPE = EVENT_TYPE;
@@ -493,7 +511,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-                            eventRow.RECEIVED_NO = "";
                             eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
@@ -510,11 +527,15 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 _context.pPayDetails.Remove(row);
                             }
+                            eventRow.RECEIVED_NO = "";
                         }
                         eventRow.RECORD_TYPE = "EVENT";
+                        if (eventRow.FB_AMT == null) eventRow.FB_AMT = 0;
+                        if (eventRow.RECEIVE_PAY_AMT == null) eventRow.RECEIVE_PAY_AMT = 0;
                         // Commit
                         if (pExlcEvent ==null)
                         {
+                            eventRow.VOUCH_ID = "";
                             _context.pExlcs.Add(eventRow);
                             _context.SaveChanges();
 
@@ -600,21 +621,18 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             resPayD = true;
                         }
-                        //string resQuote;
-                        //resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXBC",  response.Data.PEXLC.EXPORT_BC_NO,
-                        //     response.Data.PEXBC.EVENT_NO, response.Data.PEXBC.EVENT_TYPE, "NEW", response.Data.PEXBC.USER_ID);
-                        //if (resPayD == false || resGL == false)
-                        //{
-                        //    response.Code = Constants.RESPONSE_ERROR;
-                        //    response.Message = "Error for  Gen.G/L or Paymemnt Detail or Quote Rate ";
-                        //    response.Data = new PEXBCPPaymentRsp();
-                        //    return BadRequest(response);
-                        //}
-                        //else
-                        //{
-                        //    return Ok(response);
-                        //}
-
+                        string resQuote = "";
+                        if (response.Data.PEXLC.REC_STATUS == "N" && response.Data.PEXLC.TENOR_OF_COLL !=1)
+                        {
+                            resQuote = ISPModule.RequestQuoteRate.GenQuoteRate("EXLC", response.Data.PEXLC.EXPORT_LC_NO,
+                                 response.Data.PEXLC.EVENT_NO, response.Data.PEXLC.EVENT_TYPE, NewRec, response.Data.PEXLC.USER_ID);
+                        }
+                        if (resQuote == "ERROR")
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for Quote Rate";
+                            return BadRequest(response);
+                        }
                         response.Message = "Export L/C Saved";
                         return Ok(response);
                     }

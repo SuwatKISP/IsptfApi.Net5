@@ -33,7 +33,18 @@ namespace ISPTF.API.Controllers
                 param);
             return results;
         }
-
+        [HttpGet("GetCustRate")]
+        public async Task<IEnumerable<MCustRateDefault>> GetCustRate(string defcust, string defmod, string defexp)
+        {
+            DynamicParameters param = new();
+            param.Add("@Def_Cust", defcust);
+            param.Add("@Def_Mod", defmod);
+            param.Add("@Def_Exp", defexp);
+            var results = await _db.LoadData<MCustRateDefault, dynamic>(
+                storedProcedure: "usp_mCustRateGetCustRate",
+                param);
+            return results;
+        }
         [HttpGet("editlist")]
         public async Task<IEnumerable<MCustRateDefaultRsp>> GetCustRate(string? defcust, string? recstatus, string Page, string PageSize)
         {

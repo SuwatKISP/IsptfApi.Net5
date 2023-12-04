@@ -12,6 +12,7 @@ namespace ISPTF.Models.PackingCredit
     {
         public int RCount { get; set; }
         public string? packing_no { get; set; }
+        public int? event_no { get; set; }
         public string? pn_no { get; set; }
         public string? cust_name { get; set; }
         public string? doc_ccy { get; set; }

@@ -477,3 +477,4 @@ $RECYCLE.BIN/
 *.lnk
 
 ISPTF.API/log.json
+*.vsconfig

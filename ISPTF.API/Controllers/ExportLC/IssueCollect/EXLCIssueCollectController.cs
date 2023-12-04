@@ -725,23 +725,23 @@ namespace ISPTF.API.Controllers.ExportLC
                     string resPayDetail;
                     string resReceiptNo;
                     resReceiptNo = response.Data.PEXLC.RECEIVED_NO;
-                    //if (pexlcppaymentreq.PPAYMENT != null)
-                    //{
-                    //    resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssCollect(pexlcppaymentreq.PEXLC.EXPORT_LC_NO, resSeqNo, resReceiptNo);
-                    //    if (resPayDetail != "ERROR")
-                    //    {
-                    //        resPayD = true;
-                    //    }
-                    //    else
-                    //    {
-                    //        resPayD = false;
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    resPayD = true;
-                    //}
-                    resPayD = true;
+                    if (pexlcppaymentreq.PPAYMENT != null)
+                    {
+                        resPayDetail = ISPModule.PayDetailEXBC.PayDetail_IssCollect(pexlcppaymentreq.PEXLC.EXPORT_LC_NO, resSeqNo, resReceiptNo);
+                        if (resPayDetail != "ERROR")
+                        {
+                            resPayD = true;
+                        }
+                        else
+                        {
+                            resPayD = false;
+                        }
+                    }
+                    else
+                    {
+                        resPayD = true;
+                    }
+                  //  resPayD = true;
                     if (resGL == true && resPayD == true)
                     {
                         response.Data.PEXLC.VOUCH_ID = resVoucherID;

@@ -8,6 +8,8 @@ namespace ISPTF.Models.ExportADV
     public class PEXADPTransferDataContainer
     {
         public pExad PEXAD { get; set; }
-        public pTransfer PTRANSFER { get; set; }
+    //    public pTransfer[] PTRANSFER { get; set; }
+        public string ADVICE_TYPE { get; set; }
+
     }
 }

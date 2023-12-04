@@ -256,7 +256,11 @@ namespace ISPTF.API.Controllers.ExportLC
                                                 row.EVENT_NO == targetEventNo
                                           select row).AsNoTracking().FirstOrDefault();
 
-
+                        if (pExlcEvent == null)
+                        {
+                            eventRow.VOUCH_ID = "";
+                            eventRow.RECEIVED_NO = "";
+                        }
                         eventRow.CenterID = USER_CENTER_ID;
                         eventRow.BUSINESS_TYPE = BUSINESS_TYPE;
                         eventRow.RECORD_TYPE = "EVENT";
@@ -314,7 +318,6 @@ namespace ISPTF.API.Controllers.ExportLC
                         {
                             // UNPAID
                             eventRow.METHOD = "";
-                            eventRow.RECEIVED_NO = "";
                             eventRow.VOUCH_ID = "";
                             var existingPaymentRows = (from row in _context.pPayments
                                                        where row.RpReceiptNo == eventRow.RECEIVED_NO
@@ -332,6 +335,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             {
                                 _context.pPayDetails.Remove(row);
                             }
+                            eventRow.RECEIVED_NO = "";
 
                         }
 
@@ -432,14 +436,14 @@ namespace ISPTF.API.Controllers.ExportLC
                             Call PrintPostGL
                         End If
                         */
-                      //  eventRow.VOUCH_ID = "MOCK VOUCH_ID";
+                        //  eventRow.VOUCH_ID = "MOCK VOUCH_ID";
 
                         // Commit pExlc
                         if (pExlcEvent == null)
                         {
                             // Insert
                             eventRow.EVENT_NO = targetEventNo;
-
+                            eventRow.VOUCH_ID = "";
                             _context.pExlcs.Add(eventRow);
                         }
                         else
@@ -456,6 +460,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         else
                         {
+
                             // Update
                             _context.pExPayments.Update(pExPaymentRow);
                         }
@@ -473,6 +478,7 @@ namespace ISPTF.API.Controllers.ExportLC
                        responseData.PEXPAYMENT = data.PEXPAYMENT;
 
                         response.Data = responseData;
+                        response.Message = "Export L/C Saved";
 
                         bool resGL;
                         bool resPayD;
@@ -546,7 +552,9 @@ namespace ISPTF.API.Controllers.ExportLC
                         }
                         else
                         {
-                            resGL = false;
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Error for G/L";
+                            return BadRequest(response);
                         }
 
                         string resPayDetail;
@@ -559,7 +567,9 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
                             else
                             {
-                                resPayD = false;
+                                response.Code = Constants.RESPONSE_ERROR;
+                                response.Message = "Error for Payment Detail";
+                                return BadRequest(response);
                             }
                         }
                         else
@@ -567,7 +577,7 @@ namespace ISPTF.API.Controllers.ExportLC
                             resPayD = true;
                         }
 
-                        response.Message = "Export L/C Saved";
+
                         return Ok(response);
                     }
                     catch (Exception e)
@@ -661,7 +671,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlcMaster.UPDATE_DATE = UpdateDateT; // With Time
 
                         var pExPayments = (from row in _context.pExPayments
-                                           where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
+                                           where row.DOCNUMBER ==pExlcEvent.EXPORT_LC_NO &&
                                                  row.EVENT_TYPE == EVENT_TYPE &&
                                                  row.EVENT_NO == targetEventNo
                                            select row).AsNoTracking().FirstOrDefault();
@@ -773,18 +783,18 @@ namespace ISPTF.API.Controllers.ExportLC
                         pExlcMaster.BUSINESS_TYPE = BUSINESS_TYPE;
                         pExlcMaster.EVENT_MODE = "E";
 
-                        pExlcMaster.VOUCH_ID = data.PEXLC.VOUCH_ID;
+                        pExlcMaster.VOUCH_ID =pExlcEvent.VOUCH_ID;
                         pExlcMaster.USER_ID = USER_ID;
                         pExlcMaster.UPDATE_DATE = UpdateDateT;
                         // 'PAYMENT
-                        pExlcMaster.NEGO_AMT = data.PEXLC.NEGO_AMT;
-                        pExlcMaster.LESS_AGENT = data.PEXLC.LESS_AGENT;
-                        pExlcMaster.TOT_NEGO_AMOUNT = data.PEXLC.TOT_NEGO_AMOUNT;
+                        pExlcMaster.NEGO_AMT =pExlcEvent.NEGO_AMT;
+                        pExlcMaster.LESS_AGENT =pExlcEvent.LESS_AGENT;
+                        pExlcMaster.TOT_NEGO_AMOUNT =pExlcEvent.TOT_NEGO_AMOUNT;
 
-                        pExlcMaster.NET_PROCEED_CLAIM = data.PEXLC.NET_PROCEED_CLAIM;
-                        pExlcMaster.BANK_CHARGE_AMT = data.PEXLC.BANK_CHARGE_AMT;
-                        pExlcMaster.TOT_NEGO_AMT = data.PEXLC.TOT_NEGO_AMT;
-                        pExlcMaster.PAYMENTTYPE = data.PEXLC.PAYMENTTYPE;
+                        pExlcMaster.NET_PROCEED_CLAIM =pExlcEvent.NET_PROCEED_CLAIM;
+                        pExlcMaster.BANK_CHARGE_AMT =pExlcEvent.BANK_CHARGE_AMT;
+                        pExlcMaster.TOT_NEGO_AMT =pExlcEvent.TOT_NEGO_AMT;
+                        pExlcMaster.PAYMENTTYPE =pExlcEvent.PAYMENTTYPE;
 
                         pExlcMaster.PURCHASE_AMT = pExlcMaster.PURCHASE_AMT - Tot_paid;
                         pExlcMaster.TOT_NEGO_AMT = pExlcMaster.TOT_NEGO_AMT - Tot_paid;
@@ -828,37 +838,37 @@ namespace ISPTF.API.Controllers.ExportLC
                             }
                         }
 
-                        pExlcMaster.TOTAL_NEGO_BALANCE = data.PEXLC.TOTAL_NEGO_BALANCE;
-                        pExlcMaster.TOTAL_NEGO_BAL_THB = data.PEXLC.TOTAL_NEGO_BAL_THB;
+                        pExlcMaster.TOTAL_NEGO_BALANCE =pExlcEvent.TOTAL_NEGO_BALANCE;
+                        pExlcMaster.TOTAL_NEGO_BAL_THB =pExlcEvent.TOTAL_NEGO_BAL_THB;
                      //   'TAB 2
-                        pExlcMaster.NEGO_AMT = data.PEXLC.NEGO_AMT;
-                        pExlcMaster.TELEX_SWIFT = data.PEXLC.TELEX_SWIFT;
-                        pExlcMaster.COURIER_POSTAGE = data.PEXLC.COURIER_POSTAGE;
-                        pExlcMaster.STAMP_FEE = data.PEXLC.STAMP_FEE;
-                        pExlcMaster.BE_STAMP = data.PEXLC.BE_STAMP;
-                        pExlcMaster.COMM_OTHER = data.PEXLC.COMM_OTHER;
-                        pExlcMaster.HANDING_FEE = data.PEXLC.HANDING_FEE;
-                        pExlcMaster.DRAFTCOMM = data.PEXLC.DRAFTCOMM;
-                        pExlcMaster.TOTAL_CHARGE = data.PEXLC.TOTAL_CHARGE;
-                        pExlcMaster.REFUND_TAX_YN = data.PEXLC.REFUND_TAX_YN;
-                        pExlcMaster.REFUND_TAX_AMT = data.PEXLC.REFUND_TAX_AMT;
-                        pExlcMaster.TOTAL_AMOUNT = data.PEXLC.TOTAL_AMOUNT;
+                        pExlcMaster.NEGO_COMM =pExlcEvent.NEGO_COMM;
+                        pExlcMaster.TELEX_SWIFT =pExlcEvent.TELEX_SWIFT;
+                        pExlcMaster.COURIER_POSTAGE =pExlcEvent.COURIER_POSTAGE;
+                        pExlcMaster.STAMP_FEE =pExlcEvent.STAMP_FEE;
+                        pExlcMaster.BE_STAMP =pExlcEvent.BE_STAMP;
+                        pExlcMaster.COMM_OTHER =pExlcEvent.COMM_OTHER;
+                        pExlcMaster.HANDING_FEE =pExlcEvent.HANDING_FEE;
+                        pExlcMaster.DRAFTCOMM =pExlcEvent.DRAFTCOMM;
+                        pExlcMaster.TOTAL_CHARGE =pExlcEvent.TOTAL_CHARGE;
+                        pExlcMaster.REFUND_TAX_YN =pExlcEvent.REFUND_TAX_YN;
+                        pExlcMaster.REFUND_TAX_AMT =pExlcEvent.REFUND_TAX_AMT;
+                        pExlcMaster.TOTAL_AMOUNT =pExlcEvent.TOTAL_AMOUNT;
                         if (data.PEXLC.PAYMENT_INSTRU == "PAID")
                         {
                             pExlcMaster.PAYMENT_INSTRU = "PAID";
-                            pExlcMaster.METHOD = data.PEXLC.METHOD;
-                            pExlcMaster.RECEIVED_NO = data.PEXLC.RECEIVED_NO;
+                            pExlcMaster.METHOD =pExlcEvent.METHOD;
+                            pExlcMaster.RECEIVED_NO =pExlcEvent.RECEIVED_NO;
                         }
                         else
                         {
                             pExlcMaster.PAYMENT_INSTRU = "UNPAID";
                             pExlcMaster.METHOD = "";
-                            pExlcMaster.RECEIVED_NO = data.PEXLC.RECEIVED_NO;
+                            pExlcMaster.RECEIVED_NO =pExlcEvent.RECEIVED_NO;
                         }
-                        pExlcMaster.DISCOUNT_CCY = data.PEXLC.DISCOUNT_CCY;
-                        pExlcMaster.DISCRATE = data.PEXLC.DISCRATE;
-                        pExlcMaster.DISCOUNT_AMT = data.PEXLC.DISCOUNT_AMT;
-                        pExlcMaster.ValueDate = data.PEXLC.ValueDate;
+                        pExlcMaster.DISCOUNT_CCY =pExlcEvent.DISCOUNT_CCY;
+                        pExlcMaster.DISCRATE =pExlcEvent.DISCRATE;
+                        pExlcMaster.DISCOUNT_AMT =pExlcEvent.DISCOUNT_AMT;
+                        pExlcMaster.ValueDate =pExlcEvent.ValueDate;
 
                         _context.SaveChanges();
 
@@ -867,8 +877,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 6 - Update GL Flag
                         var gls = (from row in _context.pDailyGLs
-                                   where row.VouchID == data.PEXLC.VOUCH_ID &&
-                                            row.VouchDate == data.PEXLC.EVENT_DATE.GetValueOrDefault().Date
+                                   where row.VouchID ==pExlcEvent.VOUCH_ID &&
+                                            row.VouchDate ==pExlcEvent.EVENT_DATE.GetValueOrDefault().Date
                                    select row).ToList();
 
                         foreach (var row in gls)
@@ -878,7 +888,7 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 7 - Update PPayment
                         var pPayments = (from row in _context.pPayments
-                                         where row.RpReceiptNo == data.PEXLC.RECEIVED_NO
+                                         where row.RpReceiptNo ==pExlcEvent.RECEIVED_NO
                                          select row).ToListAsync();
 
                         foreach (var row in await pPayments)
@@ -889,8 +899,8 @@ namespace ISPTF.API.Controllers.ExportLC
 
                         // 8 - Update PPayment
                         var pEXPayments = (from row in _context.pExPayments
-                                         where row.DOCNUMBER == data.PEXLC.EXPORT_LC_NO &&
-                                         row.EVENT_TYPE ==EVENT_TYPE && row.EVENT_NO == data.PEXLC.EVENT_NO
+                                         where row.DOCNUMBER ==pExlcEvent.EXPORT_LC_NO &&
+                                         row.EVENT_TYPE ==EVENT_TYPE && row.EVENT_NO ==pExlcEvent.EVENT_NO
                                          select row).ToListAsync();
 
                         foreach (var row in await pEXPayments)
@@ -902,7 +912,7 @@ namespace ISPTF.API.Controllers.ExportLC
                         //HistoryInt
                         if (pExPayments.int_day > 0)
                         {
-                            var HistoryInt = ExportLCHelper.HistInterest(_context, USER_CENTER_ID, USER_ID, data.PEXLC, pExPayments);
+                            var HistoryInt = ExportLCHelper.HistInterest(_context, USER_CENTER_ID, USER_ID,pExlcEvent, pExPayments);
                         }
 
                         //if (data.PEXLC.WithOutFlag == "N")
@@ -926,12 +936,12 @@ namespace ISPTF.API.Controllers.ExportLC
                         string resCustLiab;
                         string bankID = "";
                         if (data.PEXLC.Wref_Bank_ID == null) bankID = "";
-                        eventDate = data.PEXLC.EVENT_DATE.Value.ToString("dd/MM/yyyy");
+                        eventDate =pExlcEvent.EVENT_DATE.Value.ToString("dd/MM/yyyy");
                         resCustLiab = ISPModule.CustLiabEXLC.EXLC_PurchasePay(eventDate, "ISSUE", "SAVE",
-                        data.PEXLC.EXPORT_LC_NO, data.PEXLC.BENE_ID,
-                        data.PEXLC.DRAFT_CCY,
-                        data.PEXLC.DRAFT_AMT.ToString(),
-                        data.PEXLC.EVENT_NO.ToString(),
+                       pExlcEvent.EXPORT_LC_NO,pExlcEvent.BENE_ID,
+                       pExlcEvent.DRAFT_CCY,
+                       pExlcEvent.DRAFT_AMT.ToString(),
+                       pExlcEvent.EVENT_NO.ToString(),
                         bankID
                             );
                         if (resCustLiab != "ERROR")

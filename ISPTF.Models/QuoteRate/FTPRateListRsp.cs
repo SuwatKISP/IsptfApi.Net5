@@ -17,6 +17,7 @@ namespace ISPTF.Models.QuoteRate
         public string? ZZUser { get; set; }
         public string? Load_Flag { get; set; }
         public string? FileName { get; set; }
+         public DateTime? ZZdate { get; set; }
         public int rCount { get; set; }
 
     }

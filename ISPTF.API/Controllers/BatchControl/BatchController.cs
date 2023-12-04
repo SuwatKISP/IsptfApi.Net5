@@ -144,10 +144,10 @@ namespace ISPTF.API.Controllers.BatchControl
                     var results = await _db.LoadData<SendMailResultResponse, dynamic>(
                         storedProcedure: "usp_RerunGFMS",
                         param);
-                       var resp = param.Get<int>("@Resp");
+                    var resp = param.Get<int>("@Resp");
                         if (resp == 1)
                         {
-                            return Ok(results);
+
                         }
                         else
                         {
@@ -161,7 +161,7 @@ namespace ISPTF.API.Controllers.BatchControl
                 var AppPath = ConfigurationHelper.config.GetSection("AppPath");
 
                 ProcessStartInfo startInfo = new ProcessStartInfo(string.Concat(AppPath.Value, "batch.bat"));
-                startInfo.Arguments = data.RerunGFMS; 
+                startInfo.Arguments = "Y";//data.RerunGFMS; 
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
                 System.Diagnostics.Process.Start(startInfo);

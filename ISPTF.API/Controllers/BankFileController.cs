@@ -52,7 +52,7 @@ namespace ISPTF.API.Controllers
 
             if (bankcode == "*" || bankcode == null)
             {
-                param.Add("@Bank_Code", "*");
+                param.Add("@Bank_Code", "");
             }
             else
             {

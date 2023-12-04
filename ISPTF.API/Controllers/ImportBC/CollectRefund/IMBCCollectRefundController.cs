@@ -26,7 +26,7 @@ namespace ISPTF.API.Controllers.ImportBC
         }
 
         [HttpGet("listpage")]
-        public async Task<IEnumerable<PIMBCListRsp>> GetAll(string? ListType ,string? CenterID, string? BCNumber, string? CustCode, string? CustName,string? UserCode, string? Page, string? PageSize)
+        public async Task<IEnumerable<PIMBCListRsp>> GetAll(string ListType, string CenterID, string BCNumber, string CustCode, string CustName, string UserCode, string Page, string PageSize)
         {
             DynamicParameters param = new();
 
@@ -58,7 +58,7 @@ namespace ISPTF.API.Controllers.ImportBC
                         param);
             return results;
         }
-// Old Select
+        // Old Select
         //[HttpGet("select")]
         //public async Task<IEnumerable<PIMBCCollectRefundSelectRsp>> GetAllSelect(string? BCNumber, string? BCSeqno, string? RecType, string? EVENT, string? RecStatus)
         //{
@@ -77,7 +77,7 @@ namespace ISPTF.API.Controllers.ImportBC
         //}
 
         [HttpGet("select")]
-        public async Task<ActionResult<PIMBCPPaymentRsp>> GetAllSelect(string? BCNumber, string? BCSeqno, string? RecType, string? EVENT, string? RecStatus)
+        public async Task<ActionResult<PIMBCPPaymentRsp>> GetAllSelect(string BCNumber, string BCSeqno, string RecType, string EVENT, string RecStatus)
         {
             DynamicParameters param = new();
 
@@ -88,11 +88,11 @@ namespace ISPTF.API.Controllers.ImportBC
             param.Add("@RecStatus", RecStatus);
 
             param.Add("@PIMBCRsp", dbType: DbType.Int32,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 12800);
 
             param.Add("@PIMBCPPaymentRsp", dbType: DbType.String,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 5215585);
 
             try
@@ -130,19 +130,19 @@ namespace ISPTF.API.Controllers.ImportBC
             //return Ok();
         }
 
-       [HttpGet("select/master")]
-        public async Task<ActionResult<PIMBCMasterRsp>> GetMasterSelect(string? BCNumber)
+        [HttpGet("select/master")]
+        public async Task<ActionResult<PIMBCMasterRsp>> GetMasterSelect(string BCNumber)
         {
             DynamicParameters param = new();
 
             param.Add("@BCNumber", BCNumber);
 
             param.Add("@PIMBCRsp", dbType: DbType.Int32,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 12800);
 
             param.Add("@PIMBCPPaymentRsp", dbType: DbType.String,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 5215585);
 
             try
@@ -180,7 +180,7 @@ namespace ISPTF.API.Controllers.ImportBC
         public async Task<ActionResult<List<PIMBCPPaymentRsp>>> Insert([FromBody] PIMBCPPaymentRsp pimbcrsp)
         {
             DynamicParameters param = new DynamicParameters();
-//PIMBC
+            //PIMBC
             param.Add("@BCNumber", pimbcrsp.PIMBC.BCNumber);
             param.Add("@RecType", pimbcrsp.PIMBC.RecType);
             param.Add("@BCSeqno", pimbcrsp.PIMBC.BCSeqno);
@@ -363,20 +363,20 @@ namespace ISPTF.API.Controllers.ImportBC
                 //param.Add("@AuthCode", pimbcrsp.PPayment.AuthCode);
             }
             param.Add("@PIMBCRsp", dbType: DbType.Int32,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 12800);
 
             param.Add("@PIMBCPPaymentRsp", dbType: DbType.String,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 5215585);
 
 
             param.Add("@Resp", dbType: DbType.String,
-               direction: System.Data.ParameterDirection.Output,
+               direction: ParameterDirection.Output,
                size: 5215585);
 
             param.Add("@BCSeqNoRsp", dbType: DbType.Int32,
-               direction: System.Data.ParameterDirection.Output,
+               direction: ParameterDirection.Output,
                size: 12800);
 
             try
@@ -431,7 +431,6 @@ namespace ISPTF.API.Controllers.ImportBC
                 return BadRequest(ex.Message);
             }
         }
-
 
         [HttpPost("update")]
         public async Task<ActionResult<List<PIMBCPPaymentRsp>>> Update([FromBody] PIMBCPPaymentRsp pimbcrsp)
@@ -621,15 +620,15 @@ namespace ISPTF.API.Controllers.ImportBC
             //param.Add("@AuthCode", pimbcrsp.PPayment.AuthCode);
 
             param.Add("@PIMBCRsp", dbType: DbType.Int32,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 12800);
 
             param.Add("@PIMBCPPaymentRsp", dbType: DbType.String,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 5215585);
 
             param.Add("@Resp", dbType: DbType.Int32,
-                direction: System.Data.ParameterDirection.Output,
+                direction: ParameterDirection.Output,
                 size: 5215585);
             try
             {
@@ -675,10 +674,10 @@ namespace ISPTF.API.Controllers.ImportBC
                     {
                         ReturnResponse response = new();
                         response.StatusCode = "400";
-                        response.Message = "Gen GL Error-->"+ eventDate ;
+                        response.Message = "Gen GL Error-->" + eventDate;
                         return BadRequest(response);
                     }
-                   
+
                 }
                 else
                 {
@@ -694,8 +693,6 @@ namespace ISPTF.API.Controllers.ImportBC
             }
         }
 
-
-
         [HttpPost("release")]
         public async Task<ActionResult<List<PIMBCPPaymentRsp>>> GetAllRelease([FromBody] PIMBCReleaseReq pimbcrsp)
         {
@@ -708,15 +705,15 @@ namespace ISPTF.API.Controllers.ImportBC
 
 
             param.Add("@PIMBCRsp", dbType: DbType.Int32,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 12800);
 
             param.Add("@PIMBCPPaymentRsp", dbType: DbType.String,
-                       direction: System.Data.ParameterDirection.Output,
+                       direction: ParameterDirection.Output,
                        size: 5215585);
 
             param.Add("@Resp", dbType: DbType.Int32,
-                direction: System.Data.ParameterDirection.Output,
+                direction: ParameterDirection.Output,
                 size: 5215585);
             try
             {
@@ -745,49 +742,9 @@ namespace ISPTF.API.Controllers.ImportBC
                 return BadRequest(ex.Message);
             }
         }
-        //public async Task<ActionResult<List<PIMBCCollectRefundSelectRsp>>> GetAllRelease(string? BCNumber, int? BCSeqno, string? CustCode, string? PayMethod, string? RpCustAc1, float? RpCustAmt1, string? RpCustAc2, float? RpCustAmt2, string? RpCustAc3, float? RpCustAmt3)
-        //{
-        //    DynamicParameters param = new DynamicParameters();
-        //    param.Add("@BCNumber", BCNumber);
-        //    param.Add("@BCSeqno", BCSeqno );
-        //    param.Add("@CustCode", CustCode );
-        //    param.Add("@PayMethod", PayMethod );
-        //    param.Add("@RpCustAc1", RpCustAc1 );
-        //    param.Add("@RpCustAmt1", RpCustAmt1 );
-        //    param.Add("@RpCustAc2", RpCustAc2);
-        //    param.Add("@RpCustAmt2", RpCustAmt2 );
-        //    param.Add("@RpCustAc3", RpCustAc3);
-        //    param.Add("@RpCustAmt3", RpCustAmt3);
-
-        //    param.Add("@Resp", dbType: DbType.Int32,
-        //        direction: System.Data.ParameterDirection.Output,
-        //        size: 5215585);
-        //    try
-        //    {
-        //        var results = await _db.LoadData<PIMBCCollectRefundSelectRsp, dynamic>(
-        //            storedProcedure: "usp_pIMBC_CollectRefund_Release",
-        //            param);
-        //        var resp = param.Get<int>("@Resp");
-        //        if (resp == 1)
-        //        {
-        //            return Ok(results);
-        //        }
-        //        else
-        //        {
-        //            ReturnResponse response = new();
-        //            response.StatusCode = "400";
-        //            response.Message = "BC Number not exist";
-        //            return BadRequest(response);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
 
         [HttpPost("delete")]
-        public async Task<ActionResult<List<PIMBCCollectRefundDeleteReq>>> GetAllDelete(string? BCNumber, string? BCSeqno, DateTime? EventDate)
+        public async Task<ActionResult<List<PIMBCCollectRefundDeleteReq>>> GetAllDelete(string BCNumber, string BCSeqno, DateTime? EventDate)
         {
             DynamicParameters param = new();
 
@@ -797,7 +754,7 @@ namespace ISPTF.API.Controllers.ImportBC
             param.Add("@BCNumber", BCNumber);
 
             param.Add("@Resp", dbType: DbType.Int32,
-                direction: System.Data.ParameterDirection.Output,
+                direction: ParameterDirection.Output,
                 size: 5215585);
             try
             {
