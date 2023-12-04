@@ -438,8 +438,8 @@ namespace ISPTF.API.Controllers.PackingCredit
                         }
                         _context.Database.ExecuteSqlRaw($"DELETE pPayDetail WHERE DpReceiptNo = '{pExpcEvent.received_no}'");
                         _context.Database.ExecuteSqlRaw($"DELETE pDailyGL WHERE TranDocNo = '{pExpcEvent.PACKING_NO}' AND VouchDate = '{pExpcEvent.LastIntDate}'");
-                        _context.Database.ExecuteSqlRaw($"UPDATE pDocRegister SET Reg_Status = 'A',Remark ='N' WHERE Reg_Login = 'EXPC' AND Reg_Appv = 'Y' and Reg_Status = 'I' AND Reg_RecStat = 'R' AND Reg_CustCode = '{pExpcEvent.cust_id}' AND Reg_Docno = '{pExpcEvent.PACKING_NO}'");
-                        _context.Database.ExecuteSqlRaw($"DELETE pExpc WHERE PACKING_NO = '{pExpcEvent.PACKING_NO}'");
+                        _context.Database.ExecuteSqlRaw($"Update pExpc SET REC_STATUS ='T' WHERE RECORD_TYPE ='EVENT' and PACKING_NO = '{pExpcEvent.PACKING_NO}' AND EventNo ={pExpcEvent.event_no} and EVENT_TYPE ='{EVENT_TYPE}' and BUSINESS_TYPE ='{BUSINESS_TYPE}' ");
+                        _context.Database.ExecuteSqlRaw($"Update pExpc SET REC_STATUS ='R',in_use ='0', EventNo ={pExpcEvent.event_no}  WHERE RECORD_TYPE ='MASTER' ");
 
                         // Commit
                         _context.SaveChanges();
@@ -814,6 +814,25 @@ namespace ISPTF.API.Controllers.PackingCredit
                         // Commit
                         transaction.Complete();
                         transaction.Dispose();
+
+                        string eventDate;
+                        string resCustLiab;
+                        eventDate = pExpcEvent.event_date.Value.ToString("dd/MM/yyyy");
+                        resCustLiab = ISPModule.CustLiabEXPC.EXPC_ReverseISS(eventDate, "ISSUE", pExpcEvent.PACKING_NO,
+                        pExpcEvent.cust_id, pExpcEvent.doc_ccy,
+                        pExpcEvent.pack_ccy.ToString(),pExpcEvent.pack_thb.ToString(),
+                        pExpcEvent.packing_for);
+                        if (resCustLiab != "ERROR")
+                        {
+                            return Ok(response);
+                        }
+                        else
+                        {
+                            response.Code = Constants.RESPONSE_ERROR;
+                            response.Message = "Export L/C Error for Update Liability";
+                            return BadRequest(response);
+                        }
+
                     }
                     catch (Exception e)
                     {

@@ -22,6 +22,6 @@ namespace ISPTF.Models.DomesticLC
         public string? RecStatus { get; set; }
         public string? AppvNo { get; set; }
         public string? FacNo { get; set; }
-
+        public string? Event { get; set; }
     }
 }

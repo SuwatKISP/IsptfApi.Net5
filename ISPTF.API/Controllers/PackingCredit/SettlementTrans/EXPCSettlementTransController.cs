@@ -321,7 +321,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpc.total_date = pExpcMaster.total_date;
                         pExpc.ValueDate = pExpcMaster.ValueDate;
                         pExpc.prev_contra_bal = pExpcMaster.prev_contra_bal;
-                        pExpc.contra_bal = pExpcMaster.contra_bal;
+                        //pExpc.contra_bal = pExpcMaster.contra_bal;
                         pExpc.principle_amt_thb1 = pExpcMaster.principle_amt_thb1;
                         pExpc.principle_amt_ccy1 = pExpcMaster.principle_amt_ccy1;
                         pExpc.PurposeCode = pExpcMaster.PurposeCode;
@@ -332,6 +332,7 @@ namespace ISPTF.API.Controllers.PackingCredit
                         pExpc.update_date = UpdateDateT;
                         pExpc.genacc_flag = "Y";
                         pExpc.in_Use = "0";
+                        
                         if (pExpc.pay_instruc == "1" || pExpc.pay_instruc == "3")
                         {
                             if (pExpc.received_no == "" || pExpc.received_no == null)
@@ -771,6 +772,55 @@ namespace ISPTF.API.Controllers.PackingCredit
             if (pPayment.RpChqNo == null) pPayment.RpChqNo = "";
             if (pPayment.RpChqBank == null) pPayment.RpChqBank = "";
             if (pPayment.RpChqBranch == null) pPayment.RpChqBranch = "";
+
+            _context.Database.ExecuteSqlRaw($"DELETE FROM pPayDetail WHERE DpReceiptNo = '{pExpc.received_no}'");
+
+            int li_seq = 0;
+
+                if (pExpc.Com_Lieu > 0)
+                {
+                    li_seq++;
+                    var payDetail = new pPayDetail();
+                    payDetail.DpReceiptNo = pExpc.received_no;
+                    payDetail.DpPayName = "";
+                    payDetail.DpPayAmt = pExpc.Com_Lieu;
+                    payDetail.DpSeq = li_seq;
+                    payDetail.DpPayName = "COMM. IN LIEU OF EXCHANGE" ;
+                    _context.pPayDetails.Add(payDetail);
+                }
+            if (pExpc.comm_other > 0)
+            {
+                li_seq++;
+                var payDetail = new pPayDetail();
+                payDetail.DpReceiptNo = pExpc.received_no;
+                payDetail.DpPayName = "";
+                payDetail.DpPayAmt = pExpc.comm_other;
+                payDetail.DpSeq = li_seq;
+                payDetail.DpPayName = "COMM. OTHER";
+                _context.pPayDetails.Add(payDetail);
+            }
+            if (pExpc.refund_tax_amt > 0)
+            {
+                li_seq++;
+                var payDetail = new pPayDetail();
+                payDetail.DpReceiptNo = pExpc.received_no;
+                payDetail.DpPayName = "";
+                payDetail.DpPayAmt = 0;
+                payDetail.DpSeq = li_seq;
+                payDetail.DpPayName = "";
+                payDetail.DpRemark = "LESS";
+                _context.pPayDetails.Add(payDetail);
+
+                li_seq++;
+                payDetail = new pPayDetail();
+                payDetail.DpReceiptNo = pExpc.received_no;
+                payDetail.DpPayName = "";
+                payDetail.DpPayAmt = pExpc.refund_tax_amt;
+                payDetail.DpSeq = li_seq;
+                payDetail.DpPayName = "REFUND TAX AMT.";
+                payDetail.DpRemark = "";
+                _context.pPayDetails.Add(payDetail);
+            }
         }
 
         public static bool SavePCOrder(ISPTFContext _context,pExpc pc, pExpcOrder[] pExpcOrders)
