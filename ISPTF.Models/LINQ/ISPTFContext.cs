@@ -16,7 +16,8 @@ namespace ISPTF.Models
             : base(options)
         {
         }
-
+        public virtual DbSet<FTPRates> FTPRates { get; set; }
+        public virtual DbSet<TPR_Rate> TPR_Rate { get; set; }
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public virtual DbSet<BOT_Classification> BOT_Classifications { get; set; }
